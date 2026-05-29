@@ -34,11 +34,11 @@ namespace DefenseDot.Systems.Pathfinding
         public void RequestPath(MapData mapData, Vector2Int start, Vector2Int end, Action<List<Vector2Int>> callback)
         {
             // 실제 구현에서는 여기서 NativeArray로 맵 정보를 넘기고 Job을 스케줄링합니다.
-            // 현재는 구조 설계를 위해 비동기 처리를 위한 코루틴이나 별도 핸들러를 시뮬레이션합니다.
-            StartCoroutine(CalculatePathAsync(mapData, start, end, callback));
+            // 임시: 비동기 처리 시뮬레이션
+            CalculatePathAsync(mapData, start, end, callback).Forget();
         }
 
-        private System.Collections.IEnumerator CalculatePathAsync(MapData mapData, Vector2Int start, Vector2Int end, Action<List<Vector2Int>> callback)
+        private async UniTask CalculatePathAsync(MapData mapData, Vector2Int start, Vector2Int end, Action<List<Vector2Int>> callback)
         {
             // 1. NativeArray 준비 (맵 그리드 정보)
             NativeArray<int> gridData = new NativeArray<int>(mapData.width * mapData.height, Allocator.TempJob);

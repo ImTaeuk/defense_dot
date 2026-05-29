@@ -96,7 +96,7 @@ namespace DefenseDot.Systems.Enemy
             activeEnemyCount++;
             spawnedEnemies.Add(actor);
             OnEnemiesRemainingChanged?.Invoke(activeEnemyCount);
-            
+
             // 임시: 10초 후 자동 제거 시뮬레이션 (나중에 실제 로직으로 대체)
             // StartCoroutine(RemoveEnemyAfterDelay(actor, 10f));
         }
