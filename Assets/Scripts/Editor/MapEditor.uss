@@ -1,0 +1,117 @@
+/*
+2026-05-28 AI-Tag
+This was created with the help of Assistant, a Unity Artificial Intelligence product.
+*/
+/*
+2026-05-28 AI-Tag
+This was created with the help of Assistant, a Unity Artificial Intelligence product.
+*/
+.container {
+    flex-grow: 1;
+    background-color: #2b2b2b;
+    padding: 10px;
+}
+
+.toolbar {
+    padding: 5px;
+    background-color: #383838;
+    border-bottom-width: 1px;
+    border-bottom-color: #1a1a1a;
+    margin-bottom: 10px;
+}
+
+.brush-container {
+    flex-direction: row;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.type-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-left: 10px;
+}
+
+.type-btn {
+    padding: 4px 8px;
+    margin: 2px;
+    background-color: #444;
+    border-width: 1px;
+    border-color: #555;
+    color: #eee;
+}
+
+.type-btn--active {
+    background-color: #4a6a96;
+    border-color: #6a8ab6;
+}
+
+.grid-scroll {
+    flex-grow: 1;
+}
+
+.scroll-view-center-wrapper {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    min-width: 100%;
+    min-height: 100%;
+}
+
+.grid-container {
+    background-color: #1a1a1a;
+    border-width: 1px;
+    border-color: #000;
+    transform-origin: center center;
+}
+
+.cell {
+    position: absolute;
+    border-width: 0.5px;
+    border-color: #333;
+    align-items: center;
+    justify-content: center;
+}
+
+.cell-label {
+    font-size: 8px;
+    color: rgba(0, 0, 0, 0.8);
+    -unity-font-style: bold;
+}
+
+.cell--red-cell { background-color: #8b0000; }
+.cell--path { background-color: #4ade80; }
+.cell--tower-slot { background-color: #9370db; }
+.cell--spawn { background-color: #ffd700; }
+.cell--core { background-color: #87cefa; }
+.prefab-container {
+    flex-direction: row;
+    align-items: center;
+    margin: 5px 0;
+    padding: 5px;
+    background-color: #2a2a2a;
+    border-radius: 4px;
+}
+
+.prefab-list {
+    flex-grow: 1;
+    margin-left: 10px;
+    height: 60px;
+}
+
+.prefab-btn {
+    width: 50px;
+    height: 50px;
+    margin-right: 5px;
+    background-color: #444;
+    border-width: 1px;
+    border-color: #555;
+    font-size: 10px;
+    -unity-text-align: middle-center;
+}
+
+.prefab-btn--active {
+    border-color: #00ffff;
+    border-width: 2px;
+    background-color: #3d5380;
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Defense Dot - Development Roadmap</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1c23; color: #e1e1e1; margin: 0; padding: 40px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #4e9af1; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .phase { margin-bottom: 40px; }
+        .phase-title { font-size: 1.4em; font-weight: bold; color: #f0ad4e; margin-bottom: 15px; display: flex; align-items: center; }
+        .phase-title::before { content: "●"; margin-right: 10px; font-size: 0.8em; }
+        .card-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .card { background: #252a34; padding: 20px; border-radius: 8px; border-left: 4px solid #4e9af1; position: relative; }
+        .card.completed { border-left-color: #5cb85c; opacity: 0.8; }
+        .card.in-progress { border-left-color: #f0ad4e; box-shadow: 0 0 10px rgba(240, 173, 78, 0.2); }
+        .card h3 { margin-top: 0; font-size: 1.1em; }
+        .card p { font-size: 0.9em; color: #aaa; margin-bottom: 0; }
+        .status { position: absolute; top: 10px; right: 15px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; }
+        .status.pending { background: #444; color: #bbb; }
+        .status.done { background: #28a745; color: #fff; }
+        .priority { color: #ff5b6e; font-weight: bold; margin-bottom: 5px; display: block; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Defense Dot 개발 로드맵</h1>
+
+        <div class="phase">
+            <div class="phase-title">Phase 1: 핵심 플레이 루프 (Core Loop)</div>
+            <div class="card-list">
+                <div class="card completed">
+                    <span class="status done">완료</span>
+                    <h3>기초 아키텍처 수립</h3>
+                    <p>MVP UI, POCO-Actor-BT, 인터페이스 기반 설계 완료</p>
+                </div>
+                <div class="card completed">
+                    <span class="status done">완료</span>
+                    <h3>맵 에디터 & 데이터</h3>
+                    <p>그리드 데이터 Bake 시스템 및 씬 뷰 기즈모 가이드 구현</p>
+                </div>
+                <div class="card completed">
+                    <span class="status done">완료</span>
+                    <h3>고성능 경로 탐색</h3>
+                    <p>JPS 알고리즘 + Job System + Burst 최적화 구현</p>
+                </div>
+                <div class="card in-progress">
+                    <span class="priority">우선순위 1</span>
+                    <span class="status pending">대기</span>
+                    <h3>건설 시스템 (Placement)</h3>
+                    <p>그리드 슬롯 인식 및 타워 설치/골드 소모 로직</p>
+                </div>
+                <div class="card">
+                    <span class="priority">우선순위 2</span>
+                    <span class="status pending">대기</span>
+                    <h3>웨이브 매니저 (Spawn)</h3>
+                    <p>적 소환 스케줄링 및 자동 경로 할당 루틴</p>
+                </div>
+                <div class="card">
+                    <span class="priority">우선순위 3</span>
+                    <span class="status pending">대기</span>
+                    <h3>투사체 & 풀링 시스템</h3>
+                    <p>타워 공격 시각화 및 오브젝트 풀 기반 성능 최적화</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="phase">
+            <div class="phase-title">Phase 2: 성장 및 깊이 (Progression)</div>
+            <div class="card-list">
+                <div class="card">
+                    <h3>능력(Ability) 시스템</h3>
+                    <p>레벨업 시 무작위 스킬 선택 및 시너지 로직</p>
+                </div>
+                <div class="card">
+                    <h3>유물(Relic) 시스템</h3>
+                    <p>영구적인 패시브 효과 및 게임플레이 변수 조정</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

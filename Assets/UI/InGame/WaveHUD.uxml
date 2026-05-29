@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="WaveHUD.uss" />
+    <ui:VisualElement name="hud-root" class="hud-container">
+        <ui:Label name="wave-label" text="WAVE: 1 / 10" class="hud-label" />
+        <ui:Label name="enemies-label" text="ENEMIES: 0" class="hud-label hud-value" />
+    </ui:VisualElement>
+</ui:UXML>

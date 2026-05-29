@@ -1,0 +1,28 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:Style src="MapEditor.uss" />
+    <ui:VisualElement name="root" class="container">
+        <ui:VisualElement name="toolbar" class="toolbar">
+            <uie:ObjectField name="mapDataField" label="Map Data" />
+            <ui:VisualElement name="brush-container" class="brush-container">
+                <ui:Label text="Brush Type:" />
+                <ui:VisualElement name="type-buttons" class="type-buttons" />
+            </ui:VisualElement>
+            <ui:VisualElement name="prefab-container" class="prefab-container">
+                <ui:Label text="Select Prefab:" />
+                <ui:ScrollView name="prefab-list" class="prefab-list" mode="Horizontal" />
+            </ui:VisualElement>
+            <ui:VisualElement name="action-buttons" style="flex-direction: row; gap: 5px;">
+                <ui:Button name="saveButton" text="Save Map" />
+                <ui:Button name="bakeButton" text="Bake Paths" tooltip="모든 Spawn에서 Core까지의 최단 경로를 미리 계산하여 저장합니다." />
+                <ui:Button name="generateSceneButton" text="Generate in Scene" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:ScrollView class="grid-scroll">
+            <ui:VisualElement name="centerWrapper" class="scroll-view-center-wrapper">
+                <ui:VisualElement name="zoomContainer">
+                    <ui:VisualElement name="gridContainer" class="grid-container" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:ScrollView>
+    </ui:VisualElement>
+</ui:UXML>

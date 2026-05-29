@@ -1,0 +1,265 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aaacaf809ddc47a419f172f9d8212e79, type: 3}
+  m_Name: NewMapData
+  m_EditorClassIdentifier: Assembly-CSharp::DefenseDot.Data.MapData
+  width: 10
+  height: 10
+  cellSize: 1
+  palette: {fileID: 11400000, guid: efb7096c79de349418bd757f683e8d44, type: 2}
+  grid:
+  - type: 3
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 4
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 2
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 2
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 2
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 2
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 2
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 2
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 1
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 2
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  - type: 2
+    prefabIndex: 0
+  - type: 0
+    prefabIndex: 0
+  bakedPaths:
+  - spawnPos: {x: 0, y: 0}
+    corePos: {x: 9, y: 0}
+    path:
+    - {x: 0, y: 0}
+    - {x: 1, y: 0}
+    - {x: 1, y: 1}
+    - {x: 1, y: 2}
+    - {x: 1, y: 3}
+    - {x: 1, y: 4}
+    - {x: 1, y: 5}
+    - {x: 1, y: 6}
+    - {x: 1, y: 7}
+    - {x: 1, y: 8}
+    - {x: 2, y: 8}
+    - {x: 3, y: 8}
+    - {x: 4, y: 8}
+    - {x: 5, y: 8}
+    - {x: 6, y: 8}
+    - {x: 7, y: 8}
+    - {x: 8, y: 8}
+    - {x: 8, y: 7}
+    - {x: 8, y: 6}
+    - {x: 7, y: 6}
+    - {x: 6, y: 6}
+    - {x: 5, y: 6}
+    - {x: 4, y: 6}
+    - {x: 3, y: 6}
+    - {x: 3, y: 5}
+    - {x: 3, y: 4}
+    - {x: 4, y: 4}
+    - {x: 5, y: 4}
+    - {x: 6, y: 4}
+    - {x: 6, y: 3}
+    - {x: 6, y: 2}
+    - {x: 5, y: 2}
+    - {x: 4, y: 2}
+    - {x: 3, y: 2}
+    - {x: 3, y: 1}
+    - {x: 3, y: 0}
+    - {x: 4, y: 0}
+    - {x: 5, y: 0}
+    - {x: 6, y: 0}
+    - {x: 7, y: 0}
+    - {x: 8, y: 0}
+    - {x: 9, y: 0}
