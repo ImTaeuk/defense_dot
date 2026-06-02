@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 642f5dc19a29b4e468d4597b8c76c1b8
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316288
+  packageName: Roguelike Magic VFX Kit
+  packageVersion: 2.0
+  assetPath: Assets/Piloto Studio/Roguelike VFX Pack/Prefabs/HealingTree.prefab
+  uploadId: 771925

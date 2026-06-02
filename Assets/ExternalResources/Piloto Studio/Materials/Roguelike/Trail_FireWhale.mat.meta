@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 43bd89fe236c47948a10492712fa9fea
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316288
+  packageName: Roguelike Magic VFX Kit
+  packageVersion: 2.0
+  assetPath: Assets/Piloto Studio/Materials/Roguelike/Trail_FireWhale.mat
+  uploadId: 771925

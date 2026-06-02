@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: c3654c90b4263364e97ccc50594ecf72
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316288
+  packageName: Roguelike Magic VFX Kit
+  packageVersion: 2.0
+  assetPath: Assets/Piloto Studio/Materials/Roguelike/HorizontalLines_Blend.mat
+  uploadId: 771925

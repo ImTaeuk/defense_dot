@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2a1752c769fd10d4881e55eabbfdcc8f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316288
+  packageName: Roguelike Magic VFX Kit
+  packageVersion: 2.0
+  assetPath: Assets/Piloto Studio/Materials/Roguelike/Trail_RoughBurst_Green.mat
+  uploadId: 771925

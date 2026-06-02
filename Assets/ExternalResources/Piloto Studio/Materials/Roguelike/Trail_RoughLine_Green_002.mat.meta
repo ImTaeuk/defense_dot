@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 331ad7970b3eabe4d828202dad70a96f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316288
+  packageName: Roguelike Magic VFX Kit
+  packageVersion: 2.0
+  assetPath: Assets/Piloto Studio/Materials/Roguelike/Trail_RoughLine_Green_002.mat
+  uploadId: 771925

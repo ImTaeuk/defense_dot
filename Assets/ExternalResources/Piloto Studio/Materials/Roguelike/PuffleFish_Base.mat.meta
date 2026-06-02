@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 6519d3aa14011a14aa9568c360e9041d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 316288
+  packageName: Roguelike Magic VFX Kit
+  packageVersion: 2.0
+  assetPath: Assets/Piloto Studio/Materials/Roguelike/PuffleFish_Base.mat
+  uploadId: 771925
