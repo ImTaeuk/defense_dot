@@ -10,6 +10,9 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
+# Superpowers brainstorming visual companion
+.superpowers/
+
 .utmp/
 /[Ll]ibrary/
 /[Tt]emp/

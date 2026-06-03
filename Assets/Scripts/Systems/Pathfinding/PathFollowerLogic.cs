@@ -1,3 +1,4 @@
+// 경로추종 이동 전략(타워디펜스 모드) — 셀 경로를 따라 적 이동
 using System.Collections.Generic;
 using UnityEngine;
 using DefenseDot.Core;
@@ -6,17 +7,23 @@ using DefenseDot.Systems.Enemy;
 namespace DefenseDot.Systems.Pathfinding
 {
     /// <summary>
-    /// MonoBehaviour가 아닌 순수 C# 클래스(POCO)로 구현된 이동 로직입니다.
-    /// Actor와 독립적으로 이동 계산을 수행합니다.
+    /// MonoBehaviour가 아닌 순수 C# 클래스(POCO)로 구현된 경로추종 이동 전략입니다.
+    /// Actor와 독립적으로 이동을 계산하며, IMovementStrategy로 모드에 주입됩니다.
     /// </summary>
-    public class PathFollowerLogic
-{
+    public class PathFollowerLogic : IMovementStrategy
+    {
         private readonly IMovableActor actor;
         private readonly float moveSpeed;
-        
+
         private List<Vector2Int> currentPath;
         private int currentPathIndex;
         private System.Action onComplete;
+        private bool reachedGoal;
+
+        /// <summary>
+        /// 경로 끝(코어)에 도달했는지 여부입니다.
+        /// </summary>
+        public bool HasReachedGoal => reachedGoal;
 
         /// <summary>
         /// 생성자에서 이동을 수행할 액터를 캐싱하도록 강제합니다.
@@ -37,7 +44,8 @@ namespace DefenseDot.Systems.Pathfinding
             currentPath = path;
             currentPathIndex = 0;
             this.onComplete = onComplete;
-            
+            reachedGoal = false;
+
             if (currentPath != null && currentPath.Count > 0)
             {
                 actor.SetState(ActorState.Moving);
@@ -49,13 +57,12 @@ namespace DefenseDot.Systems.Pathfinding
         /// </summary>
         public void Tick(float deltaTime)
         {
-            // 액터가 이동 가능한 상태가 아니면 로직을 수행하지 않음 (인터페이스를 통한 상태 확인)
             if (!actor.IsMovableState()) return;
             if (currentPath == null || currentPathIndex >= currentPath.Count) return;
 
             Vector3 targetWorldPos = CellToWorld(currentPath[currentPathIndex]);
             Vector3 currentPos = actor.Position;
-            
+
             Vector3 nextPos = Vector3.MoveTowards(currentPos, targetWorldPos, moveSpeed * deltaTime);
             actor.SetPosition(nextPos);
 
@@ -72,15 +79,16 @@ namespace DefenseDot.Systems.Pathfinding
         private void CompleteMovement()
         {
             currentPath = null;
+            reachedGoal = true;
             actor.SetState(ActorState.Idle);
             onComplete?.Invoke();
         }
 
         private Vector3 CellToWorld(Vector2Int cell)
         {
-            // 3D 환경 (XZ 평면)에 맞춰 Map Y를 World Z로 매핑
-            // Y축을 0.8f로 설정하여 1유닛 높이의 타일(중심 0, 상단 0.5) 위에 적(반지름 0.3)이 위치하게 함
+            // 3D 환경(XZ 평면)에 맞춰 Map Y를 World Z로 매핑
+            // Y축 0.8f로 타일 위에 적(반지름 0.3) 배치
             return new Vector3(cell.x + 0.5f, 0.8f, cell.y + 0.5f);
         }
-}
+    }
 }

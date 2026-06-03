@@ -1,33 +1,58 @@
-using UnityEngine;
-using DefenseDot.Data;
+// 적 스포너 — 웨이브 소환, 풀링, 처치/도달 분기, WaveModel 갱신
 using System.Collections.Generic;
-using System;
+using UnityEngine;
 using Cysharp.Threading.Tasks;
+using DefenseDot.Data;
+using DefenseDot.Domain.Models;
+using DefenseDot.Systems.Mode;
 
 namespace DefenseDot.Systems.Enemy
 {
     /// <summary>
-    /// 웨이브 데이터를 기반으로 적을 순차적으로 소환하고 상태를 관리합니다.
+    /// 웨이브 데이터 기반으로 적을 소환·풀링하고, 처치/도달을 분기하며 WaveModel을 갱신합니다.
+    /// 모드·레지스트리·모델은 GameManager(합성 루트)가 주입합니다.
     /// </summary>
     public class EnemySpawner : MonoBehaviour
     {
         [Header("Data References")]
-        public MapData mapData;
         public WaveSequence waveSequence;
 
         [Header("Hierarchy")]
         [SerializeField] private Transform container;
 
-        // UI 연동을 위한 이벤트
-        public event Action<int, int> OnWaveChanged; // (현재 웨이브, 전체 웨이브)
-        public event Action<int> OnEnemiesRemainingChanged;
+        // 주입 의존성
+        private IGameMode mode;
+        private EnemyRegistry registry;
+        private CombatModel combat;
+        private WaveModel waveModel;
 
         private int currentWaveIndex = -1;
         private int activeEnemyCount = 0;
-        private List<MonsterActor> spawnedEnemies = new List<MonsterActor>();
         private bool isSpawning = false;
 
-        private void Start()
+        // prefab별 경량 풀 (필드 보관 컬렉션 → 일반 new 허용)
+        private readonly Dictionary<GameObject, Queue<MonsterActor>> pools = new Dictionary<GameObject, Queue<MonsterActor>>();
+
+        /// <summary>
+        /// 현재 활성 적 수입니다. (아레나 수용 한계 패배 판정용)
+        /// </summary>
+        public int ActiveEnemyCount => activeEnemyCount;
+
+        /// <summary>
+        /// 합성 루트에서 의존성을 주입합니다.
+        /// </summary>
+        public void SetContext(IGameMode gameMode, EnemyRegistry enemyRegistry, CombatModel combatModel, WaveModel wave)
+        {
+            mode = gameMode;
+            registry = enemyRegistry;
+            combat = combatModel;
+            waveModel = wave;
+        }
+
+        /// <summary>
+        /// 웨이브 진행을 시작합니다. (주입 완료 후 GameManager가 호출)
+        /// </summary>
+        public void BeginWaves()
         {
             if (waveSequence != null && waveSequence.waves.Count > 0)
             {
@@ -42,12 +67,13 @@ namespace DefenseDot.Systems.Enemy
             currentWaveIndex++;
             if (currentWaveIndex < waveSequence.waves.Count)
             {
+                waveModel?.SetWave(currentWaveIndex + 1, waveSequence.waves.Count);
                 SpawnWaveRoutineAsync(waveSequence.waves[currentWaveIndex]).Forget();
-                OnWaveChanged?.Invoke(currentWaveIndex + 1, waveSequence.waves.Count);
             }
             else
             {
-                Debug.Log("All Waves Completed!");
+                // 모든 웨이브 소진 → 승리 통지
+                waveModel?.MarkWaveCleared();
             }
         }
 
@@ -65,55 +91,62 @@ namespace DefenseDot.Systems.Enemy
             }
 
             isSpawning = false;
-
-            // 웨이브의 모든 적 소환 후 다음 웨이브 대기 (또는 수동 시작)
-            // await UniTask.Delay(System.TimeSpan.FromSeconds(wave.nextWaveDelay), cancellationToken: destroyCancellationToken);
-            // StartNextWave();
+            CheckWaveComplete();
         }
 
         private void SpawnEnemy(EnemyData data)
         {
-            if (mapData.bakedPaths.Count == 0) return;
+            if (mode == null) return;
 
-            // 라운드 로빈 방식으로 경로 할당 (원본 HTML 방식)
-            int pathIndex = activeEnemyCount % mapData.bakedPaths.Count;
-            var bakedPath = mapData.bakedPaths[pathIndex];
-
-            GameObject go = Instantiate(data.prefab, container != null ? container : transform);
-            MonsterActor actor = go.GetComponent<MonsterActor>();
-
-            if (actor == null) actor = go.AddComponent<MonsterActor>();
-
+            MonsterActor actor = GetFromPool(data);
             actor.SetSpawner(this);
-            // Y값을 0.8f로 설정하여 타일 위에 소환
-            Vector3 spawnWorldPos = new Vector3(bakedPath.spawnPos.x + 0.5f, 0.8f, bakedPath.spawnPos.y + 0.5f);
-            actor.transform.position = transform.position + spawnWorldPos;
+
+            // 스폰 위치 모드 위임
+            actor.transform.position = mode.GetSpawnWorldPosition(activeEnemyCount);
 
             actor.Initialize(data);
-            actor.MoveToPath(bakedPath.path);
 
-            // 적 제거 시 카운트 관리를 위해 콜백 등록 (나중에 Actor에 OnDie/OnReachCore 추가 필요)
+            // 이동 전략 모드 위임
+            IMovementStrategy strategy = mode.CreateMovementStrategy(actor, data.moveSpeed, activeEnemyCount);
+            actor.SetMovement(strategy);
+
+            registry?.Register(actor);
             activeEnemyCount++;
-            spawnedEnemies.Add(actor);
-            OnEnemiesRemainingChanged?.Invoke(activeEnemyCount);
-
-            // 임시: 10초 후 자동 제거 시뮬레이션 (나중에 실제 로직으로 대체)
-            // StartCoroutine(RemoveEnemyAfterDelay(actor, 10f));
+            waveModel?.SetRemaining(activeEnemyCount);
         }
 
-        public void HandleEnemyRemoved(MonsterActor actor)
+        /// <summary>
+        /// 적 처치 처리 — 보상 통지 후 회수합니다.
+        /// </summary>
+        public void HandleEnemyKilled(MonsterActor actor)
         {
-            if (spawnedEnemies.Contains(actor))
-            {
-                spawnedEnemies.Remove(actor);
-                activeEnemyCount--;
-                OnEnemiesRemainingChanged?.Invoke(activeEnemyCount);
+            combat?.RegisterKill(actor.RewardGold);
+            RemoveAndReturn(actor);
+        }
 
-                // 모든 적 처치 시 다음 웨이브 체크
-                if (activeEnemyCount == 0 && !isSpawning)
-                {
-                    DelayedNextWaveAsync().Forget();
-                }
+        /// <summary>
+        /// 적 코어 도달 처리 — 코어 피해 후 회수합니다. (보상 없음)
+        /// </summary>
+        public void HandleEnemyReached(MonsterActor actor)
+        {
+            mode?.OnEnemyReachedGoal(actor.CoreDamage);
+            RemoveAndReturn(actor);
+        }
+
+        private void RemoveAndReturn(MonsterActor actor)
+        {
+            registry?.Unregister(actor);
+            ReturnToPool(actor);
+            activeEnemyCount--;
+            waveModel?.SetRemaining(activeEnemyCount);
+            CheckWaveComplete();
+        }
+
+        private void CheckWaveComplete()
+        {
+            if (activeEnemyCount == 0 && !isSpawning)
+            {
+                DelayedNextWaveAsync().Forget();
             }
         }
 
@@ -122,5 +155,48 @@ namespace DefenseDot.Systems.Enemy
             await UniTask.Delay(2000, cancellationToken: destroyCancellationToken);
             StartNextWave();
         }
+
+        #region Pooling
+        private MonsterActor GetFromPool(EnemyData data)
+        {
+            if (!pools.TryGetValue(data.prefab, out var queue))
+            {
+                queue = new Queue<MonsterActor>();
+                pools[data.prefab] = queue;
+            }
+
+            MonsterActor actor;
+            if (queue.Count > 0)
+            {
+                actor = queue.Dequeue();
+                actor.gameObject.SetActive(true);
+            }
+            else
+            {
+                GameObject go = Instantiate(data.prefab, container != null ? container : transform);
+                actor = go.GetComponent<MonsterActor>();
+                if (actor == null) actor = go.AddComponent<MonsterActor>();
+            }
+
+            actor.OnSpawn();
+            return actor;
+        }
+
+        private void ReturnToPool(MonsterActor actor)
+        {
+            actor.OnDespawn();
+            actor.gameObject.SetActive(false);
+
+            GameObject prefab = actor.Data != null ? actor.Data.prefab : null;
+            if (prefab == null) { Destroy(actor.gameObject); return; }
+
+            if (!pools.TryGetValue(prefab, out var queue))
+            {
+                queue = new Queue<MonsterActor>();
+                pools[prefab] = queue;
+            }
+            queue.Enqueue(actor);
+        }
+        #endregion
     }
 }

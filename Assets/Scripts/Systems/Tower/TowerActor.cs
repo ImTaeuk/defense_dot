@@ -1,3 +1,4 @@
+// 타워 액터 — 사거리 내 타겟 탐색·공격, 풀링 대상
 using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Data;
@@ -5,12 +6,32 @@ using DefenseDot.Data;
 namespace DefenseDot.Systems.Tower
 {
     /// <summary>
-    /// 타워 액터 클래스입니다. 전투(공격) 로직을 포함합니다.
+    /// 타워 액터 클래스입니다. 전투(공격) 로직과 사거리 기반 타겟 탐색을 포함합니다.
     /// </summary>
-    public class TowerActor : ActorBase<TowerData>, ICombatActor
+    public class TowerActor : ActorBase<TowerData>, ICombatActor, IPoolable
     {
         private CombatLogic combatLogic;
         private ITargetable currentTarget;
+        private TargetFinder targetFinder;
+
+        /// <summary>
+        /// 타겟 탐색기를 주입합니다. (배치 시 호출)
+        /// </summary>
+        public void SetTargetFinder(TargetFinder finder) => targetFinder = finder;
+
+        #region IPoolable Implementation
+        public void OnSpawn()
+        {
+            currentTarget = null;
+            SetState(ActorState.Idle);
+        }
+
+        public void OnDespawn()
+        {
+            currentTarget = null;
+            SetState(ActorState.Idle);
+        }
+        #endregion
 
         #region ICombatActor Implementation
         public bool IsAttackableState()
@@ -27,8 +48,6 @@ namespace DefenseDot.Systems.Tower
             }
 
             SetState(ActorState.Attacking);
-            Debug.Log($"{data.towerName} attacks {currentTarget} for {data.attackDamage} damage.");
-            
             if (currentTarget is IDamageable damageable)
             {
                 damageable.TakeDamage(data.attackDamage);
@@ -57,21 +76,30 @@ namespace DefenseDot.Systems.Tower
 
         private void Update()
         {
-            // 타겟이 있을 때만 전투 로직 수행
-            if (currentTarget != null && currentTarget.IsActive)
+            // 타겟이 유효(생존 + 사거리 내)하면 공격, 아니면 재탐색
+            if (IsTargetValid())
             {
                 UpdateCombat(Time.deltaTime);
             }
             else
             {
-                // 타겟 탐색 로직 (Behavior Tree에서 수행하거나 직접 구현)
+                currentTarget = null;
                 SearchTarget();
             }
         }
 
+        private bool IsTargetValid()
+        {
+            if (currentTarget == null || !currentTarget.IsActive || data == null) return false;
+            float rangeSqr = data.attackRange * data.attackRange;
+            return (currentTarget.Position - Position).sqrMagnitude <= rangeSqr;
+        }
+
         private void SearchTarget()
         {
-            // 임시 타겟 탐색 로직 (추후 그리드/범위 기반으로 고도화 필요)
+            if (targetFinder == null || data == null) return;
+            ITargetable target = targetFinder.FindNearest(Position, data.attackRange);
+            if (target != null) SetTarget(target);
         }
 
         public void SetTarget(ITargetable target)

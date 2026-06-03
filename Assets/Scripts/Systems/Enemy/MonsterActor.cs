@@ -1,23 +1,47 @@
+// 적 액터 — 주입된 전략으로 이동, 처치/도달 분기, 풀링 대상
 using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Data;
-using DefenseDot.Systems.Pathfinding;
 
 namespace DefenseDot.Systems.Enemy
 {
     /// <summary>
-    /// 적(몬스터) 액터 클래스입니다. 이동과 타겟팅 기능을 포함합니다.
+    /// 적(몬스터) 액터입니다. 주입된 이동 전략으로 이동하며, 처치/도달을 스포너에 통지합니다.
     /// </summary>
     public class MonsterActor : ActorBase<EnemyData>, IMovableActor, ITargetable, IPoolable
     {
-        private PathFollowerLogic movementLogic;
+        private IMovementStrategy movement;
         private EnemySpawner spawner;
+        private bool resolved;   // 처치/도달 이중 정산 방지
 
-        public void SetSpawner(EnemySpawner s) => this.spawner = s;
+        /// <summary>
+        /// 이 적의 데이터입니다. (풀 회수 시 prefab 식별용)
+        /// </summary>
+        public EnemyData Data => data;
+
+        /// <summary>
+        /// 처치 시 지급할 보상 골드입니다.
+        /// </summary>
+        public int RewardGold => data != null ? data.rewardGold : 0;
+
+        /// <summary>
+        /// 코어 도달 시 입히는 피해입니다. (P0 기본값 1)
+        /// </summary>
+        public float CoreDamage => 1f;
+
+        /// <summary>
+        /// 회수·통지를 위임할 스포너를 주입합니다.
+        /// </summary>
+        public void SetSpawner(EnemySpawner s) => spawner = s;
+
+        /// <summary>
+        /// 모드가 생성한 이동 전략을 주입합니다.
+        /// </summary>
+        public void SetMovement(IMovementStrategy strategy) => movement = strategy;
 
         #region IMovableActor Implementation
         public void SetPosition(Vector3 newPosition) => transform.position = newPosition;
-        
+
         public bool IsMovableState()
         {
             return currentState == ActorState.Moving || currentState == ActorState.Idle;
@@ -31,60 +55,53 @@ namespace DefenseDot.Systems.Enemy
         #region IPoolable Implementation
         public void OnSpawn()
         {
+            resolved = false;
+            movement = null;
             if (data != null) currentHealth = data.health;
             SetState(ActorState.Idle);
         }
 
         public void OnDespawn()
         {
+            movement = null;
             SetState(ActorState.Dead);
         }
         #endregion
 
-        private void Awake()
-        {
-            // Initial logic moved to Initialize
-        }
-
         public override void Initialize(EnemyData actorData)
         {
             base.Initialize(actorData);
-            movementLogic = new PathFollowerLogic(this, actorData.moveSpeed);
             currentHealth = actorData.health;
+            resolved = false;
         }
 
         private void Update()
         {
-            movementLogic?.Tick(Time.deltaTime);
+            if (movement == null || resolved) return;
+
+            movement.Tick(Time.deltaTime);
+            if (movement.HasReachedGoal) Resolve(reached: true);
+        }
+
+        public override void TakeDamage(float amount)
+        {
+            if (currentState == ActorState.Dead || resolved) return;
+
+            currentHealth -= amount;
+            if (currentHealth <= 0f) Resolve(reached: false);
         }
 
         /// <summary>
-        /// 경로를 설정하여 이동을 시작합니다.
+        /// 적의 최종 처리를 분기합니다. (도달=코어 피해, 처치=보상)
         /// </summary>
-        public void MoveToPath(System.Collections.Generic.List<Vector2Int> path)
+        private void Resolve(bool reached)
         {
-            movementLogic.SetPath(path, () => {
-                // 도착 시 행동 (Core 데미지 처리 후 파괴)
-                DestroyActor();
-            });
-        }
-
-        public void TakeDamage(float amount)
-        {
-            if (currentState == ActorState.Dead) return;
-
-            currentHealth -= amount;
-            if (currentHealth <= 0)
-            {
-                DestroyActor();
-            }
-        }
-
-        private void DestroyActor()
-        {
+            if (resolved) return;
+            resolved = true;
             SetState(ActorState.Dead);
-            spawner?.HandleEnemyRemoved(this);
-            Destroy(gameObject); // 나중에 Pooling으로 교체 권장
+
+            if (reached) spawner?.HandleEnemyReached(this);
+            else spawner?.HandleEnemyKilled(this);
         }
-}
+    }
 }
