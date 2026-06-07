@@ -1,4 +1,5 @@
 // 타워 타겟 탐색 — 사거리 내 가장 가까운 적 선택(제곱거리 비교)
+using System.Collections.Generic;
 using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Systems.Enemy;
@@ -43,6 +44,23 @@ namespace DefenseDot.Systems.Tower
                 }
             }
             return best;
+        }
+
+        /// <summary>
+        /// 원점에서 사거리 내 모든 활성 적을 results에 채웁니다. (제곱거리 비교)
+        /// </summary>
+        public void FindAllInRange(Vector3 origin, float range, List<ITargetable> results)
+        {
+            if (registry == null || results == null) return;
+
+            float rangeSqr = range * range;
+            var actors = registry.Actors;
+            for (int i = 0; i < actors.Count; i++)
+            {
+                MonsterActor actor = actors[i];
+                if (actor == null || !actor.IsActive) continue;
+                if ((actor.Position - origin).sqrMagnitude <= rangeSqr) results.Add(actor);
+            }
         }
     }
 }
