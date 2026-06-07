@@ -19,16 +19,8 @@ namespace DefenseDot.Systems.Grid
         private bool showWireframe = true;
 
         [Header("Hierarchy")]
-        [SerializeField, Tooltip("생성된 타일들이 담길 부모 오브젝트")] 
+        [SerializeField, Tooltip("생성된 타일들이 담길 부모 오브젝트")]
         private Transform container;
-
-        [Header("Camera Settings")]
-        [SerializeField, Tooltip("카메라 포커스 시 적용할 여유 공간 배율")]
-        private float cameraPadding = 1.1f;
-        [SerializeField, Tooltip("쿼터뷰 각도 (Pitch)")]
-        private float cameraPitch = 30f;
-        [SerializeField, Tooltip("쿼터뷰 각도 (Yaw)")]
-        private float cameraYaw = 45f;
 
         /// <summary>
         /// 외부(에디터 등)에서 맵 데이터를 주입하고 즉시 3D 맵을 생성합니다.
@@ -37,56 +29,6 @@ namespace DefenseDot.Systems.Grid
         {
             this.mapData = data;
             GenerateMap();
-            FocusCameraOnMap();
-        }
-
-        /// <summary>
-        /// 현재 메인 카메라를 맵 전체가 보이도록 비스듬하게 배치합니다.
-        /// </summary>
-        [ContextMenu("Focus Camera on Map")]
-        public void FocusCameraOnMap()
-        {
-            Camera mainCam = Camera.main;
-            if (mainCam == null)
-            {
-                Debug.LogWarning("[MapVisualizer] Main Camera를 찾을 수 없습니다.");
-                return;
-            }
-
-            if (mapData == null) return;
-
-            // 1. 맵의 논리적 중심 계산
-            float mapW = mapData.width * mapData.cellSize;
-            float mapH = mapData.height * mapData.cellSize;
-            Vector3 mapCenter = transform.position + new Vector3(mapW * 0.5f, 0, mapH * 0.5f);
-
-            // 2. 카메라 회전 설정 (블루 아카이브 스타일 쿼터뷰)
-            mainCam.transform.rotation = Quaternion.Euler(cameraPitch, cameraYaw, 0);
-
-            // 3. 맵을 화면에 맞추기 위한 거리/사이즈 계산
-            // 대각선 길이를 고려하여 맵 전체가 잘리지 않도록 함
-            float diagonal = Mathf.Sqrt(mapW * mapW + mapH * mapH);
-            
-            if (mainCam.orthographic)
-            {
-                // 직교 투영: 맵의 대각선 절반 값을 기본으로 패딩 적용
-                mainCam.orthographicSize = (diagonal * 0.5f) * cameraPadding;
-            }
-            else
-            {
-                // 원근 투영: FOV와 대각선 길이를 고려하여 뒤로 후퇴
-                float fov = mainCam.fieldOfView;
-                float halfFovRad = fov * 0.5f * Mathf.Deg2Rad;
-                float distance = (diagonal * 0.5f) / Mathf.Tan(halfFovRad);
-                mainCam.transform.position = mapCenter - mainCam.transform.forward * (distance * cameraPadding);
-                return;
-            }
-
-            // 4. 카메라 위치 이동 (중심에서 뒤로 후퇴)
-            // 거리는 충분히 멀리 두어도 Orthographic에서는 크기에 영향 없음
-            mainCam.transform.position = mapCenter - mainCam.transform.forward * 50f;
-
-            Debug.Log($"[MapVisualizer] Camera focused on map: {mapData.name}");
         }
 
         /// <summary>

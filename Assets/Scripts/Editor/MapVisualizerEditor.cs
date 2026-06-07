@@ -21,11 +21,6 @@ namespace DefenseDot.Editor
                 visualizer.GenerateMap();
             }
 
-            if (GUILayout.Button("Focus Camera on Map"))
-            {
-                visualizer.FocusCameraOnMap();
-            }
-
             if (GUILayout.Button("Clear Map Tiles"))
             {
                 visualizer.ClearExistingMap();
