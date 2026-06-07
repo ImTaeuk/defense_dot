@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c779f32ff753aad489f8db8005423f7a, type: 3}
-  m_Name: NewMapPalette
+  m_Name: TestMapPalette
   m_EditorClassIdentifier: Assembly-CSharp::DefenseDot.Data.MapPalette
   paletteItems:
   - type: 0

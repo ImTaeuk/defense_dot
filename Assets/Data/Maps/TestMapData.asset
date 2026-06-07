@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aaacaf809ddc47a419f172f9d8212e79, type: 3}
-  m_Name: NewMapData
+  m_Name: TestMapData
   m_EditorClassIdentifier: Assembly-CSharp::DefenseDot.Data.MapData
   width: 10
   height: 10
