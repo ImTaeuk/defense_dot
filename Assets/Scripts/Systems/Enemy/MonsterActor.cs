@@ -25,9 +25,9 @@ namespace DefenseDot.Systems.Enemy
         public int RewardGold => data != null ? data.rewardGold : 0;
 
         /// <summary>
-        /// 코어 도달 시 입히는 피해입니다. (P0 기본값 1)
+        /// 코어 도달 시 입히는 피해입니다. (EnemyData 공급, 미할당 시 1)
         /// </summary>
-        public float CoreDamage => 1f;
+        public float CoreDamage => data != null ? data.coreDamage : 1f;
 
         /// <summary>
         /// 회수·통지를 위임할 스포너를 주입합니다.

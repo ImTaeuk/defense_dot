@@ -16,6 +16,8 @@ namespace DefenseDot.Data
         public float moveSpeed;
         [Tooltip("처치 시 획득하는 골드")]
         public int rewardGold;
+        [Tooltip("코어 도달 시 입히는 피해")]
+        public float coreDamage = 1f;
         [Tooltip("게임 내에 생성될 적 프리팹")]
         public GameObject prefab;
     }

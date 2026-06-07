@@ -16,4 +16,5 @@ MonoBehaviour:
   health: 10
   moveSpeed: 1
   rewardGold: 5
+  coreDamage: 1
   prefab: {fileID: 5787995391864394790, guid: c679ff24747c69b48a536fd33a1d073e, type: 3}
