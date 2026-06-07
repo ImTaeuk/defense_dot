@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="400" viewBox="0 0 1140 400" font-family="Pretendard, 'Malgun Gothic', sans-serif">
+  <rect id="Background" width="1140" height="400" fill="#15161c"/>
+  <text id="Title" x="20" y="32" fill="#ffffff" font-size="18" font-weight="700">통합 HUD — 모드 공통 구조 / 바인딩만 차등 (레이아웃 B)</text>
+
+  <!-- ================= GRID PANEL ================= -->
+  <g id="Panel_Grid">
+    <rect x="20" y="48" width="540" height="332" rx="12" fill="#13141b" stroke="#2c2f3a" stroke-width="2"/>
+    <g id="Grid_TitleBar">
+      <path d="M20 60 a12 12 0 0 1 12 -12 h516 a12 12 0 0 1 12 12 v22 h-540 z" fill="#13141b"/>
+      <line x1="20" y1="82" x2="560" y2="82" stroke="#2c2f3a" stroke-width="1"/>
+      <text x="34" y="70" fill="#8be9fd" font-size="13" font-weight="700">■ GRID — 잔여 적 = 웨이브 잔여 / 웨이브 총량</text>
+    </g>
+    <g id="Grid_PlayArea">
+      <rect x="22" y="83" width="536" height="295" fill="#0a0b10"/>
+      <g stroke="#1c1f2a" stroke-width="1" opacity="0.6">
+        <line x1="100" y1="83" x2="100" y2="378"/><line x1="180" y1="83" x2="180" y2="378"/>
+        <line x1="260" y1="83" x2="260" y2="378"/><line x1="340" y1="83" x2="340" y2="378"/>
+        <line x1="420" y1="83" x2="420" y2="378"/><line x1="500" y1="83" x2="500" y2="378"/>
+        <line x1="22" y1="150" x2="558" y2="150"/><line x1="22" y1="230" x2="558" y2="230"/><line x1="22" y1="310" x2="558" y2="310"/>
+      </g>
+      <rect id="Grid_Path" x="22" y="245" width="536" height="28" fill="#23252f"/>
+      <circle cx="140" cy="259" r="5" fill="#ff5555"/><circle cx="210" cy="259" r="5" fill="#ff5555"/><circle cx="280" cy="259" r="5" fill="#ff5555"/>
+    </g>
+    <g id="Grid_HUD">
+      <g id="Grid_Gold">
+        <rect x="34" y="96" width="92" height="30" rx="8" fill="#1b1d27" stroke="#343849"/>
+        <text x="46" y="116" font-size="13" font-weight="700" fill="#f1fa8c">◆ 300</text>
+      </g>
+      <g id="Grid_Health">
+        <rect x="34" y="134" width="168" height="30" rx="8" fill="#1b1d27" stroke="#343849"/>
+        <text x="44" y="154" font-size="13" font-weight="700" fill="#ff6e6e">♥ 32 / 40</text>
+        <rect x="136" y="145" width="54" height="9" rx="4" fill="#3a1f1f"/>
+        <rect x="136" y="145" width="43" height="9" rx="4" fill="#ff7777"/>
+      </g>
+      <g id="Grid_Round">
+        <rect x="450" y="96" width="96" height="30" rx="8" fill="#1b1d27" stroke="#343849"/>
+        <text x="462" y="116" font-size="13" font-weight="700" fill="#8be9fd">라운드 3</text>
+      </g>
+      <g id="Grid_EnemyCount">
+        <rect x="356" y="134" width="190" height="30" rx="8" fill="#1b1d27" stroke="#343849"/>
+        <text x="366" y="154" font-size="13" font-weight="700" fill="#ffb86c">잔여 적 12 / 20</text>
+        <rect x="478" y="145" width="54" height="9" rx="4" fill="#2a2c38"/>
+        <rect x="478" y="145" width="33" height="9" rx="4" fill="#ffb86c"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- ================= ARENA PANEL ================= -->
+  <g id="Panel_Arena">
+    <rect x="580" y="48" width="540" height="332" rx="12" fill="#13141b" stroke="#2c2f3a" stroke-width="2"/>
+    <g id="Arena_TitleBar">
+      <line x1="580" y1="82" x2="1120" y2="82" stroke="#2c2f3a" stroke-width="1"/>
+      <text x="594" y="70" fill="#50fa7b" font-size="13" font-weight="700">● ARENA — 잔여 적 = 생존 적 / 수용 한계(maxAlive)</text>
+    </g>
+    <g id="Arena_PlayArea">
+      <rect x="582" y="83" width="536" height="295" fill="#0a0b10"/>
+      <circle cx="850" cy="232" r="82" fill="none" stroke="#44485a" stroke-width="2" stroke-dasharray="6 6"/>
+      <circle id="Arena_Core" cx="850" cy="232" r="15" fill="#50fa7b22" stroke="#50fa7b" stroke-width="2"/>
+      <circle cx="810" cy="185" r="5" fill="#ff5555"/><circle cx="905" cy="220" r="5" fill="#ff5555"/>
+      <circle cx="838" cy="295" r="5" fill="#ff5555"/><circle cx="778" cy="255" r="5" fill="#ff5555"/>
+    </g>
+    <g id="Arena_HUD">
+      <g id="Arena_Gold">
+        <rect x="594" y="96" width="92" height="30" rx="8" fill="#1b1d27" stroke="#343849"/>
+        <text x="606" y="116" font-size="13" font-weight="700" fill="#f1fa8c">◆ 300</text>
+      </g>
+      <g id="Arena_Health">
+        <rect x="594" y="134" width="168" height="30" rx="8" fill="#1b1d27" stroke="#343849"/>
+        <text x="604" y="154" font-size="13" font-weight="700" fill="#ff6e6e">♥ 32 / 40</text>
+        <rect x="696" y="145" width="54" height="9" rx="4" fill="#3a1f1f"/>
+        <rect x="696" y="145" width="43" height="9" rx="4" fill="#ff7777"/>
+      </g>
+      <g id="Arena_Round">
+        <rect x="1010" y="96" width="96" height="30" rx="8" fill="#1b1d27" stroke="#343849"/>
+        <text x="1022" y="116" font-size="13" font-weight="700" fill="#8be9fd">라운드 3</text>
+      </g>
+      <g id="Arena_EnemyCount">
+        <rect x="916" y="134" width="190" height="30" rx="8" fill="#1b1d27" stroke="#343849"/>
+        <text x="926" y="154" font-size="13" font-weight="700" fill="#ffb86c">잔여 적 24 / 80</text>
+        <rect x="1038" y="145" width="54" height="9" rx="4" fill="#2a2c38"/>
+        <rect x="1038" y="145" width="16" height="9" rx="4" fill="#ffb86c"/>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -7,9 +7,6 @@ using DefenseDot.Systems.Economy;
 using DefenseDot.Systems.Mode;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Core;
-using DefenseDot.UI.Models;
-using DefenseDot.UI.Views;
-using DefenseDot.UI.Presenters;
 using DefenseDot.UI.InGame;
 
 namespace DefenseDot.Systems.Management
@@ -28,8 +25,7 @@ namespace DefenseDot.Systems.Management
         [Header("Scene References")]
         [SerializeField] private EnemySpawner spawner;
         [SerializeField] private CoreController coreController;
-        [SerializeField] private HUDView hudView;
-        [SerializeField] private WaveHUDPresenter waveHud;
+        [SerializeField] private UIRoot uiRoot;
 
         /// <summary>골드 재화 모델입니다.</summary>
         public EconomyModel Economy { get; private set; }
@@ -51,7 +47,6 @@ namespace DefenseDot.Systems.Management
         private TargetFinder targetFinder;
         private EconomyController economyController;
         private IGameMode mode;
-        private HUDPresenter hudPresenter;
 
         private void Awake()
         {
@@ -86,13 +81,9 @@ namespace DefenseDot.Systems.Management
             Core.OnCoreDestroyed += HandleCoreDestroyed;
             Wave.OnWaveCleared += HandleVictory;
 
-            // HUD 연결 (도메인 모델 구독)
-            if (hudView != null)
-            {
-                hudPresenter = new HUDPresenter(hudView, new HUDModel(), Economy, Core, Wave);
-                hudPresenter.Initialize();
-            }
-            if (waveHud != null) waveHud.Bind(Wave);
+            // UI 연결 (UI 합성 루트에 주입)
+            if (uiRoot != null)
+                uiRoot.Inject(Economy, Core, Wave, modeBootstrap.EnemyDisplayCapacity);
 
             // 게임 시작
             Flow.SetPhase(GamePhase.Playing);
@@ -137,7 +128,6 @@ namespace DefenseDot.Systems.Management
         private void OnDestroy()
         {
             economyController?.Dispose();
-            hudPresenter?.Dispose();
             if (Core != null) Core.OnCoreDestroyed -= HandleCoreDestroyed;
             if (Wave != null) Wave.OnWaveCleared -= HandleVictory;
         }

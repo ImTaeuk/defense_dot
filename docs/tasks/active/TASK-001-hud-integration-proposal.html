@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인게임 HUD 통합 — 코드 수정안</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>인게임 HUD 통합 — 코드 수정안</h1>
+  <div class="sub">
+    <span class="tag must">제안서</span>
+    <span class="tag opt">진행 중</span>
+    TASK-001 A · 설계 확정 · 2026-06-06
+  </div>
+
+  <!-- 1 -->
+  <h2>1. 제보 요지</h2>
+  <div class="panel">
+    <p>“UI 프리팹 구성은 끝났고, UI 를 통합해 단일 HUD 로 만들고 싶다.” 현재 두 모드(Grid 타워 디펜스 / Arena 코어 디펜스)의 HUD 가 <strong>uGUI <code>HUDView</code> 와 UI Toolkit <code>WaveHUDPresenter</code> 로 분열</strong>돼 있어 웨이브 표시 중복·MVP 비대칭·<code>HUDView</code> NRE 가 누적됐다.</p>
+    <div class="note">
+      핵심 결론: <strong>게임 씬 내 <code>HudBootstrap</code> 미디에이터</strong>로 단일 통합 HUD 를 구성하고, 적 게이지는 <strong>원작 충실(살아있는 적 / 수용 한계, 위험 채움)</strong>로 두 모드를 통일한다. 도메인 모델·9개 EditMode 테스트는 불변.
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <h2>2. 현재 동작 (재현 경로)</h2>
+  <div class="panel">
+    <ol>
+      <li><code><strong>GameManager.cs:56-67</strong></code> 가 도메인 POCO 모델(Economy/Core/Wave)을 생성·초기 통지</li>
+      <li><code><strong>GameManager.cs:90-95</strong></code> 가 <code>hudView</code> 면 <code>HUDPresenter</code> 인라인 생성, <code>waveHud</code> 면 <code>waveHud.Bind(Wave)</code> 호출 — <strong>두 갈래로 분기</strong></li>
+      <li><code><strong>HUDView.cs:23-33</strong></code> 이 3개 TMP 텍스트(골드/웨이브/체력)를 직접 갱신</li>
+      <li><code><strong>WaveHUDPresenter.cs:64-72</strong></code> 가 UI Toolkit <code>Label</code> 로 웨이브·잔여 적을 <strong>별도</strong> 표시 (웨이브 중복)</li>
+      <li>Play 시 <code>AreanaScene</code> 의 <code>HUDView</code> 인스턴스 TMP 필드가 모두 미할당(fileID:0) → NRE 잠재</li>
+    </ol>
+  </div>
+
+  <!-- 3 -->
+  <h2>3. 근본 원인</h2>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/Views/HUDView.cs · L23-33</div>
+    <pre><code><span class="cmt">public void UpdateGold(int gold)   =&gt; goldText.text   = $"Gold: {gold}";
+public void UpdateWave(int wave)   =&gt; waveText.text   = $"Wave: {wave}";</span>
+<span class="hl-line">public void UpdateHealth(float health) =&gt; <span class="hl-inline">healthText.text</span> = $"HP: {health}";  // null 가드 없음</span></code></pre>
+    <p><strong>NRE 직접 원인</strong>: 3개 TMP 를 인스펙터 직렬화에만 의존하고 <code>.text</code> 에 null 체크 없이 접근한다. 씬 인스턴스의 TMP 가 미할당이면 Play 즉시 NRE(현재는 <code>GameManager.hudView</code> 도 미할당이라 잠복).</p>
+    <p><strong>구조적 원인</strong>: ① 웨이브 표시가 <code>HUDView</code> 와 <code>WaveHUDPresenter</code> 양쪽에 중복. ② <code>WaveHUDPresenter</code> 는 <code>MonoBehaviour</code> 가 <code>UIDocument</code> 를 직접 <code>Q&lt;Label&gt;</code> 조작 — View/Model 경계 없는 <strong>MVP 비대칭</strong>.</p>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. 기획 요구사항 (사용자 확정)</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>레이아웃 B</strong>(코너 분산): 좌상단 골드·체력 / 우상단 라운드·적 수</li>
+      <li>HUD 구조·컴포넌트는 <strong>두 모드 공통</strong>, 데이터 바인딩(capacity)만 차등</li>
+      <li><code>RoundView</code> 표기 = <code>라운드 {current}/{total}</code></li>
+      <li><strong>(원본 충실)</strong> 적 = <code>살아있는 적 / 수용 한계(maxAlive)</code>, 위험 시 채워지는 게이지 + 색상 임계 — 두 모드 공통 (근거 <code><strong>index.html:16160·16180</strong></code>)</li>
+      <li>아키텍처 = <strong>게임 씬 내 <code>HudBootstrap</code> 미디에이터</strong> (별도 UI 씬 X · 싱글톤 X · SO 채널 X)</li>
+      <li>이번 작업 = <strong>Grid HUD 완성</strong> / Panel_Arena 프리팹은 designer 후속(Arena capacity 코드는 포함)</li>
+      <li><strong>코딩 스타일(추가 지시)</strong>: 유효성 검사는 <code>IsValid()</code> <span class="hl-inline">bool 반환</span> 사용(<code>Validate</code> 대신) · <strong>라이프사이클 함수(Awake/OnDestroy 등)에 람다(<code>=&gt;</code>) 금지</strong>, 블록 본문 사용</li>
+    </ul>
+  </div>
+
+  <!-- 5 -->
+  <h2>5. 설계 원칙 — 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>통일감 있는 구현을 위해 프로젝트 내 두 레퍼런스에서 공통 사상을 차용했다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr>
+        <td><strong>① HUDPresenter (기존 MVP)</strong></td>
+        <td><code><strong>HUDPresenter.cs:31-50</strong></code></td>
+        <td><strong>Observer + 구독 대칭</strong> — 도메인 이벤트 구독, <code>Initialize</code> 즉시 통지 / <code>Dispose</code> 해제</td>
+      </tr>
+      <tr>
+        <td><strong>② ModeBootstrap (합성 루트)</strong></td>
+        <td><code><strong>ArenaModeBootstrap.cs:17-29</strong></code></td>
+        <td><strong>주입식 합성 루트</strong> — 모드 고유 자원을 보유하고 단방향으로 생성·주입</td>
+      </tr>
+    </table>
+    <div class="note">
+      <strong>결합 결론</strong>: 이벤트는 도메인 POCO 모델에 그대로 두고(레퍼런스 ①), <code>HudBootstrap</code> 을 <code>ModeBootstrap</code> 와 동형의 합성 루트 주입점(레퍼런스 ②)으로 둔다. 싱글톤·SO 채널 없이 기존 구조를 확장한다.
+    </div>
+  </div>
+
+  <!-- 5b -->
+  <h3>레퍼런스 ① HUDPresenter — 구독 대칭 패턴</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/Presenters/HUDPresenter.cs · L31-50</div>
+    <pre><code><span class="cmt">public override void Initialize()
+{</span>
+<span class="hl-line">    economy.OnGoldChanged += HandleGoldChanged;   // 구독</span>
+<span class="cmt">    core.OnHealthChanged += HandleHealthChanged;
+    wave.OnWaveChanged += HandleWaveChanged;
+    HandleGoldChanged(economy.Gold);              // 초기값 즉시 통지
+}
+public override void Dispose()
+{</span>
+<span class="hl-line">    economy.OnGoldChanged -= HandleGoldChanged;   // 대칭 해제(Lapsed Listener 방지)</span>
+<span class="cmt">    ...
+}</span></code></pre>
+    <p>본 통합은 이 구독·해제 대칭 패턴을 그대로 계승하고, 누락돼 있던 <code>OnRemainingChanged</code> 까지 대칭으로 추가한다.</p>
+  </div>
+
+  <h3>레퍼런스 ② ArenaModeBootstrap — 합성 루트 주입</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Mode/ArenaModeBootstrap.cs · L17-29</div>
+    <pre><code><span class="cmt">public override IGameMode CreateMode(ModeContext ctx)
+{
+    var arenaModel = new ArenaModel();</span>
+<span class="hl-line">    ArenaConfig config = arenaView != null ? arenaView.Config : null;  // 모드 고유 자원 보유</span>
+<span class="cmt">    ...
+    return new ArenaMode(arenaModel, ctx.CoreCenter, height);
+}</span></code></pre>
+    <p><code>HudBootstrap.Inject(...)</code> 도 동일하게 “외부가 만든 자원을 받아 자기 영역(Presenter)을 구성”하는 주입 방식을 따른다. 모드별 capacity 는 <code>ModeBootstrap.EnemyDisplayCapacity</code> 로 공급한다.</p>
+  </div>
+
+  <!-- 6 -->
+  <h2>6. 해결 방안 — 변경 사항</h2>
+
+  <h3>(1) 하위 View 4종 — GoldView / HealthView / RoundView / EnemyCountView <span class="tag must">신규</span></h3>
+  <div class="panel">
+    <p>각 코너 위젯을 단일 책임 <code>MonoBehaviour</code> 로 분리. 자기 TMP/Image 만 직렬화하고 도메인을 모른다. <span class="hl-inline">유효성은 <code>IsValid()</code> bool 반환</span>, <span class="hl-inline">Awake 는 블록 본문(람다 금지)</span>.</p>
+    <div class="file">Assets/Scripts/UI/Views/GoldView.cs (신규)</div>
+    <div class="lbl after">▼ 신규</div>
+<pre class="after"><span class="cmt">using UnityEngine;
+using TMPro;
+
+namespace DefenseDot.UI.Views
+{
+    /// &lt;summary&gt;골드 수치를 표시하는 하위 View.&lt;/summary&gt;
+    public class GoldView : MonoBehaviour
+    {
+        [SerializeField] private TextMeshProUGUI goldText;
+</span>
+<span class="hl-line">        private void Awake()
+        {
+            if (!IsValid()) Debug.LogError($"[GoldView] goldText 미할당: {name}", this);
+        }</span>
+<span class="add">
+        public void SetGold(int gold)
+        {
+            if (goldText == null) return;
+            goldText.text = gold.ToString();
+        }
+</span>
+<span class="hl-line">        private bool IsValid() =&gt; goldText != null;</span>
+<span class="cmt">    }
+}</span></pre>
+
+    <div class="file">Assets/Scripts/UI/Views/EnemyCountView.cs (신규 · 원작 충실)</div>
+    <div class="lbl after">▼ 신규</div>
+<pre class="after"><span class="cmt">using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+namespace DefenseDot.UI.Views
+{
+    /// &lt;summary&gt;생존 적 수 / 수용 한계 + 위험 게이지.&lt;/summary&gt;
+    public class EnemyCountView : MonoBehaviour
+    {
+        [SerializeField] private TextMeshProUGUI countText;
+        [SerializeField] private Image fillBar;
+        [SerializeField] private Color normalColor = new Color(1f, 0.72f, 0.42f);
+        [SerializeField] private Color warnColor   = new Color(1f, 0.53f, 0.33f);
+        [SerializeField] private Color dangerColor = new Color(1f, 0.20f, 0.27f);
+
+        private void Awake()
+        {
+            if (!IsValid()) Debug.LogError($"[EnemyCountView] 참조 미할당: {name}", this);
+        }
+</span>
+<span class="add">        public void SetEnemyCount(int alive, int capacity)
+        {
+            float ratio = capacity &gt; 0 ? alive / (float)capacity : 0f;
+            if (countText != null) countText.text = $"잔여 적 {alive} / {capacity}";
+            if (fillBar == null) return;</span>
+<span class="hl-line">            fillBar.fillAmount = ratio;                               // 위험 방향 채움</span>
+<span class="hl-line">            fillBar.color = ratio &gt; 0.75f ? dangerColor : ratio &gt; 0.5f ? warnColor : normalColor;</span>
+<span class="add">        }</span>
+<span class="cmt">
+        private bool IsValid() =&gt; countText != null &amp;&amp; fillBar != null;
+    }
+}</span></pre>
+    <p class="note"><code>HealthView</code>(<code>SetHealth(cur,max,ratio)</code>), <code>RoundView</code>(<code>SetRound(cur,total)</code> → <code>라운드 N/M</code>)도 동일 골격(블록 본문 Awake + <code>IsValid()</code>)을 따른다.</p>
+  </div>
+
+  <h3>(2) HUDView — Composite 루트로 재작성 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/Views/HUDView.cs</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">public class HUDView : MonoBehaviour, IView
+{</span>
+<span class="del">    [SerializeField] private TextMeshProUGUI goldText;
+    [SerializeField] private TextMeshProUGUI waveText;
+    [SerializeField] private TextMeshProUGUI healthText;
+
+    public void UpdateGold(int gold)   =&gt; goldText.text   = $"Gold: {gold}";
+    public void UpdateWave(int wave)   =&gt; waveText.text   = $"Wave: {wave}";
+    public void UpdateHealth(float h)  =&gt; healthText.text = $"HP: {h}";</span>
+<span class="cmt">    public void Show() =&gt; gameObject.SetActive(true);
+    public void Hide() =&gt; gameObject.SetActive(false);
+}</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">public class HUDView : MonoBehaviour, IView
+{</span>
+<span class="add">    [SerializeField] private GoldView goldView;
+    [SerializeField] private HealthView healthView;
+    [SerializeField] private RoundView roundView;
+    [SerializeField] private EnemyCountView enemyCountView;
+
+    public void UpdateGold(int gold) =&gt; goldView?.SetGold(gold);
+    public void UpdateHealth(float cur, float max, float ratio) =&gt; healthView?.SetHealth(cur, max, ratio);
+    public void UpdateRound(int cur, int total) =&gt; roundView?.SetRound(cur, total);
+    public void UpdateEnemyCount(int alive, int cap) =&gt; enemyCountView?.SetEnemyCount(alive, cap);</span>
+<span class="cmt">    public void Show() =&gt; gameObject.SetActive(true);
+    public void Hide() =&gt; gameObject.SetActive(false);
+}</span></pre>
+    <p>기존 3 TMP 직접 필드를 폐기(NRE 직접 원인 제거)하고 하위 View 4 를 보유하는 Composite 위임 분배자로 전환. (위임 메서드의 <code>=&gt;</code> 는 라이프사이클이 아니므로 유지)</p>
+  </div>
+
+  <h3>(3) HUDPresenter — remaining 흡수 + capacity 주입 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/Presenters/HUDPresenter.cs</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">public HUDPresenter(HUDView view, HUDModel model,
+    EconomyModel economy, CoreModel core, WaveModel wave) : base(view, model) { ... }
+
+public override void Initialize()
+{
+    economy.OnGoldChanged += HandleGoldChanged;
+    core.OnHealthChanged += HandleHealthChanged;
+    wave.OnWaveChanged += HandleWaveChanged;</span>
+<span class="del">    // OnRemainingChanged 미구독 (적 수 표시 없음)</span>
+<span class="cmt">}</span>
+<span class="del">private void HandleHealthChanged(float ratio) { ...; view.UpdateHealth(ratio); }
+private void HandleWaveChanged(int cur, int total) { ...; view.UpdateWave(cur); }</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">public HUDPresenter(HUDView view, HUDModel model,
+    EconomyModel economy, CoreModel core, WaveModel wave, int enemyCapacity) : base(view, model)
+{ ...; this.enemyCapacity = enemyCapacity; }</span>
+<span class="cmt">public override void Initialize()
+{
+    economy.OnGoldChanged += HandleGoldChanged;
+    core.OnHealthChanged += HandleHealthChanged;
+    wave.OnWaveChanged += HandleWaveChanged;</span>
+<span class="add">    wave.OnRemainingChanged += HandleRemainingChanged;   // 신규(A-3 흡수)</span>
+<span class="cmt">    HandleGoldChanged(economy.Gold); ...</span>
+<span class="add">    HandleRemainingChanged(wave.Remaining);</span>
+<span class="cmt">}</span>
+<span class="add">private void HandleHealthChanged(float ratio)
+{ model.CoreHealth = ratio; view.UpdateHealth(core.CurrentHp, core.MaxHp, ratio); }
+private void HandleWaveChanged(int cur, int total)
+{ model.RoundTotal = total; view.UpdateRound(cur, total); }
+private void HandleRemainingChanged(int alive)
+{ view.UpdateEnemyCount(alive, enemyCapacity); }</span></pre>
+    <p><code>Dispose()</code> 에도 <code>wave.OnRemainingChanged -= HandleRemainingChanged;</code> 를 대칭 추가(구독 누수 차단). <code>HandleHealthChanged</code> 는 <code>core.CurrentHp/MaxHp</code> 를 조립해 <code>HP/MaxHP</code> 텍스트를 만든다.</p>
+  </div>
+
+  <h3>(4) HudBootstrap — 미디에이터 <span class="tag must">신규</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/InGame/HudBootstrap.cs (신규)</div>
+    <div class="lbl after">▼ 신규</div>
+<pre class="after"><span class="cmt">namespace DefenseDot.UI.InGame
+{
+    /// &lt;summary&gt;HUD 진입점·미디에이터. 합성 루트가 주입한 모델로 Presenter 구성.&lt;/summary&gt;
+    public class HudBootstrap : MonoBehaviour
+    {
+        [SerializeField] private HUDView hudView;
+        private HUDPresenter presenter;
+</span>
+<span class="add">        public void Inject(EconomyModel economy, CoreModel core, WaveModel wave, int enemyCapacity)
+        {
+            presenter = new HUDPresenter(hudView, new HUDModel(), economy, core, wave, enemyCapacity);
+            presenter.Initialize();
+        }
+</span>
+<span class="hl-line">        private void OnDestroy()        // 블록 본문(람다 금지)
+        {
+            presenter?.Dispose();
+        }</span>
+<span class="cmt">    }
+}</span></pre>
+    <p><code>GameManager</code> 는 <code>HudBootstrap</code> 만 알고 <code>HUDView</code>/Presenter 는 모른다(God Object 회피). <code>OnDestroy</code> 는 사용자 규칙대로 람다 대신 블록 본문.</p>
+  </div>
+
+  <h3>(5) GameManager — UI 배선 교체 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Management/GameManager.cs · L31-32, L90-95</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">[SerializeField] private HUDView hudView;
+[SerializeField] private WaveHUDPresenter waveHud;</span>
+<span class="cmt">...</span>
+<span class="del">if (hudView != null)
+{
+    hudPresenter = new HUDPresenter(hudView, new HUDModel(), Economy, Core, Wave);
+    hudPresenter.Initialize();
+}
+if (waveHud != null) waveHud.Bind(Wave);</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">[SerializeField] private HudBootstrap hudBootstrap;</span>
+<span class="cmt">...</span>
+<span class="hl-line">if (hudBootstrap != null)
+    hudBootstrap.Inject(Economy, Core, Wave, modeBootstrap.EnemyDisplayCapacity);</span></pre>
+    <p><code>hudPresenter</code> 필드와 <code>OnDestroy</code> 의 <code>hudPresenter?.Dispose()</code> 제거(미디에이터가 담당). 미사용 <code>using</code>(UI.Models/Views/Presenters) 정리.</p>
+  </div>
+
+  <h3>(6) ModeBootstrap · Grid · Arena — capacity 공급 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Mode/ModeBootstrap.cs · GridDefenseModeBootstrap.cs · ArenaModeBootstrap.cs</div>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">// ModeBootstrap (추상)</span>
+<span class="add">public abstract int EnemyDisplayCapacity { get; }</span>
+
+<span class="cmt">// GridDefenseModeBootstrap</span>
+<span class="add">[SerializeField] private int enemyDisplayCapacity = 80;   // 원작 기본값
+public override int EnemyDisplayCapacity =&gt; enemyDisplayCapacity;</span>
+
+<span class="cmt">// ArenaModeBootstrap</span>
+<span class="add">public override int EnemyDisplayCapacity =&gt;
+    arenaView != null &amp;&amp; arenaView.Config != null ? arenaView.Config.maxAlive : 80;</span></pre>
+    <p>모드 차이가 capacity int 하나뿐이라 <code>HudBindingMode</code> enum 없이 모드가 직접 값을 공급한다. (프로퍼티 <code>=&gt;</code> 는 라이프사이클 아님 — 유지)</p>
+  </div>
+
+  <h3>(7) WaveHUDPresenter — 삭제 <span class="tag must">삭제</span></h3>
+  <div class="panel">
+    <p><code><strong>Assets/Scripts/UI/InGame/WaveHUDPresenter.cs</strong></code> (+<code>.meta</code>) 삭제로 UI Toolkit 의존 제거(A-2). 기능은 <code>RoundView</code>+<code>EnemyCountView</code> 가 흡수. <code>DefenseDot.asmdef</code> 의 <code>references</code> 에 UIElements 항목이 애초에 없어(noEngineReferences:false 로 엔진 모듈 자동 참조) <strong>asmdef 변경 불필요</strong>.</p>
+  </div>
+
+  <!-- 7 -->
+  <h2>7. 영향 범위 및 부수 효과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>분석</th></tr>
+      <tr><td>도메인 모델 5종</td><td><span class="ok">변경 없음</span> — 이벤트 시그니처 보존</td></tr>
+      <tr><td>9개 EditMode 테스트</td><td><span class="ok">회귀 0</span> (순수 도메인 검증) · <span class="warn">단 컴파일 무결 상태로 커밋해야 테스트 어셈블리도 빌드</span></td></tr>
+      <tr><td>DefenseDot.asmdef</td><td><span class="ok">변경 불필요</span> — UIElements 항목 부재</td></tr>
+      <tr><td>HUDModel 외부 참조</td><td><span class="ok">HUDPresenter 단독</span> — 필드 보강 회귀 위험 0</td></tr>
+      <tr><td>Panel_Grid 게이지</td><td><span class="warn">EnemyBar_Fill 이 Sliced(m_Type:1) → Filled(3) 로 프리팹 수정 필요</span> (fillAmount 무시됨)</td></tr>
+      <tr><td>씬 구 인스턴스</td><td><span class="warn">두 씬의 구 HUDView/WaveHUDPresenter/UIDocument GameObject 제거 필요</span> (이중 HUD·missing script 방지)</td></tr>
+      <tr><td>Arena 모드</td><td><span class="warn">Panel_Arena 프리팹·배치는 designer 후속</span> — capacity 코드는 포함되어 프리팹만 생기면 동작</td></tr>
+    </table>
+  </div>
+
+  <!-- 8 -->
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <p>도메인 무변경이라 EditMode 회귀는 자동 검증 가능. HUD 갱신은 Unity Play 수동 검증.</p>
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대 동작</th></tr>
+      <tr><td>1</td><td><strong>컴파일 + EditMode 9개</strong>(ArenaModelTests 5 + ArenaOrbitLogicTests 4)</td><td><span class="ok">전부 통과</span></td></tr>
+      <tr><td>2</td><td>Grid Play — 골드/코어피해/웨이브전환/적증감</td><td><span class="ok">Gold·Health(텍스트+게이지)·Round(<code>라운드 N/M</code>)·EnemyCount 갱신</span></td></tr>
+      <tr><td>3</td><td>적 수용 한계 근접 (ratio &gt; 0.5 / &gt; 0.75)</td><td><span class="ok">게이지 채움 + 색상 warn→danger 전환</span></td></tr>
+      <tr><td>4</td><td>View 슬롯 미할당 프리팹으로 Play</td><td><span class="ok">Awake 가 Debug.LogError 조기 경고</span> · <span class="warn">크래시(NRE) 없음</span></td></tr>
+      <tr><td>5</td><td>Play 종료 / 씬 전환</td><td><span class="ok">HudBootstrap.OnDestroy → Dispose 로 구독 해제</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 9 -->
+  <h2>9. 수정 파일 요약</h2>
+  <table>
+    <tr><th>파일</th><th>변경 내용</th></tr>
+    <tr><td><code><strong>UI/Views/GoldView.cs · HealthView.cs · RoundView.cs · EnemyCountView.cs</strong></code></td><td><span class="ok">신규</span> 하위 View 4종 (IsValid + 블록 본문 Awake)</td></tr>
+    <tr><td><code><strong>UI/InGame/HudBootstrap.cs</strong></code></td><td><span class="ok">신규</span> 미디에이터 (Inject / OnDestroy Dispose)</td></tr>
+    <tr><td><code><strong>UI/Views/HUDView.cs</strong></code></td><td>Composite 루트로 재작성 (TMP 직접 필드 폐기)</td></tr>
+    <tr><td><code><strong>UI/Models/HUDModel.cs</strong></code></td><td>RoundTotal/EnemyAlive/EnemyCapacity 최소 보강</td></tr>
+    <tr><td><code><strong>UI/Presenters/HUDPresenter.cs</strong></code></td><td>OnRemainingChanged 흡수 + enemyCapacity 주입</td></tr>
+    <tr><td><code><strong>Systems/Management/GameManager.cs</strong></code></td><td>hudView/waveHud → hudBootstrap.Inject 배선</td></tr>
+    <tr><td><code><strong>Systems/Mode/ModeBootstrap.cs · GridDefenseModeBootstrap.cs · ArenaModeBootstrap.cs</strong></code></td><td>EnemyDisplayCapacity 공급</td></tr>
+    <tr><td><code><strong>UI/InGame/WaveHUDPresenter.cs</strong></code></td><td><span class="warn">삭제</span> (UI Toolkit 제거)</td></tr>
+  </table>
+  <div class="note">도메인 모델 5종 · <code>BasePresenter</code>/<code>IView</code> · <code>DefenseDot.asmdef</code> · 9개 EditMode 테스트는 <strong>변경 없음</strong>. 프리팹 <code>EnemyBar_Fill</code> Filled 전환·씬 정리는 에디터 작업으로 코드와 한 세트.</div>
+
+  <p class="foot">코드 수정안 산출 완료 — 다음 단계: 사용자 확인 후 단계별 구현(IsValid·블록 본문 라이프사이클 반영)</p>
+
+</div>
+</body>
+</html>

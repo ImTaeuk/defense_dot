@@ -14,6 +14,10 @@ namespace DefenseDot.Systems.Mode
     {
         [SerializeField] private ArenaView arenaView;
 
+        /// <summary> 아레나 모드의 적 수 표시 한계(수용 한계)입니다. </summary>
+        public override int EnemyDisplayCapacity =>
+            arenaView != null && arenaView.Config != null ? arenaView.Config.maxAlive : 80;
+
         public override IGameMode CreateMode(ModeContext ctx)
         {
             var arenaModel = new ArenaModel();

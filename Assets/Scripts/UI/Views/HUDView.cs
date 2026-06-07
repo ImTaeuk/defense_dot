@@ -1,36 +1,37 @@
 using UnityEngine;
-using TMPro;
-using DefenseDot.UI;
 
 namespace DefenseDot.UI.Views
 {
     /// <summary>
-    /// 화면 상단 HUD UI를 시각적으로 제어하는 View 클래스입니다.
+    /// 하위 View 4종을 통솔하는 통합 HUD 루트 View입니다.
     /// </summary>
     public class HUDView : MonoBehaviour, IView
     {
-        [Header("UI References")]
-        [SerializeField, Tooltip("골드 표시 텍스트")] 
-        private TextMeshProUGUI goldText;
-        [SerializeField, Tooltip("웨이브 표시 텍스트")] 
-        private TextMeshProUGUI waveText;
-        [SerializeField, Tooltip("체력 표시 텍스트")] 
-        private TextMeshProUGUI healthText;
+        [Header("Sub Views")]
+        [SerializeField] private GoldView goldView;
+        [SerializeField] private HealthView healthView;
+        [SerializeField] private RoundView roundView;
+        [SerializeField] private EnemyCountView enemyCountView;
 
         /// <summary>
-        /// 골드 텍스트를 최신값으로 갱신합니다.
+        /// 골드 표시를 갱신합니다.
         /// </summary>
-        public void UpdateGold(int gold) => goldText.text = $"Gold: {gold}";
+        public void UpdateGold(int gold) => goldView?.SetGold(gold);
 
         /// <summary>
-        /// 웨이브 텍스트를 최신값으로 갱신합니다.
+        /// 체력 표시를 갱신합니다.
         /// </summary>
-        public void UpdateWave(int wave) => waveText.text = $"Wave: {wave}";
+        public void UpdateHealth(float current, float max, float ratio) => healthView?.SetHealth(current, max, ratio);
 
         /// <summary>
-        /// 체력 텍스트를 최신값으로 갱신합니다.
+        /// 라운드 표시를 갱신합니다.
         /// </summary>
-        public void UpdateHealth(float health) => healthText.text = $"HP: {health}";
+        public void UpdateRound(int current, int total) => roundView?.SetRound(current, total);
+
+        /// <summary>
+        /// 적 수 표시를 갱신합니다.
+        /// </summary>
+        public void UpdateEnemyCount(int alive, int capacity) => enemyCountView?.SetEnemyCount(alive, capacity);
 
         /// <summary>
         /// HUD를 화면에 표시합니다.

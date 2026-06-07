@@ -11,5 +11,8 @@ namespace DefenseDot.Systems.Mode
     {
         /// <summary> 공통 입력을 받아 이 부트스트랩의 모드를 생성합니다. </summary>
         public abstract IGameMode CreateMode(ModeContext ctx);
+
+        /// <summary> 이 모드의 적 수 표시 한계(HUD capacity)입니다. </summary>
+        public abstract int EnemyDisplayCapacity { get; }
     }
 }

@@ -2,7 +2,9 @@
     "name": "DefenseDot.Editor",
     "rootNamespace": "",
     "references": [
-        "DefenseDot"
+        "DefenseDot",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [
         "Editor"

@@ -13,6 +13,10 @@ namespace DefenseDot.Systems.Mode
     {
         [SerializeField] private MapData mapData;
         [SerializeField] private TowerPlacementController placement;
+        [SerializeField] private int enemyDisplayCapacity = 80;
+
+        /// <summary> 그리드 모드의 적 수 표시 한계입니다. </summary>
+        public override int EnemyDisplayCapacity => enemyDisplayCapacity;
 
         public override IGameMode CreateMode(ModeContext ctx)
         {
