@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b42e9ffa8d396a4f986049f1a6b5bab, type: 3}
   m_Name: CameraRig_Arena
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Camera.CameraRigConfig
-  pitch: 22
+  pitch: 40
   yaw: 0
-  distance: 30
-  heightOffset: 0
+  distance: 75
+  heightOffset: -4.45
   perspective: 1
   fieldOfView: 40
   orthoSize: 15

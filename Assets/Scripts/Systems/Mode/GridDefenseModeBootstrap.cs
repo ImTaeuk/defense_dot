@@ -21,7 +21,7 @@ namespace DefenseDot.Systems.Mode
         public override IGameMode CreateMode(ModeContext ctx)
         {
             if (placement != null) placement.Bind(ctx.Economy, ctx.TargetFinder);
-            BindCamera(ctx);
+            BindPresentation(ctx);
             return new GridDefenseMode(ctx.Core, mapData, ctx.SpawnOrigin);
         }
     }

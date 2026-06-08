@@ -29,7 +29,7 @@ namespace DefenseDot.Systems.Mode
             }
             float height = config != null ? config.enemyHeight : 0.8f;
             if (arenaView != null) arenaView.Bind(arenaModel);
-            BindCamera(ctx);
+            BindPresentation(ctx);
             return new ArenaMode(arenaModel, ctx.CoreCenter, height);
         }
     }
