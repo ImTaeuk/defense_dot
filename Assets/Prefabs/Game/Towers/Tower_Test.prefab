@@ -123,7 +123,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9838d0c8e4f2a784c9eba5b3bd8661dd, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Tower.TowerActor
-  data: {fileID: 0}
-  currentHealth: 0
+  data: {fileID: 11400000, guid: 3abfda84f33119d4626aad661bc55ad6, type: 2}
+  currentHealth: 10
+  debugSingle: 1
+  debugAoe: 0
+  debugProjectile: 0

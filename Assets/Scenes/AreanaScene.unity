@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 27475962}
   - component: {fileID: 27475961}
   - component: {fileID: 27475964}
+  - component: {fileID: 27475965}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -211,7 +212,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 016ead6256cb1f04da03f0cab323bfed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.ArenaModeBootstrap
+  cameraRig: {fileID: 330585548}
+  globalVolume: {fileID: 832575518}
+  postFxProfile: {fileID: 11400000, guid: 4677671fe43006d41972bb5d435086ed, type: 2}
+  postFxBinder: {fileID: 27475965}
   arenaView: {fileID: 878275005}
+--- !u!114 &27475965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 27475958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5687c6d462c0264fa4a4ae6427643f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.PostFx.PostFxBinder
 --- !u!1 &158154814
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,6 +287,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -318,8 +336,8 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
-  orthographic: 1
+  field of view: 40
+  orthographic: 0
   orthographic size: 7.778175
   m_Depth: -1
   m_CullingMask:
@@ -344,8 +362,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23911761, y: 0.36964384, z: -0.09904577, w: 0.8923991}
-  m_LocalPosition: {x: -25.618624, y: 24.999998, z: -25.61862}
+  m_LocalRotation: {x: 0.34202015, y: 0, z: 0, w: 0.9396927}
+  m_LocalPosition: {x: 0, y: 43.759068, z: -57.45334}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -395,6 +413,21 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 862fbcd44adb24b40abe81b4b6d5dc3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Camera.CenterFocusCameraRig
+  targetCamera: {fileID: 330585545}
+  target: {fileID: 878275006}
+  config: {fileID: 11400000, guid: 4c1394eaca2d9a24085c197fac12660f, type: 2}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,6 +15,9 @@ namespace DefenseDot.Core
 
         protected ActorState currentState = ActorState.Idle;
 
+        /// <summary> 상태 변경 시 발생 (View가 구독해 애니메이션 전환) </summary>
+        public event System.Action<ActorState> StateChanged;
+
         #region IActor Implementation
         public virtual Vector3 Position => transform.position;
         public ActorState CurrentState => currentState;
@@ -24,6 +27,7 @@ namespace DefenseDot.Core
             if (currentState == newState) return;
             currentState = newState;
             OnStateChanged(newState);
+            StateChanged?.Invoke(newState);
         }
         #endregion
 

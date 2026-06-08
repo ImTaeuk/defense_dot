@@ -15,5 +15,8 @@ namespace DefenseDot.Core
 
         /// <summary> 액터의 상태를 변경 </summary>
         void SetState(ActorState newState);
+
+        /// <summary> 상태 변경 시 발생 (변경된 새 상태 전달) </summary>
+        event System.Action<ActorState> StateChanged;
     }
 }

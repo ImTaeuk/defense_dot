@@ -46,6 +46,10 @@ namespace DefenseDot.Systems.Management
         private EnemyRegistry registry;
         private TargetFinder targetFinder;
         private EconomyController economyController;
+
+        // DEBUG: 치트 도구 접근용 — 실제 타워 등장 시스템 구현 시 삭제
+        /// <summary>적 타겟 탐색기입니다. Start 이후 non-null. (DEBUG)</summary>
+        public TargetFinder TargetFinder => targetFinder;
         private IGameMode mode;
 
         private void Awake()

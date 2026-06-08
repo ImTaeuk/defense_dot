@@ -19,5 +19,5 @@ MonoBehaviour:
   perspective: 1
   fieldOfView: 45
   orthoSize: 15
-  followLerp: 0
+  followLerp: 7.41
   pitchRange: {x: 10, y: 60}

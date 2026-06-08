@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>디버그 공격 타입 구현 제안서 (A-1~A-4)</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+    --code-bg: #21222c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>디버그 공격 타입 구현 제안서 — 단일 · 범위 · 투사체 (A-1~A-4)</h1>
+  <div class="sub">
+    <span class="tag must">제안서</span>
+    <span class="tag opt">검증 완료 · 구현 대기</span>
+    4차원 멀티에이전트 검증 반영 · 2026-06-08
+  </div>
+
+  <!-- 1 -->
+  <h2>1. 제안 요지</h2>
+  <div class="panel">
+    <p>플레이 루프가 실제로 도는지 <strong>런타임에 눈으로 검증</strong>하기 위해, 타워에 공격 타입 3종(단일/범위/투사체)을 <strong>throwaway 디버그</strong>로 붙인다. 인스펙터 토글로 플레이 중 타입을 하나씩 add/remove(능력 카드 스택 느낌)하며 루프를 확인한다. 전략 계약(<code>IAttackBehavior</code>/<code>AttackContext</code>)과 <code>TargetFinder.FindAllInRange</code>는 이미 구현·커밋됨 — 본 제안은 그 위에 얹는 <strong>A-1~A-4</strong>를 다룬다.</p>
+    <div class="note">
+      <strong>검증 결론</strong>: A-1·A-2 는 4차원(로직·Unity API·컨벤션·YAGNI) 전부 통과 = <span class="ok">즉시 구현 가능</span>. A-3 는 <span class="warn">투사체 관통이 실제로 작동 안 함(critical)</span> → 수정본 제안. A-4 는 <code>using</code> 2건 추가가 <span class="warn">컴파일 필수</span>.
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <h2>2. 현재 동작 (A-1~A-4 가 얹히는 경로)</h2>
+  <div class="panel">
+    <ol>
+      <li>매 프레임 <code><strong>TowerActor.cs:77-89 Update()</strong></code> 가 <code>IsTargetValid()</code> 검사 → 유효 시 <code>UpdateCombat</code>, 아니면 <code>SearchTarget()</code> 으로 최근접 적 재탐색</li>
+      <li><code><strong>CombatLogic.cs:30-44 Tick()</strong></code> 가 쿨다운 경과 시 <code>PerformAttack()</code> 호출</li>
+      <li>현재 <code><strong>TowerActor.cs:42-55 PerformAttack()</strong></code> 는 <code>currentTarget</code> 1체에 즉시 <code>TakeDamage(attackDamage)</code> — <strong>단일 공격 1종만</strong> 존재</li>
+      <li>적 처치 → <code><strong>EnemySpawner.cs:121-125</strong></code> 보상 → 골드(HUD), 적 코어 도달 → 코어 체력 감소</li>
+    </ol>
+    <div class="note">선행 완료(커밋됨): <code><strong>TargetFinder.FindAllInRange</strong></code> (1a58371) · <code><strong>AttackContext / IAttackBehavior</strong></code> (ce06173). <span class="warn">이 3개는 재작성 금지.</span></div>
+  </div>
+
+  <!-- 3 -->
+  <h2>3. 검증으로 드러난 핵심 이슈 (A-3 투사체 관통)</h2>
+  <div class="panel">
+    <p>계획 원안의 <code>DebugProjectile</code> 는 첫 명중 후 <code>target = null</code> 로 두고 직진시키는데, 정밀 추적 결과 <strong>관통이 실질적으로 작동하지 않는다</strong>.</p>
+    <div class="file">계획 원안 · DebugProjectile.Update() (검증 대상)</div>
+    <pre><code><span class="cmt">    Vector3 aim = (target != null &amp;&amp; target.IsActive)
+        ? target.Position</span>
+<span class="hl-line">        : transform.position + transform.forward;   <span class="hl-inline">// 회전 미설정 → 항상 월드 +Z</span></span>
+<span class="cmt">    transform.position = Vector3.MoveTowards(transform.position, aim, speed * Time.deltaTime);
+
+    if (target != null &amp;&amp; target.IsActive &amp;&amp; ...sqrMagnitude &lt; 0.09f)
+    {
+        if (target is IDamageable d) d.TakeDamage(damage);
+        pierceRemaining--;
+        if (pierceRemaining &lt;= 0) { Destroy(gameObject); return; }</span>
+<span class="hl-line">        target = null;   <span class="hl-inline">// 이후 명중 판정이 target!=null 가드에 막힘 → 2번째 적 불가</span></span>
+<span class="cmt">    }</code></pre>
+    <p>① 첫 명중 후 <code>target == null</code> 이 되면 명중 판정 자체가 <code>target != null</code> 가드에 막혀 <strong>2번째 적을 절대 타격할 수 없다</strong>. ② 콜라이더도 제거되어 물리 충돌도 없다. ③ <code>transform.forward</code> 는 회전 미설정이라 항상 월드 +Z 라 잔여 비행이 발사 궤적과 무관하다. 결과적으로 <code>PierceMax=3</code> 은 <strong>죽은 파라미터</strong>이며 "최대 3관통" 문구와 불일치한다.</p>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. 확정 요구사항 (브레인스토밍)</h2>
+  <div class="panel">
+    <ul>
+      <li>공격 타입 3종(단일 즉시 / 범위 즉시 / 투사체)을 <strong>디버그 전용</strong>으로 구현 — 실제 VFX·파티클은 HD2D 이후</li>
+      <li>런타임에 타워에 타입을 <strong>하나씩 add/remove</strong>(인스펙터 토글) — "능력 카드 스택" 느낌</li>
+      <li>아키텍처: 기존 <code>IMovementStrategy</code>(이동)와 동형의 <code>IAttackBehavior</code> 전략 패턴</li>
+      <li><code>TowerData</code> 불변 · 재화/도메인/HUD 불변 · 9개 EditMode 회귀 0</li>
+      <li>실제 능력 카드 시스템 구현 시 본 3타입은 <strong>삭제</strong>(throwaway 전제, 전 코드 <code>// DEBUG</code> 표식)</li>
+    </ul>
+  </div>
+
+  <!-- 5 -->
+  <h2>5. 설계 원칙 — 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>통일감을 위해 프로젝트 내 기존 두 패턴에서 사상을 차용했다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr>
+        <td><strong>이동 전략 패턴</strong></td>
+        <td><code><strong>GridDefenseMode.cs:41-47</strong></code>, <code><strong>PathFollowerLogic.cs</strong></code></td>
+        <td><strong>전략 인터페이스 주입</strong> — 모드/액터가 <code>IMovementStrategy</code> 구현체를 주입받아 교체. 공격도 동형 <code>IAttackBehavior</code> 로 둔다</td>
+      </tr>
+      <tr>
+        <td><strong>적 질의 패턴</strong></td>
+        <td><code><strong>TargetFinder.cs:24-46 FindNearest</strong></code>, <code><strong>EnemyRegistry.cs</strong></code></td>
+        <td><strong>registry 순회 + 제곱거리 비교</strong> — 사거리 내 적 선정. <code>FindAllInRange</code>(범위)·관통 재질의가 이 패턴을 그대로 재사용</td>
+      </tr>
+    </table>
+    <div class="note">
+      <strong>결합 결론</strong>: 공격을 behavior 단위로 분리(전략 패턴)하되, 대상 선정은 기존 <code>TargetFinder</code>(FindNearest/FindAllInRange)에 위임한다. 새 개념 도입 없이 기존 2패턴의 합으로 구성 → throwaway 삭제 시 흔적 최소.
+    </div>
+  </div>
+
+  <!-- 5b -->
+  <h3>레퍼런스 ① 이동 전략 — IMovementStrategy 주입</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Mode/GridDefenseMode.cs · L41-47</div>
+    <pre><code><span class="cmt">public IMovementStrategy CreateMovementStrategy(IMovableActor actor, float moveSpeed, int spawnIndex)
+{</span>
+<span class="hl-line">    var follower = new PathFollowerLogic(actor, moveSpeed);   <span class="hl-inline">// 전략 구현체 생성·주입</span></span>
+<span class="cmt">    BakedPath path = PathFor(spawnIndex);
+    if (path != null) follower.SetPath(path.path);
+    return follower;
+}</span></code></pre>
+    <p>모드가 전략 구현체를 만들어 액터에 주입하고, 액터는 인터페이스만 안다. <code>IAttackBehavior</code> 도 동일하게 타워가 구현체를 보유·실행한다.</p>
+  </div>
+
+  <h3>레퍼런스 ② 적 질의 — registry 순회 + 제곱거리</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Tower/TargetFinder.cs · L24-46 (FindNearest)</div>
+    <pre><code><span class="cmt">var actors = registry.Actors;
+for (int i = 0; i &lt; actors.Count; i++)
+{
+    MonsterActor actor = actors[i];
+    if (actor == null || !actor.IsActive) continue;</span>
+<span class="hl-line">    float distSqr = (actor.Position - origin).sqrMagnitude;   <span class="hl-inline">// sqrt 회피</span></span>
+<span class="cmt">    if (distSqr &lt;= rangeSqr &amp;&amp; distSqr &lt; bestSqr) { bestSqr = distSqr; best = actor; }
+}</span></code></pre>
+    <p>이미 커밋된 <code>FindAllInRange</code> 와 A-3 관통 재질의가 이 순회·필터(<code>!IsActive</code> 제외, 제곱거리)를 그대로 따른다.</p>
+  </div>
+
+  <!-- 6 -->
+  <h2>6. 해결 방안 — A-1 ~ A-4</h2>
+
+  <h3>(A-1) SingleTargetAttack — 신규 <span class="tag must">신규 파일</span> <span class="tag opt">검증 ready</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Tower/Debug/SingleTargetAttack.cs</div>
+    <div class="lbl after">▼ 신규</div>
+<pre class="after"><span class="cmt">// DEBUG: 공격 타입 테스트용 — 실제 능력 시스템 구현 시 삭제
+using UnityEngine;
+using DefenseDot.Core;
+
+namespace DefenseDot.Systems.Tower.Debugging
+{
+    /// &lt;summary&gt; 최근접 적 1체에 즉시 데미지 + 타워→타겟 라인. (DEBUG) &lt;/summary&gt;
+    public class SingleTargetAttack : IAttackBehavior
+    {
+        public void Execute(in AttackContext ctx)
+        {</span>
+<span class="add">            if (ctx.Finder == null || ctx.Data == null) return;
+            ITargetable target = ctx.Finder.FindNearest(ctx.Origin, ctx.Data.attackRange);
+            if (target == null) return;
+            if (target is IDamageable damageable) damageable.TakeDamage(ctx.Data.attackDamage);
+            UnityEngine.Debug.DrawLine(ctx.Origin, target.Position, Color.cyan, 0.08f);</span>
+<span class="cmt">        }
+    }
+}</span></pre>
+    <div class="note">검증: 기존 <code>PerformAttack</code> 의 단일타겟 로직(FindNearest 캐스트 후 <code>IDamageable.TakeDamage</code>)과 <span class="ok">의미상 동치</span>. <code>MonsterActor</code> 가 <code>IDamageable</code>·<code>ITargetable</code> 모두 구현 → 캐스팅 성립. 변경 없이 채택.</div>
+  </div>
+
+  <h3>(A-2) AoeAttack — 신규 <span class="tag must">신규 파일</span> <span class="tag opt">검증 ready</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Tower/Debug/AoeAttack.cs</div>
+    <div class="lbl after">▼ 신규</div>
+<pre class="after"><span class="cmt">// DEBUG ...
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Pool;
+using DefenseDot.Core;
+
+namespace DefenseDot.Systems.Tower.Debugging
+{
+    /// &lt;summary&gt; 반경(=attackRange) 내 전체 적에 즉시 데미지 + 원 비주얼. (DEBUG) &lt;/summary&gt;
+    public class AoeAttack : IAttackBehavior
+    {
+        public void Execute(in AttackContext ctx)
+        {
+            if (ctx.Finder == null || ctx.Data == null) return;
+            float radius = ctx.Data.attackRange;</span>
+<span class="add">            List&lt;ITargetable&gt; hits = ListPool&lt;ITargetable&gt;.Get();
+            ctx.Finder.FindAllInRange(ctx.Origin, radius, hits);
+            for (int i = 0; i &lt; hits.Count; i++)
+                if (hits[i] is IDamageable damageable) damageable.TakeDamage(ctx.Data.attackDamage);
+            ListPool&lt;ITargetable&gt;.Release(hits);</span>
+<span class="cmt">            DrawCircle(ctx.Origin, radius, Color.magenta);   // 세그먼트 라인 24개
+        }
+        // private static void DrawCircle(...) — 원안 그대로
+    }
+}</span></pre>
+    <div class="note">검증: <code>ListPool</code> Get/Release 쌍 정확, <strong>스냅샷 리스트 순회</strong>라 순회 중 적 사망(registry 변경)에 안전(IndexOutOfRange 없음), 한 Execute 내 동일 적 1회만 타격 = <span class="ok">중복 피해 없음</span>. <code>CollectionPool</code> 컨벤션 준수. EditMode 테스트 <code>AoeAttack_KillsEnemiesInRange_SparesOutside</code> 동반.</div>
+  </div>
+
+  <h3>(A-3) ProjectileAttack + DebugProjectile — 관통 수정본 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <p>검증에서 드러난 관통 미작동(§3)을 해소한다. <strong>권장안</strong>: 명중 후 <code>FindAllInRange</code> 로 다음 최근접 미명중 적을 재질의해 <strong>실제 관통</strong>을 살린다(원작 piercer 개념과 일치, 코드 소폭 증가).</p>
+    <div class="file">Assets/Scripts/Systems/Tower/Debug/DebugProjectile.cs · Update() / Spawn()</div>
+
+    <div class="lbl before">▼ BEFORE (원안 — 관통 미작동)</div>
+<pre class="before"><span class="cmt">    // Spawn: 회전 미설정</span>
+<span class="del">    go.transform.localScale = Vector3.one * 0.25f;</span>
+<span class="cmt">    ...
+    // Update 명중부</span>
+<span class="del">        target = null;   // 2번째 적 타격 불가, +Z 직진</span></pre>
+
+    <div class="lbl after">▼ AFTER (관통 재질의 + 발사 방향)</div>
+<pre class="after"><span class="cmt">    // Spawn 추가 인자: TargetFinder finder, float range</span>
+<span class="add">    if (target != null) go.transform.forward = (target.Position - origin).normalized;</span>
+<span class="add">    p.finder = finder;  p.range = range;</span>
+<span class="cmt">    ...
+    // Update 명중부</span>
+<span class="add">        if (target is IDamageable damageable) damageable.TakeDamage(damage);
+        hit.Add(target);                       // HashSet&lt;ITargetable&gt; 로 중복 제외
+        pierceRemaining--;
+        if (pierceRemaining &lt;= 0) { Destroy(gameObject); return; }
+        target = NextNearestUnhit();           // FindAllInRange 로 다음 최근접 미명중</span></pre>
+
+    <div class="file">신규 헬퍼 — NextNearestUnhit()</div>
+<pre class="after"><span class="add">    private ITargetable NextNearestUnhit()
+    {
+        List&lt;ITargetable&gt; cands = ListPool&lt;ITargetable&gt;.Get();
+        finder.FindAllInRange(transform.position, range, cands);
+        ITargetable best = null; float bestSqr = float.MaxValue;
+        for (int i = 0; i &lt; cands.Count; i++)
+        {
+            ITargetable c = cands[i];
+            if (hit.Contains(c)) continue;
+            float d = (c.Position - transform.position).sqrMagnitude;
+            if (d &lt; bestSqr) { bestSqr = d; best = c; }
+        }
+        ListPool&lt;ITargetable&gt;.Release(cands);
+        return best;
+    }</span></pre>
+    <h3>핵심 변경 포인트</h3>
+    <ul>
+      <li><code>PierceMax=3</code> 이 실제로 동작 — 최대 3체를 차례로 관통 타격</li>
+      <li><code>HashSet&lt;ITargetable&gt; hit</code> 로 동일 적 재타격 방지, <code>FindAllInRange</code> 재사용(레퍼런스 ②)</li>
+      <li>Spawn 시 <code>transform.forward</code> 를 발사 방향으로 설정 → 잔여 비행이 자연스러움</li>
+      <li><strong>대안(보류 가능)</strong>: 시각 검증만 필요하면 <code>PierceMax=1</code> + 주석 "관통 미구현"으로 단순화. 단 이 경우 계획 V3 "최대 3관통" 문구도 함께 수정</li>
+    </ul>
+  </div>
+
+  <h3>(A-4) TowerActor 통합 — behavior 위임 + 토글 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Tower/TowerActor.cs · using / 필드 / PerformAttack()</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">using UnityEngine;
+using DefenseDot.Core;
+using DefenseDot.Data;
+// (System.Collections.Generic / Debugging using 없음)
+...
+public void PerformAttack()
+{
+    if (currentTarget == null || !currentTarget.IsActive) { SetState(ActorState.Idle); return; }
+    SetState(ActorState.Attacking);</span>
+<span class="del">    if (currentTarget is IDamageable damageable)
+        damageable.TakeDamage(data.attackDamage);   // 단일 공격 1종 고정</span>
+<span class="cmt">}</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">using System.Collections.Generic;                 // ★ 필수</span>
+<span class="cmt">using UnityEngine;
+using DefenseDot.Core;
+using DefenseDot.Data;</span>
+<span class="add">using DefenseDot.Systems.Tower.Debugging;          // ★ 필수</span>
+<span class="cmt">...
+    // DEBUG 토글 + behavior 보유</span>
+<span class="add">    [Header("DEBUG Attack Toggles")]
+    [SerializeField] private bool debugSingle = true;
+    [SerializeField] private bool debugAoe = false;
+    [SerializeField] private bool debugProjectile = false;
+    private readonly IAttackBehavior singleBehavior = new SingleTargetAttack();
+    private readonly IAttackBehavior aoeBehavior = new AoeAttack();
+    private readonly IAttackBehavior projectileBehavior = new ProjectileAttack();
+    private readonly List&lt;IAttackBehavior&gt; activeBehaviors = new List&lt;IAttackBehavior&gt;();</span>
+<span class="cmt">...
+public void PerformAttack()
+{
+    if (currentTarget == null || !currentTarget.IsActive) { SetState(ActorState.Idle); return; }
+    SetState(ActorState.Attacking);</span>
+<span class="add">    activeBehaviors.Clear();
+    if (debugSingle) activeBehaviors.Add(singleBehavior);
+    if (debugAoe) activeBehaviors.Add(aoeBehavior);
+    if (debugProjectile) activeBehaviors.Add(projectileBehavior);
+    if (activeBehaviors.Count == 0) return;
+    AttackContext ctx = new AttackContext(this, Position, targetFinder, data);
+    for (int i = 0; i &lt; activeBehaviors.Count; i++) activeBehaviors[i].Execute(in ctx);</span>
+<span class="cmt">}</span></pre>
+    <h3>핵심 변경 포인트</h3>
+    <ul>
+      <li><span class="warn">필수</span>: <code>using</code> 2건(<code>System.Collections.Generic</code>, <code>DefenseDot.Systems.Tower.Debugging</code>) — 누락 시 <code>List&lt;&gt;</code>·<code>IAttackBehavior</code>·각 behavior 미해결로 컴파일 실패</li>
+      <li><code>Update</code>/<code>IsTargetValid</code>/<code>SearchTarget</code>/<code>currentTarget</code> 게이팅은 <span class="ok">불변</span> — "사거리 내 적 존재" 트리거 역할 유지</li>
+      <li><code>AttackContext(this, Position, targetFinder, data)</code> — 접근성 전부 유효(검증 confirm)</li>
+      <li><strong>선택(보류 가능)</strong>: list 재구성 대신 <code>if(debugSingle) singleBehavior.Execute(in ctx)</code> 직접 3분기로 더 단순화 가능(throwaway라 현행도 무방)</li>
+    </ul>
+  </div>
+
+  <!-- 7 -->
+  <h2>7. 영향 범위 및 부수 효과 (검증 반영)</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>분석</th></tr>
+      <tr><td>도메인 / 재화 / HUD</td><td><span class="ok">불변</span>. behavior 는 기존 <code>TakeDamage</code>·<code>EconomyController</code> 경로만 호출</td></tr>
+      <tr><td>9개 EditMode 회귀</td><td><span class="ok">0</span>. <code>TowerData</code>·도메인 시그니처 미변경. 신규 AoE 테스트 1건 추가</td></tr>
+      <tr><td>URP 투사체 렌더</td><td><span class="ok">정상(마젠타 아님)</span>. <code>CreatePrimitive</code> 는 활성 URP 파이프라인 기본 머티리얼 사용(웹 검증). ※ 핑크면 Graphics Settings 에 URP 에셋 미할당 신호</td></tr>
+      <tr><td>중복 피해 / 풀 오타격</td><td><span class="ok">없음</span>. 사망 적 동기 <code>Unregister</code> + <code>!IsActive</code> 필터 + <code>resolved</code> 플래그</td></tr>
+      <tr><td>디버그 비주얼 가시성</td><td><span class="warn">라인/원은 Game 뷰 우상단 <strong>Gizmos 토글 ON</strong> 필요 · 빌드엔 미렌더(에디터 전용)</span>. 처치 로직 자체는 Gizmos 무관하게 동작</td></tr>
+      <tr><td>토글 트리거 결합</td><td><span class="warn">단일 off + 범위/투사체 on 시 "최근접 적이 사거리 내"여야 트리거</span>(currentTarget 게이트). V2 검증은 적이 항상 사거리 내인 상황에서</td></tr>
+      <tr><td>ListPool 예외 누수</td><td><span class="warn">Get~Release 사이 예외 시 미반환</span>. throwaway라 수용(원하면 try/finally)</td></tr>
+    </table>
+  </div>
+
+  <!-- 8 -->
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <p>EditMode 자동(반경 판정)은 가능, 비주얼·투사체·토글은 사용자 Unity PlayMode 수동(이 세션 Claude는 Unity 실행 불가).</p>
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대</th></tr>
+      <tr><td>1</td><td><strong>회귀</strong> — 기존 9 EditMode + <code>FindAllInRange</code></td><td><span class="ok">전부 PASS</span></td></tr>
+      <tr><td>2</td><td>EditMode <code>AoeAttack_KillsEnemiesInRange_SparesOutside</code></td><td><span class="ok">범위 내 처치 / 밖 생존</span></td></tr>
+      <tr><td>3</td><td>PlayMode V1 단일 — <code>debugSingle</code> only</td><td><span class="ok">cyan 라인 + 처치 + 골드↑</span></td></tr>
+      <tr><td>4</td><td>PlayMode V2 범위 — <code>debugAoe</code> only</td><td><span class="ok">magenta 원 내 동시 처치</span></td></tr>
+      <tr><td>5</td><td>PlayMode V3 투사체 — <code>debugProjectile</code> only</td><td><span class="ok">구가 날아가 명중, 최대 3관통</span>(수정본 채택 시)</td></tr>
+      <tr><td>6</td><td>PlayMode V4 스택 — 토글 런타임 add/remove</td><td><span class="ok">즉시 반영</span></td></tr>
+      <tr><td>7</td><td>PlayMode V5 풀 루프 — 처치→골드·도달→체력·승패</td><td><span class="ok">한 바퀴 정상</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 9 -->
+  <h2>9. 작업 파일 요약</h2>
+  <table>
+    <tr><th>파일</th><th>변경</th><th>구분</th></tr>
+    <tr><td><code><strong>Debug/SingleTargetAttack.cs</strong></code></td><td>신규 — 단일 즉시 + 라인</td><td><span class="tag must">신규</span></td></tr>
+    <tr><td><code><strong>Debug/AoeAttack.cs</strong></code></td><td>신규 — 반경 전체 + 원</td><td><span class="tag must">신규</span></td></tr>
+    <tr><td><code><strong>Debug/ProjectileAttack.cs</strong></code></td><td>신규 — 투사체 발사(finder/range 전달)</td><td><span class="tag must">신규</span></td></tr>
+    <tr><td><code><strong>Debug/DebugProjectile.cs</strong></code></td><td>신규 — 관통 재질의 수정본</td><td><span class="tag must">신규</span></td></tr>
+    <tr><td><code><strong>TowerActor.cs</strong></code></td><td>using 2건 + 토글/필드 + PerformAttack 위임</td><td><span class="tag must">수정</span></td></tr>
+    <tr><td><code><strong>AttackBehaviorTests.cs</strong></code></td><td>AoE 테스트 1건 추가</td><td><span class="tag must">수정</span></td></tr>
+  </table>
+  <div class="note">불변: <code>TargetFinder</code>·<code>AttackContext</code>·<code>IAttackBehavior</code>(커밋됨, 재작성 금지) · <code>TowerData</code> · 도메인 모델 · <code>EconomyController</code> · HUD. 신규 <code>.cs</code> 4종은 <code>.meta</code> 동반.</div>
+
+  <p class="foot">제안서 산출 완료 — 4차원 검증 반영(A-1·A-2 ready, A-3 관통 수정본, A-4 using 필수). 승인 시 TASK-004 프로토콜대로 main 에서 구현(구현만 → 일괄 커밋), 컴파일·테스트·PlayMode 는 사용자 Unity 에서.</p>
+
+</div>
+</body>
+</html>

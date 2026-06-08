@@ -1493,6 +1493,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1393735427}
+  - {fileID: 1696723607}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &303302756
@@ -4084,7 +4085,9 @@ GameObject:
   - component: {fileID: 684409894}
   - component: {fileID: 684409893}
   - component: {fileID: 684409892}
-  - component: {fileID: 684409891}
+  - component: {fileID: 684409898}
+  - component: {fileID: 684409897}
+  - component: {fileID: 684409896}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -4092,20 +4095,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &684409891
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 684409890}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 016ead6256cb1f04da03f0cab323bfed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.ArenaModeBootstrap
-  cameraRig: {fileID: 330585548}
-  arenaView: {fileID: 1639373338}
 --- !u!114 &684409892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4144,12 +4133,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37988c851a4ab1f41a386241de83357f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Management.GameManager
-  modeBootstrap: {fileID: 684409891}
+  modeBootstrap: {fileID: 684409897}
   startGold: 300
   coreMaxHp: 40
   spawner: {fileID: 684409893}
   coreController: {fileID: 684409892}
-  uiRoot: {fileID: 0}
+  uiRoot: {fileID: 1863633888}
 --- !u!4 &684409895
 Transform:
   m_ObjectHideFlags: 0
@@ -4166,6 +4155,54 @@ Transform:
   - {fileID: 1639373339}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &684409896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684409890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c2f9f5c16b80914286ce2ca8c368a14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Tower.TowerPlacementController
+  mapData: {fileID: 11400000, guid: 0c8886fe1bf3b5b4b82f8d7b905a440a, type: 2}
+  targetCamera: {fileID: 330585545}
+  towerData: {fileID: 11400000, guid: 3abfda84f33119d4626aad661bc55ad6, type: 2}
+  container: {fileID: 1696723607}
+  inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+--- !u!114 &684409897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684409890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d2f711e15bd5684bb6247f86b230cd9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.GridDefenseModeBootstrap
+  cameraRig: {fileID: 330585548}
+  globalVolume: {fileID: 832575518}
+  postFxProfile: {fileID: 11400000, guid: 4677671fe43006d41972bb5d435086ed, type: 2}
+  postFxBinder: {fileID: 684409898}
+  mapData: {fileID: 11400000, guid: 0c8886fe1bf3b5b4b82f8d7b905a440a, type: 2}
+  placement: {fileID: 684409896}
+  enemyDisplayCapacity: 80
+--- !u!114 &684409898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684409890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5687c6d462c0264fa4a4ae6427643f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.PostFx.PostFxBinder
 --- !u!1 &752116133
 GameObject:
   m_ObjectHideFlags: 0
@@ -7713,7 +7750,7 @@ Transform:
   m_GameObject: {fileID: 1393735425}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5, y: -1, z: -5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -9552,6 +9589,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1683637652}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1696723606
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1696723607}
+  m_Layer: 0
+  m_Name: Towers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1696723607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696723606}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 275214904}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1706263486
 GameObject:
   m_ObjectHideFlags: 0

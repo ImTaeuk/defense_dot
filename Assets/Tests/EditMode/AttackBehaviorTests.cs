@@ -5,6 +5,7 @@ using DefenseDot.Core;
 using DefenseDot.Data;
 using DefenseDot.Systems.Enemy;
 using DefenseDot.Systems.Tower;
+using DefenseDot.Systems.Tower.Debugging;
 
 public class AttackBehaviorTests
 {
@@ -47,5 +48,24 @@ public class AttackBehaviorTests
         Assert.Contains(edge, results);
         Assert.IsFalse(results.Contains(outside));
         Assert.AreEqual(2, results.Count);
+    }
+
+    [Test]
+    public void AoeAttack_KillsEnemiesInRange_SparesOutside()
+    {
+        EnemyRegistry reg = new EnemyRegistry();
+        MonsterActor inside  = MakeEnemy(reg, new Vector3(1f, 0f, 0f), 1f);
+        MonsterActor outside = MakeEnemy(reg, new Vector3(5f, 0f, 0f), 1f);
+        TargetFinder finder = new TargetFinder(reg);
+
+        TowerData data = ScriptableObject.CreateInstance<TowerData>();
+        data.attackDamage = 5f;
+        data.attackRange = 3f;
+        AttackContext ctx = new AttackContext(null, Vector3.zero, finder, data);
+
+        new AoeAttack().Execute(in ctx);
+
+        Assert.IsFalse(inside.IsActive,  "범위 내 적은 처치되어야 함");
+        Assert.IsTrue(outside.IsActive,  "범위 밖 적은 생존해야 함");
     }
 }

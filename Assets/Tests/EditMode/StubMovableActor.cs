@@ -13,6 +13,7 @@ namespace DefenseDot.Tests.EditMode
         public Vector3 Position => LastPosition;
         public ActorState CurrentState => ActorState.Moving;
         public void SetState(ActorState newState) { }
+        public event System.Action<ActorState> StateChanged;
         public void SetPosition(Vector3 newPosition) => LastPosition = newPosition;
         public bool IsMovableState() => Movable;
     }
