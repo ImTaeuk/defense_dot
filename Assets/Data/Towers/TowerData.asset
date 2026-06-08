@@ -15,6 +15,7 @@ MonoBehaviour:
   towerName: Tower Test
   attackDamage: 5
   attackRange: 3
+  aoeRadius: 0.5
   attackSpeed: 1
   cost: 50
   prefab: {fileID: 5787995391864394890, guid: 58afe9b187e9c18bc9a51f24a39e5bd7, type: 3}

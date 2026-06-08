@@ -14,6 +14,8 @@ namespace DefenseDot.Data
         public float attackDamage;
         [Tooltip("사거리")]
         public float attackRange;
+        [Tooltip("범위(AoE) 공격의 블래스트 반경")]
+        public float aoeRadius = 3f;
         [Tooltip("공격 속도 (초당 공격 횟수)")]
         public float attackSpeed;
         [Tooltip("설치 비용")]

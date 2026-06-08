@@ -20,6 +20,7 @@ namespace DefenseDot.EditorTools
         private float rangeOverride = 3f;
         private float dmgOverride = 5f;
         private float spdOverride = 1f;
+        private float aoeRadiusOverride = 3f;
         private readonly List<Vector2Int> slots = new List<Vector2Int>();
         private int selectedSlot = -1;
         private readonly Dictionary<Vector2Int, GameObject> placed = new Dictionary<Vector2Int, GameObject>();
@@ -81,6 +82,7 @@ namespace DefenseDot.EditorTools
             rangeOverride = EditorGUILayout.FloatField("Attack Range", rangeOverride);
             dmgOverride = EditorGUILayout.FloatField("Attack Damage", dmgOverride);
             spdOverride = EditorGUILayout.FloatField("Attack Speed", spdOverride);
+            aoeRadiusOverride = EditorGUILayout.FloatField("AoE Radius", aoeRadiusOverride);
 
             if (GUILayout.Button("슬롯 새로고침")) RebuildSlots();
             EditorGUILayout.LabelField($"Tower Slots ({slots.Count})");
@@ -131,6 +133,7 @@ namespace DefenseDot.EditorTools
             rangeOverride = t.attackRange;
             dmgOverride = t.attackDamage;
             spdOverride = t.attackSpeed;
+            aoeRadiusOverride = t.aoeRadius;
         }
 
         private void RebuildSlots()
@@ -161,6 +164,7 @@ namespace DefenseDot.EditorTools
             data.attackRange = rangeOverride;
             data.attackDamage = dmgOverride;
             data.attackSpeed = spdOverride;
+            data.aoeRadius = aoeRadiusOverride;
 
             GameObject go = Instantiate(data.prefab);
             go.name = $"CheatTower_{cell.x}_{cell.y}";
