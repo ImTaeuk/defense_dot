@@ -217,6 +217,7 @@ MonoBehaviour:
   postFxProfile: {fileID: 11400000, guid: 4677671fe43006d41972bb5d435086ed, type: 2}
   postFxBinder: {fileID: 27475965}
   arenaView: {fileID: 878275005}
+  centerTowerData: {fileID: 11400000, guid: 3abfda84f33119d4626aad661bc55ad6, type: 2}
 --- !u!114 &27475965
 MonoBehaviour:
   m_ObjectHideFlags: 0

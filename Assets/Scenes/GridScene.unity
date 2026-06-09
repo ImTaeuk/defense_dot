@@ -4190,6 +4190,7 @@ MonoBehaviour:
   postFxBinder: {fileID: 684409898}
   mapData: {fileID: 11400000, guid: 0c8886fe1bf3b5b4b82f8d7b905a440a, type: 2}
   placement: {fileID: 684409896}
+  mapRoot: {fileID: 275214904}
   enemyDisplayCapacity: 80
 --- !u!114 &684409898
 MonoBehaviour:
