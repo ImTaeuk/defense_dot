@@ -17,5 +17,20 @@ namespace DefenseDot.Systems.Visual.Billboard
             if (dir.sqrMagnitude < 1e-6f) return 0f;
             return Mathf.Atan2(dir.x, dir.z) * Mathf.Rad2Deg;
         }
+
+        /// <summary>
+        /// 이동 방향(XZ)을 카메라 yaw 기준 4방향 인덱스로 변환합니다.
+        /// (AC Player Direction 파라미터: 0=S, 1=N, 2=E, 3=W. 정지 시 S)
+        /// </summary>
+        public static int DirectionIndex(Vector3 worldMoveDir, float cameraYaw)
+        {
+            Vector3 flat = worldMoveDir;
+            flat.y = 0f;
+            if (flat.sqrMagnitude < 1e-6f) return 0;
+            Vector3 rel = Quaternion.Euler(0f, -cameraYaw, 0f) * flat;
+            if (Mathf.Abs(rel.x) >= Mathf.Abs(rel.z))
+                return rel.x > 0f ? 2 : 3;
+            return rel.z > 0f ? 1 : 0;
+        }
     }
 }

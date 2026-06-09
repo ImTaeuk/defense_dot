@@ -91,8 +91,9 @@ namespace DefenseDot.Systems.Visual.Camera
 
         private Vector3 GetCenter()
         {
-            if (target != null) return target.position;
+            // 런타임 Bind 주입을 최우선(권위). target은 에디터 프리뷰 폴백.
             if (hasRuntimeCenter) return runtimeCenter;
+            if (target != null) return target.position;
             return transform.position;
         }
 

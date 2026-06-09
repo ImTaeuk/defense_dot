@@ -35,5 +35,41 @@ namespace DefenseDot.Tests.EditMode
             float yaw = BillboardMath.YawTowardCamera(Vector3.zero, new Vector3(0f, 10f, 0f));
             Assert.AreEqual(0f, yaw, 0.01f);
         }
+
+        [Test]
+        public void DirectionIndex_ForwardZ_ReturnsNorth()
+        {
+            Assert.AreEqual(1, BillboardMath.DirectionIndex(new Vector3(0f, 0f, 1f), 0f));
+        }
+
+        [Test]
+        public void DirectionIndex_BackZ_ReturnsSouth()
+        {
+            Assert.AreEqual(0, BillboardMath.DirectionIndex(new Vector3(0f, 0f, -1f), 0f));
+        }
+
+        [Test]
+        public void DirectionIndex_PlusX_ReturnsEast()
+        {
+            Assert.AreEqual(2, BillboardMath.DirectionIndex(new Vector3(1f, 0f, 0f), 0f));
+        }
+
+        [Test]
+        public void DirectionIndex_MinusX_ReturnsWest()
+        {
+            Assert.AreEqual(3, BillboardMath.DirectionIndex(new Vector3(-1f, 0f, 0f), 0f));
+        }
+
+        [Test]
+        public void DirectionIndex_Zero_ReturnsSouth()
+        {
+            Assert.AreEqual(0, BillboardMath.DirectionIndex(Vector3.zero, 0f));
+        }
+
+        [Test]
+        public void DirectionIndex_Yaw90_PlusXBecomesNorth()
+        {
+            Assert.AreEqual(1, BillboardMath.DirectionIndex(new Vector3(1f, 0f, 0f), 90f));
+        }
     }
 }

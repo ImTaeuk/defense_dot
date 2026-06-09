@@ -28,8 +28,8 @@ namespace DefenseDot.Systems.Mode
         /// </summary>
         protected void BindPresentation(in ModeContext ctx)
         {
-            // 1) 카메라 바인딩 (config는 리그가 단독 소유)
-            if (cameraRig != null) cameraRig.Bind(ctx.CoreCenter);
+            // 1) 카메라 바인딩 (config는 리그가 단독 소유, 중심은 모드별 산출)
+            if (cameraRig != null) cameraRig.Bind(GetCameraCenter(ctx));
 
             // 2) 모드별 프리셋 참조 교체 (읽기전용 — sharedProfile 비파괴)
             if (globalVolume != null && postFxProfile != null)
@@ -43,6 +43,12 @@ namespace DefenseDot.Systems.Mode
             {
                 postFxBinder.Bind(cameraRig, globalVolume);
             }
+        }
+
+        /// <summary> 카메라가 바라볼 중심을 반환합니다. 기본은 코어 중심(모드별 재정의 가능). </summary>
+        protected virtual Vector3 GetCameraCenter(in ModeContext ctx)
+        {
+            return ctx.CoreCenter;
         }
     }
 }

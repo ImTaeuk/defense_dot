@@ -13,10 +13,21 @@ namespace DefenseDot.Systems.Mode
     {
         [SerializeField] private MapData mapData;
         [SerializeField] private TowerPlacementController placement;
+        [SerializeField] private Transform mapRoot;
         [SerializeField] private int enemyDisplayCapacity = 80;
 
         /// <summary> 그리드 모드의 적 수 표시 한계입니다. </summary>
         public override int EnemyDisplayCapacity => enemyDisplayCapacity;
+
+        /// <summary> 카메라 중심을 맵의 기하 중심으로 계산합니다. (맵 원점이 좌하단이라 보정) </summary>
+        protected override Vector3 GetCameraCenter(in ModeContext ctx)
+        {
+            if (mapData == null) return base.GetCameraCenter(ctx);
+            Vector3 origin = mapRoot != null ? mapRoot.position : Vector3.zero;
+            float w = mapData.width * mapData.cellSize;
+            float h = mapData.height * mapData.cellSize;
+            return origin + new Vector3(w * 0.5f, 0f, h * 0.5f);
+        }
 
         public override IGameMode CreateMode(ModeContext ctx)
         {

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b42e9ffa8d396a4f986049f1a6b5bab, type: 3}
   m_Name: CameraRig_Grid
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Camera.CameraRigConfig
-  pitch: 48.3
+  pitch: 44.1
   yaw: 0
   distance: 18.5
   heightOffset: 0
