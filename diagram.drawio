@@ -1,0 +1,110 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="1. 3계층 아키텍처" id="arch3">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="t1" value="Actor 행동·연출 3계층 (이음새 = ActorState)" style="text;html=1;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="16" width="560" height="30" as="geometry" /></mxCell>
+        <mxCell id="lb1" value="두뇌" style="text;html=1;align=center;fontStyle=1;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;" vertex="1" parent="1"><mxGeometry x="40" y="70" width="60" height="80" as="geometry" /></mxCell>
+        <mxCell id="brain" value="ActorBehaviorTree (MonoBehaviour, 액터당 1개)&lt;br&gt;· BuildTree() → Update에서 tick&lt;br&gt;· 리프가 결정&lt;br&gt;&lt;b&gt;· ActorState의 유일한 writer&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="120" y="70" width="340" height="80" as="geometry" /></mxCell>
+        <mxCell id="poco" value="POCO 로직 (기존·검증됨)&lt;br&gt;PathFollowerLogic&lt;br&gt;ArenaOrbitLogic&lt;br&gt;CombatLogic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="540" y="70" width="300" height="80" as="geometry" /></mxCell>
+        <mxCell id="e_bp" value="🅰 리프 호출 (결정→계산)" style="endArrow=block;html=1;dashed=1;" edge="1" parent="1" source="brain" target="poco"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lb2" value="이음새" style="text;html=1;align=center;fontStyle=1;fillColor=#d5e8d4;strokeColor=#82b366;rounded=1;" vertex="1" parent="1"><mxGeometry x="40" y="210" width="60" height="80" as="geometry" /></mxCell>
+        <mxCell id="state" value="ActorState  (ActorBase 소유, 기존 코드 재사용)&lt;br&gt;SetState() → StateChanged 이벤트 발행&lt;br&gt;값: Idle / Moving / Attacking / Stunned / Dead" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="120" y="210" width="340" height="80" as="geometry" /></mxCell>
+        <mxCell id="e_bs" value="actor.SetState(...)" style="endArrow=block;html=1;fontStyle=1;" edge="1" parent="1" source="brain" target="state"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="lb3" value="연출" style="text;html=1;align=center;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;" vertex="1" parent="1"><mxGeometry x="40" y="350" width="60" height="80" as="geometry" /></mxCell>
+        <mxCell id="view" value="ActorAnimatorBinder  (StateChanged 구독)&lt;br&gt;· Animator 파라미터만 push&lt;br&gt;· State(int) + Direction(int)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="120" y="350" width="340" height="80" as="geometry" /></mxCell>
+        <mxCell id="e_sv" value="StateChanged.Invoke(newState)" style="endArrow=block;html=1;" edge="1" parent="1" source="state" target="view"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ctrl" value="AnimatorController 에셋&lt;br&gt;· 전환 규칙 소유&lt;br&gt;&lt;b&gt;· 프리팹별 교체 = 애니 오버라이드 (코드 0)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=10;" vertex="1" parent="1"><mxGeometry x="120" y="490" width="340" height="70" as="geometry" /></mxCell>
+        <mxCell id="e_vc" value="SetInteger(State) / SetInteger(Direction)" style="endArrow=block;html=1;" edge="1" parent="1" source="view" target="ctrl"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="note1" value="핵심: 화살표는 한 방향(위→아래).&#10;BT만 상태를 쓰고, View는 읽기만 한다.&#10;→ 같은 프레임 상태 경쟁 없음 (TASK-006 재발 방지)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#999999;dashed=1;align=left;spacingLeft=10;fontStyle=2;" vertex="1" parent="1"><mxGeometry x="540" y="350" width="300" height="80" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="2. 상태 변경 시퀀스" id="seq">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="520" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="st" value="상태 변경 1회의 흐름 (예: Idle → Moving)" style="text;html=1;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="12" width="600" height="30" as="geometry" /></mxCell>
+        <mxCell id="h1" value="ActorBehaviorTree" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="40" y="56" width="140" height="36" as="geometry" /></mxCell>
+        <mxCell id="h2" value="리프 노드" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="240" y="56" width="140" height="36" as="geometry" /></mxCell>
+        <mxCell id="h3" value="ActorBase" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="440" y="56" width="140" height="36" as="geometry" /></mxCell>
+        <mxCell id="h4" value="ActorAnimatorBinder" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="640" y="56" width="140" height="36" as="geometry" /></mxCell>
+        <mxCell id="h5" value="Animator / Controller" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="820" y="56" width="140" height="36" as="geometry" /></mxCell>
+        <mxCell id="l1" style="endArrow=none;dashed=1;html=1;strokeColor=#b85450;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="110" y="92" as="sourcePoint" /><mxPoint x="110" y="470" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l2" style="endArrow=none;dashed=1;html=1;strokeColor=#b85450;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="310" y="92" as="sourcePoint" /><mxPoint x="310" y="470" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l3" style="endArrow=none;dashed=1;html=1;strokeColor=#82b366;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="510" y="92" as="sourcePoint" /><mxPoint x="510" y="470" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l4" style="endArrow=none;dashed=1;html=1;strokeColor=#6c8ebf;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="710" y="92" as="sourcePoint" /><mxPoint x="710" y="470" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="l5" style="endArrow=none;dashed=1;html=1;strokeColor=#9673a6;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="890" y="92" as="sourcePoint" /><mxPoint x="890" y="470" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m1" value="Tick() → Evaluate()" style="endArrow=block;html=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="110" y="130" as="sourcePoint" /><mxPoint x="310" y="130" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m2" value="actor.SetState(Moving)" style="endArrow=block;html=1;fontStyle=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="310" y="195" as="sourcePoint" /><mxPoint x="510" y="195" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m3" value="StateChanged(Moving) 이벤트" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="510" y="260" as="sourcePoint" /><mxPoint x="710" y="260" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m4" value="SetInteger(State, Direction)" style="endArrow=block;html=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="710" y="325" as="sourcePoint" /><mxPoint x="890" y="325" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m5" value="전환: Move 클립 재생" style="endArrow=block;html=1;rounded=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="890" y="385" as="sourcePoint" /><mxPoint x="890" y="425" as="targetPoint" /><Array as="points"><mxPoint x="955" y="385" /><mxPoint x="955" y="425" /></Array></mxGeometry></mxCell>
+        <mxCell id="note2" value="이동 방향(Direction)은 BillboardMath.DirectionIndex로 산출 (카메라 기준 4방향). Move 상태일 때만 갱신." style="text;html=1;align=left;fontStyle=2;fontColor=#666666;" vertex="1" parent="1"><mxGeometry x="40" y="440" width="900" height="30" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="3. BT 트리 (오버라이드)" id="bt">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="640" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="bt_t" value="BT 구조: 베이스 골격 + BuildPrimary() 한 점만 오버라이드" style="text;html=1;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="12" width="700" height="30" as="geometry" /></mxCell>
+        <mxCell id="g0" value="베이스 ActorBehaviorTree.BuildTree() — 모든 액터 공통" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;verticalAlign=top;fontStyle=1;spacingTop=6;" vertex="1" parent="1"><mxGeometry x="40" y="56" width="560" height="190" as="geometry" /></mxCell>
+        <mxCell id="b_sel" value="? Selector" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="250" y="84" width="120" height="50" as="geometry" /></mxCell>
+        <mxCell id="b_seq" value="→ Sequence (Stun 처리)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="80" y="170" width="180" height="50" as="geometry" /></mxCell>
+        <mxCell id="b_hook" value="BuildPrimary() ⟨virtual hook⟩" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;dashed=1;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="360" y="170" width="200" height="50" as="geometry" /></mxCell>
+        <mxCell id="be1" style="endArrow=none;html=1;" edge="1" parent="1" source="b_sel" target="b_seq"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="be2" style="endArrow=none;html=1;" edge="1" parent="1" source="b_sel" target="b_hook"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="b_seq_lbl" value="조건 IsStunned? → 액션 SetState(Stunned)" style="text;html=1;align=center;fontSize=11;fontColor=#555555;" vertex="1" parent="1"><mxGeometry x="60" y="222" width="220" height="20" as="geometry" /></mxCell>
+        <mxCell id="g1" value="EnemyBehaviorTree.BuildPrimary()  (비공격 — 이동만)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#82b366;verticalAlign=top;fontStyle=1;spacingTop=6;" vertex="1" parent="1"><mxGeometry x="40" y="300" width="380" height="150" as="geometry" /></mxCell>
+        <mxCell id="en1" value="→ 액션: MoveAlongPath&lt;br&gt;(PathFollowerLogic 호출)&lt;br&gt;&lt;b&gt;SetState(Moving)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="100" y="340" width="240" height="80" as="geometry" /></mxCell>
+        <mxCell id="g2" value="TowerBehaviorTree.BuildPrimary()  (공격 추가)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fde8e8;strokeColor=#b85450;verticalAlign=top;fontStyle=1;spacingTop=6;" vertex="1" parent="1"><mxGeometry x="460" y="300" width="480" height="220" as="geometry" /></mxCell>
+        <mxCell id="tw_sel" value="? Selector" style="rhombus;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="630" y="336" width="120" height="50" as="geometry" /></mxCell>
+        <mxCell id="tw_atk" value="→ Sequence: 타겟 있음+사거리&lt;br&gt;액션 Attack (CombatLogic)&lt;br&gt;&lt;b&gt;SetState(Attacking)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="500" y="420" width="240" height="80" as="geometry" /></mxCell>
+        <mxCell id="tw_idle" value="액션: Idle&lt;br&gt;SetState(Idle)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="790" y="430" width="120" height="60" as="geometry" /></mxCell>
+        <mxCell id="twe1" style="endArrow=none;html=1;" edge="1" parent="1" source="tw_sel" target="tw_atk"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="twe2" style="endArrow=none;html=1;" edge="1" parent="1" source="tw_sel" target="tw_idle"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ov1" value="override" style="endArrow=block;html=1;dashed=1;fontStyle=1;strokeColor=#d79b00;" edge="1" parent="1" source="b_hook" target="g1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ov2" value="override" style="endArrow=block;html=1;dashed=1;fontStyle=1;strokeColor=#d79b00;" edge="1" parent="1" source="b_hook" target="tw_sel"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="bt_note" value="공격(Attacking)은 베이스에 없고 TowerBehaviorTree에서만 추가. Enemy 컨트롤러엔 Attack 스테이트가 아예 불필요." style="text;html=1;align=left;fontStyle=2;fontColor=#666666;" vertex="1" parent="1"><mxGeometry x="40" y="540" width="900" height="30" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="4. 클래스 계층" id="uml">
+    <mxGraphModel dx="900" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="760" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="uml_t" value="클래스 계층 — 두 갈래(Actor 데이터/상태 · ActorBehaviorTree 두뇌)" style="text;html=1;align=left;fontSize=16;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="12" width="760" height="30" as="geometry" /></mxCell>
+        <mxCell id="i_actor" value="&lt;&lt;interface&gt;&gt; IActor&#10;Position&#10;CurrentState&#10;SetState()&#10;event StateChanged" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="380" y="56" width="180" height="110" as="geometry" /></mxCell>
+        <mxCell id="i_dmg" value="&lt;&lt;interface&gt;&gt; IDamageable&#10;TakeDamage()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="600" y="56" width="180" height="70" as="geometry" /></mxCell>
+        <mxCell id="e_state" value="&lt;&lt;enum&gt;&gt; ActorState&#10;Idle / Moving&#10;Attacking / Stunned&#10;Dead&#10;(공유 슈퍼셋)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="800" y="56" width="150" height="110" as="geometry" /></mxCell>
+        <mxCell id="c_base" value="ActorBase&lt;TData&gt; {abstract}&#10;# currentState&#10;+ SetState()&#10;# virtual OnStateChanged()&#10;+ event StateChanged" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="400" y="220" width="220" height="120" as="geometry" /></mxCell>
+        <mxCell id="i_mov" value="&lt;&lt;interface&gt;&gt; IMovableActor&#10;SetPosition()&#10;IsMovableState()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="60" y="232" width="180" height="90" as="geometry" /></mxCell>
+        <mxCell id="i_cmb" value="&lt;&lt;interface&gt;&gt; ICombatActor&#10;IsAttackableState()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="760" y="232" width="190" height="70" as="geometry" /></mxCell>
+        <mxCell id="c_mon" value="MonsterActor : ActorBase&lt;EnemyData&gt;&#10;+ CoreDamage / RewardGold&#10;(IMovableActor, ITargetable, IPoolable)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="220" y="420" width="240" height="90" as="geometry" /></mxCell>
+        <mxCell id="c_tow" value="TowerActor : ActorBase&lt;TowerData&gt;&#10;(ICombatActor, IPoolable)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="560" y="420" width="240" height="70" as="geometry" /></mxCell>
+        <mxCell id="r1" style="endArrow=block;endFill=0;dashed=1;html=1;" edge="1" parent="1" source="c_base" target="i_actor"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r2" style="endArrow=block;endFill=0;dashed=1;html=1;" edge="1" parent="1" source="c_base" target="i_dmg"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r3" value="extends" style="endArrow=block;endFill=0;html=1;" edge="1" parent="1" source="c_mon" target="c_base"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r4" value="extends" style="endArrow=block;endFill=0;html=1;" edge="1" parent="1" source="c_tow" target="c_base"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r5" style="endArrow=block;endFill=0;dashed=1;html=1;" edge="1" parent="1" source="c_mon" target="i_mov"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r6" style="endArrow=block;endFill=0;dashed=1;html=1;" edge="1" parent="1" source="c_tow" target="i_cmb"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c_brain" value="ActorBehaviorTree {abstract}&#10;+ BuildTree()&#10;# virtual BuildPrimary()&#10;+ Tick()" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="400" y="560" width="220" height="100" as="geometry" /></mxCell>
+        <mxCell id="c_eb" value="EnemyBehaviorTree&#10;# override BuildPrimary()&#10;= 경로이동" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="240" y="690" width="200" height="70" as="geometry" /></mxCell>
+        <mxCell id="c_tb" value="TowerBehaviorTree&#10;# override BuildPrimary()&#10;= 공격 + Idle" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="580" y="690" width="200" height="70" as="geometry" /></mxCell>
+        <mxCell id="r7" value="extends" style="endArrow=block;endFill=0;html=1;" edge="1" parent="1" source="c_eb" target="c_brain"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r8" value="extends" style="endArrow=block;endFill=0;html=1;" edge="1" parent="1" source="c_tb" target="c_brain"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="r9" value="SetState() ▶ 상태 writer" style="endArrow=open;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="c_brain" target="c_base"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c_bb" value="Blackboard&#10;+ Target&#10;(노드 간 공유 씨앗)&#10;Threat/StunTimer ... 추가" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="690" y="560" width="200" height="90" as="geometry" /></mxCell>
+        <mxCell id="r_bb" value="owns · Evaluate(bb)" style="startArrow=diamondThin;startFill=1;endArrow=none;html=1;fontSize=10;" edge="1" parent="1" source="c_brain" target="c_bb"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c_view" value="ActorAnimatorBinder&#10;+ OnStateChanged()&#10;params: State + Direction" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;spacingLeft=8;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="60" y="420" width="180" height="80" as="geometry" /></mxCell>
+        <mxCell id="r10" value="구독 StateChanged" style="endArrow=open;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="c_view" target="i_actor"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="uml_note" value="점선 삼각형=인터페이스 구현, 실선 삼각형=상속, 점선 화살표=의존(구독/호출)." style="text;html=1;align=left;fontStyle=2;fontColor=#666666;" vertex="1" parent="1"><mxGeometry x="40" y="720" width="900" height="20" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
