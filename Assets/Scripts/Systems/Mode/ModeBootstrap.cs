@@ -1,6 +1,7 @@
 // 모드별 합성 루트 베이스 — 모드(IGameMode)를 생성한다
 using UnityEngine;
 using DefenseDot.Systems.Visual.Camera;
+using DefenseDot.Systems.Tower;
 
 namespace DefenseDot.Systems.Mode
 {
@@ -21,6 +22,9 @@ namespace DefenseDot.Systems.Mode
 
         /// <summary> 이 모드의 적 수 표시 한계(HUD capacity)입니다. </summary>
         public abstract int EnemyDisplayCapacity { get; }
+
+        /// <summary> 이 모드의 타워 배치 컨트롤러입니다. 없으면 null (빌드 모달 미생성). </summary>
+        public virtual TowerPlacementController PlacementController => null;
 
         /// <summary>
         /// 모드 연출을 바인딩합니다. 카메라 중심 주입 → 모드별 포스트FX 프리셋 활성화

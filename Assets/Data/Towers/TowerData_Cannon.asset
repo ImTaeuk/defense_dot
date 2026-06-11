@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08741d6bb7d02b748b02e7a96df653b3, type: 3}
+  m_Name: TowerData_Cannon
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.TowerData
+  towerName: Cannon
+  attackDamage: 30
+  attackRange: 4
+  aoeRadius: 0.5
+  attackSpeed: 0.7
+  cost: 150
+  prefab: {fileID: 5787995391864394890, guid: 58afe9b187e9c18bc9a51f24a39e5bd7, type: 3}

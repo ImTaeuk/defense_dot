@@ -19,6 +19,9 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 그리드 모드의 적 수 표시 한계입니다. </summary>
         public override int EnemyDisplayCapacity => enemyDisplayCapacity;
 
+        /// <summary> 그리드 모드의 타워 배치 컨트롤러입니다. </summary>
+        public override TowerPlacementController PlacementController => placement;
+
         /// <summary> 카메라 중심을 맵의 기하 중심으로 계산합니다. (맵 원점이 좌하단이라 보정) </summary>
         protected override Vector3 GetCameraCenter(in ModeContext ctx)
         {
@@ -31,7 +34,7 @@ namespace DefenseDot.Systems.Mode
 
         public override IGameMode CreateMode(ModeContext ctx)
         {
-            if (placement != null) placement.Bind(ctx.Economy, ctx.TargetFinder);
+            if (placement != null) placement.Bind(ctx.TargetFinder);
             BindPresentation(ctx);
             return new GridDefenseMode(ctx.Core, mapData, ctx.SpawnOrigin);
         }

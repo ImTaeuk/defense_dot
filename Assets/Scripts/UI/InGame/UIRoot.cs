@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DefenseDot.Domain.Models;
+using DefenseDot.Data;
+using DefenseDot.Systems.Tower;
 using DefenseDot.UI.Models;
 using DefenseDot.UI.Views;
 using DefenseDot.UI.Presenters;
@@ -15,16 +17,21 @@ namespace DefenseDot.UI.InGame
     {
         [Header("Views")]
         [SerializeField] private HUDView hudView;
+        [SerializeField] private TowerBuildModalView buildModalView;
+        [SerializeField] private TowerRoster towerRoster;
 
         private readonly List<IPresenter> presenters = new List<IPresenter>();
 
         /// <summary>
         /// 합성 루트가 도메인 모델과 적 수용 한계를 주입합니다.
         /// </summary>
-        public void Inject(EconomyModel economy, CoreModel core, WaveModel wave, int enemyCapacity)
+        public void Inject(EconomyModel economy, CoreModel core, WaveModel wave, int enemyCapacity,
+                           TowerPlacementController placement)
         {
             presenters.Add(new HUDPresenter(hudView, new HUDModel(), economy, core, wave, enemyCapacity));
-            // 새 UI 는 여기에 추가
+
+            if (placement != null && buildModalView != null && towerRoster != null)
+                presenters.Add(new TowerBuildPresenter(buildModalView, towerRoster, economy, placement));
 
             foreach (IPresenter presenter in presenters) presenter.Initialize();
         }
