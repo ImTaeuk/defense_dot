@@ -4,6 +4,10 @@
 
 You are working on a **Unity project** used to build games or interactive experiences. Unity is a cross-platform game engine that uses C# for scripting and organizes content into scenes, prefabs, and assets.
 
+## UI / 폰트 컨벤션
+
+- **폰트**: 모든 UI 텍스트(TextMeshPro)는 **neodgm** (`Assets/Font/neodgm SDF.asset`) 을 사용한다. 새 `TextMeshProUGUI`/`TextMeshPro` 컴포넌트·프리팹은 neodgm SDF 폰트 에셋으로 설정하고, TMP 기본 폰트(TMP Settings)도 neodgm 으로 둔다. 다른 폰트(LiberationSans 등) 사용 금지.
+
 ## Understanding Unity Projects
 
 Unity projects are often **large, messy, and difficult to parse**:
