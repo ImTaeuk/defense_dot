@@ -39,6 +39,9 @@ namespace DefenseDot.Systems.Enemy
         /// </summary>
         public void SetMovement(IMovementStrategy strategy) => movement = strategy;
 
+        /// <summary> 현재 주입된 이동 전략(브레인 리프가 live-read). </summary>
+        public IMovementStrategy CurrentMovement => movement;
+
         #region IMovableActor Implementation
         public void SetPosition(Vector3 newPosition) => transform.position = newPosition;
 
@@ -75,14 +78,6 @@ namespace DefenseDot.Systems.Enemy
             resolved = false;
         }
 
-        private void Update()
-        {
-            if (movement == null || resolved) return;
-
-            movement.Tick(Time.deltaTime);
-            if (movement.HasReachedGoal) Resolve(reached: true);
-        }
-
         public override void TakeDamage(float amount)
         {
             if (currentState == ActorState.Dead || resolved) return;
@@ -90,6 +85,9 @@ namespace DefenseDot.Systems.Enemy
             currentHealth -= amount;
             if (currentHealth <= 0f) Resolve(reached: false);
         }
+
+        /// <summary> 경로 끝 도달 처리(브레인 리프가 호출). </summary>
+        public void HandleReachedGoal() => Resolve(reached: true);
 
         /// <summary>
         /// 적의 최종 처리를 분기합니다. (도달=코어 피해, 처치=보상)

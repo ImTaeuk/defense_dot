@@ -54,13 +54,7 @@ namespace DefenseDot.Systems.Tower
 
         public void PerformAttack()
         {
-            if (currentTarget == null || !currentTarget.IsActive)
-            {
-                SetState(ActorState.Idle);
-                return;
-            }
-
-            SetState(ActorState.Attacking);
+            if (currentTarget == null || !currentTarget.IsActive) return;   // 상태는 브레인이 기록
 
             // DEBUG: 토글에서 활성 behavior 구성 후 순회 실행
             activeBehaviors.Clear();
@@ -93,19 +87,11 @@ namespace DefenseDot.Systems.Tower
             combatLogic = new CombatLogic(this, actorData.attackSpeed);
         }
 
-        private void Update()
-        {
-            // 타겟이 유효(생존 + 사거리 내)하면 공격, 아니면 재탐색
-            if (IsTargetValid())
-            {
-                UpdateCombat(Time.deltaTime);
-            }
-            else
-            {
-                currentTarget = null;
-                SearchTarget();
-            }
-        }
+        /// <summary> 현재 타겟이 유효(생존+사거리)한지(브레인 조건). </summary>
+        public bool HasValidTarget() => IsTargetValid();
+
+        /// <summary> 사거리 내 타겟을 탐색·설정(브레인 액션). </summary>
+        public void AcquireTarget() => SearchTarget();
 
         private bool IsTargetValid()
         {
