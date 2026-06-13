@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 472662310583384074}
   - component: {fileID: 613726735875951144}
   - component: {fileID: 2315711957311622133}
-  - component: {fileID: 3468261153083852258}
+  - component: {fileID: 8132125737914612167}
   m_Layer: 20
   m_Name: Visual
   m_TagString: Player
@@ -105,7 +105,7 @@ Animator:
   m_GameObject: {fileID: 472662310583384073}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: eb1ae3e395b532e4d8dbc08a412e4a7d, type: 2}
+  m_Controller: {fileID: 9100000, guid: 60e3703ffd7b6fc4cbb45fddc6664dc1, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -131,7 +131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Billboard.BillboardSprite
   mode: 1
   targetCamera: {fileID: 0}
---- !u!114 &3468261153083852258
+--- !u!114 &8132125737914612167
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,10 +140,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 472662310583384073}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c76378c737c8cea48863040693748803, type: 3}
+  m_Script: {fileID: 11500000, guid: 865709770564c9643b60ef243b9dc6cd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Billboard.ActorAnimatorView
-  animator: {fileID: 613726735875951144}
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Billboard.ActorAnimatorBinder
+  animator: {fileID: 0}
   targetCamera: {fileID: 0}
   moveThreshold: 0.01
 --- !u!1 &472662312245261781
