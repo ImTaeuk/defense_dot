@@ -59,6 +59,17 @@ namespace DefenseDot.EditorTools
                 return;
             }
 
+            // DEBUG: 게임 속도(배속) — 테스트용
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField($"게임 속도  x{Time.timeScale:0.##}", GUILayout.Width(150));
+            if (GUILayout.Button("0.5x")) Time.timeScale = 0.5f;
+            if (GUILayout.Button("1x")) Time.timeScale = 1f;
+            if (GUILayout.Button("2x")) Time.timeScale = 2f;
+            if (GUILayout.Button("4x")) Time.timeScale = 4f;
+            if (GUILayout.Button("8x")) Time.timeScale = 8f;
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+
             mapData = (MapData)EditorGUILayout.ObjectField("Map Data", mapData, typeof(MapData), false);
 
             EditorGUILayout.BeginHorizontal();
