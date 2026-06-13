@@ -49,5 +49,7 @@ namespace DefenseDot.Systems.Mode
         public void OnEnemyReachedGoal(float damage) => coreModel.ApplyDamage(damage);
 
         public bool CheckDefeat(int activeEnemyCount) => false;
+
+        public bool WinsOnWaveClear => true;
     }
 }

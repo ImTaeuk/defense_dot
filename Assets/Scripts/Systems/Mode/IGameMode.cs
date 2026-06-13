@@ -23,5 +23,8 @@ namespace DefenseDot.Systems.Mode
 
         /// <summary> 활성 적 수를 근거로 패배 여부를 판정합니다. (아레나=수용 한계, TD=false) </summary>
         bool CheckDefeat(int activeEnemyCount);
+
+        /// <summary> 웨이브를 모두 클리어하면 승리하는지 여부입니다. (아레나=false: 무한 생존) </summary>
+        bool WinsOnWaveClear { get; }
     }
 }

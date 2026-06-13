@@ -87,7 +87,7 @@ namespace DefenseDot.Systems.Management
 
             // UI 연결 (UI 합성 루트에 주입)
             if (uiRoot != null)
-                uiRoot.Inject(Economy, Core, Wave, modeBootstrap.EnemyDisplayCapacity, modeBootstrap.PlacementController);
+                uiRoot.Inject(Economy, Core, Wave, Flow, modeBootstrap.EnemyDisplayCapacity, modeBootstrap.PlacementController);
 
             // 게임 시작
             Flow.SetPhase(GamePhase.Playing);

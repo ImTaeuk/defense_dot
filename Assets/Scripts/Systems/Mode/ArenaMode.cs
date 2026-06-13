@@ -44,5 +44,7 @@ namespace DefenseDot.Systems.Mode
         }
 
         public bool CheckDefeat(int activeEnemyCount) => activeEnemyCount >= arena.MaxAlive;
+
+        public bool WinsOnWaveClear => false;
     }
 }

@@ -65,16 +65,17 @@ namespace DefenseDot.Systems.Enemy
             if (isSpawning) return;
 
             currentWaveIndex++;
-            if (currentWaveIndex < waveSequence.waves.Count)
+            if (currentWaveIndex >= waveSequence.waves.Count)
             {
-                waveModel?.SetWave(currentWaveIndex + 1, waveSequence.waves.Count);
-                SpawnWaveRoutineAsync(waveSequence.waves[currentWaveIndex]).Forget();
+                if (mode == null || mode.WinsOnWaveClear)
+                {
+                    waveModel?.MarkWaveCleared();   // Grid: 승리 통지
+                    return;
+                }
+                currentWaveIndex = 0;               // Arena: 무한 루프
             }
-            else
-            {
-                // 모든 웨이브 소진 → 승리 통지
-                waveModel?.MarkWaveCleared();
-            }
+            waveModel?.SetWave(currentWaveIndex + 1, waveSequence.waves.Count);
+            SpawnWaveRoutineAsync(waveSequence.waves[currentWaveIndex]).Forget();
         }
 
         private async UniTask SpawnWaveRoutineAsync(WaveData wave)
@@ -91,7 +92,10 @@ namespace DefenseDot.Systems.Enemy
             }
 
             isSpawning = false;
-            CheckWaveComplete();
+            if (mode != null && !mode.WinsOnWaveClear)
+                DelayedNextWaveAsync().Forget();   // Arena: 클리어 무관 연속 스폰
+            else
+                CheckWaveComplete();               // Grid: 클리어 후 다음 웨이브
         }
 
         private void SpawnEnemy(EnemyData data)
@@ -144,6 +148,7 @@ namespace DefenseDot.Systems.Enemy
 
         private void CheckWaveComplete()
         {
+            if (mode != null && !mode.WinsOnWaveClear) return;   // Arena: 클리어로 진행하지 않음
             if (activeEnemyCount == 0 && !isSpawning)
             {
                 DelayedNextWaveAsync().Forget();
