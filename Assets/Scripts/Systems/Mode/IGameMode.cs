@@ -26,5 +26,8 @@ namespace DefenseDot.Systems.Mode
 
         /// <summary> 웨이브를 모두 클리어하면 승리하는지 여부입니다. (아레나=false: 무한 생존) </summary>
         bool WinsOnWaveClear { get; }
+
+        /// <summary> 코어 HP를 수용 한계로 표시하는 모드면 true와 표시 HP(=한계−생존수)를 반환합니다. (아레나=true, TD=false) </summary>
+        bool TryGetCapacityHp(int activeEnemyCount, out float hp);
     }
 }

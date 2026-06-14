@@ -20,7 +20,6 @@ namespace DefenseDot.Systems.Management
         [Header("Startup")]
         [SerializeField] private ModeBootstrap modeBootstrap;
         [SerializeField] private int startGold = 300;
-        [SerializeField] private float coreMaxHp = 40f;
 
         [Header("Scene References")]
         [SerializeField] private EnemySpawner spawner;
@@ -62,7 +61,7 @@ namespace DefenseDot.Systems.Management
             Combat = new CombatModel();
 
             Economy.Initialize(startGold);
-            Core.Configure(coreMaxHp);
+            Core.Configure(modeBootstrap != null ? modeBootstrap.CoreMaxHp : 40f);
         }
 
         private void Start()
@@ -110,6 +109,9 @@ namespace DefenseDot.Systems.Management
         private void Update()
         {
             if (!Flow.IsPlaying || mode == null || spawner == null) return;
+
+            // 아레나: 코어 HP를 수용 헤드룸(한계−생존수)으로 표시
+            if (mode.TryGetCapacityHp(spawner.ActiveEnemyCount, out float capacityHp)) Core.SetCurrent(capacityHp);
 
             // 아레나 수용 한계 패배 판정 (TD는 항상 false)
             if (mode.CheckDefeat(spawner.ActiveEnemyCount)) TriggerGameOver();

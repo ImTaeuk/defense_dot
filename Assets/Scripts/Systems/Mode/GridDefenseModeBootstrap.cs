@@ -15,9 +15,13 @@ namespace DefenseDot.Systems.Mode
         [SerializeField] private TowerPlacementController placement;
         [SerializeField] private Transform mapRoot;
         [SerializeField] private int enemyDisplayCapacity = 80;
+        [SerializeField] private float coreHp = 40f;
 
         /// <summary> 그리드 모드의 적 수 표시 한계입니다. </summary>
         public override int EnemyDisplayCapacity => enemyDisplayCapacity;
+
+        /// <summary> 그리드 모드의 코어(본진) 최대 HP입니다. </summary>
+        public override float CoreMaxHp => coreHp;
 
         /// <summary> 그리드 모드의 타워 배치 컨트롤러입니다. </summary>
         public override TowerPlacementController PlacementController => placement;

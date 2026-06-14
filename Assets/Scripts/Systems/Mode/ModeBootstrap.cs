@@ -23,6 +23,9 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 이 모드의 적 수 표시 한계(HUD capacity)입니다. </summary>
         public abstract int EnemyDisplayCapacity { get; }
 
+        /// <summary> 이 모드의 코어 최대 HP입니다. (Grid=본진 HP, Arena=수용 한계) </summary>
+        public abstract float CoreMaxHp { get; }
+
         /// <summary> 이 모드의 타워 배치 컨트롤러입니다. 없으면 null (빌드 모달 미생성). </summary>
         public virtual TowerPlacementController PlacementController => null;
 

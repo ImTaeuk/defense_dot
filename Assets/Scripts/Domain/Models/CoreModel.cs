@@ -50,6 +50,15 @@ namespace DefenseDot.Domain.Models
         }
 
         /// <summary>
+        /// 현재 체력을 절대값으로 설정합니다. (아레나 수용 헤드룸 표시용 — 파괴 통지 없음)
+        /// </summary>
+        public void SetCurrent(float value)
+        {
+            currentHp = Mathf.Clamp(value, 0f, maxHp);
+            OnHealthChanged?.Invoke(HealthRatio);
+        }
+
+        /// <summary>
         /// 코어에 피해를 적용합니다. HP가 0에 도달하면 파괴를 통지합니다.
         /// </summary>
         public void ApplyDamage(float amount)

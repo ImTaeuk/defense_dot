@@ -51,5 +51,12 @@ namespace DefenseDot.Systems.Mode
         public bool CheckDefeat(int activeEnemyCount) => false;
 
         public bool WinsOnWaveClear => true;
+
+        /// <summary> Grid는 코어 HP를 본진 피해로 관리하므로 수용 HP 표시 안 함. </summary>
+        public bool TryGetCapacityHp(int activeEnemyCount, out float hp)
+        {
+            hp = 0f;
+            return false;
+        }
     }
 }

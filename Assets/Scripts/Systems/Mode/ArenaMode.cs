@@ -46,5 +46,12 @@ namespace DefenseDot.Systems.Mode
         public bool CheckDefeat(int activeEnemyCount) => activeEnemyCount >= arena.MaxAlive;
 
         public bool WinsOnWaveClear => false;
+
+        /// <summary> 코어 HP = 수용 한계 − 현재 생존 적 수(헤드룸). </summary>
+        public bool TryGetCapacityHp(int activeEnemyCount, out float hp)
+        {
+            hp = Mathf.Max(0, arena.MaxAlive - activeEnemyCount);
+            return true;
+        }
     }
 }

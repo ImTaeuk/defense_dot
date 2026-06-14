@@ -29,6 +29,7 @@ namespace DefenseDot.Systems.Enemy
         private int currentWaveIndex = -1;
         private int activeEnemyCount = 0;
         private bool isSpawning = false;
+        private bool allWavesSpawned = false;   // Arena: 등록 웨이브 소진 여부
 
         // prefab별 경량 풀 (필드 보관 컬렉션 → 일반 new 허용)
         private readonly Dictionary<GameObject, Queue<MonsterActor>> pools = new Dictionary<GameObject, Queue<MonsterActor>>();
@@ -69,10 +70,11 @@ namespace DefenseDot.Systems.Enemy
             {
                 if (mode == null || mode.WinsOnWaveClear)
                 {
-                    waveModel?.MarkWaveCleared();   // Grid: 승리 통지
+                    waveModel?.MarkWaveCleared();   // Grid: 즉시 승리 통지
                     return;
                 }
-                currentWaveIndex = 0;               // Arena: 무한 루프
+                allWavesSpawned = true;             // Arena: 유한 — 스폰 중단, 전멸 시 승리
+                return;
             }
             waveModel?.SetWave(currentWaveIndex + 1, waveSequence.waves.Count);
             SpawnWaveRoutineAsync(waveSequence.waves[currentWaveIndex]).Forget();
@@ -148,7 +150,12 @@ namespace DefenseDot.Systems.Enemy
 
         private void CheckWaveComplete()
         {
-            if (mode != null && !mode.WinsOnWaveClear) return;   // Arena: 클리어로 진행하지 않음
+            if (mode != null && !mode.WinsOnWaveClear)
+            {
+                // Arena: 클리어로 진행하지 않음. 모든 웨이브 스폰 후 전멸 시 승리.
+                if (allWavesSpawned && activeEnemyCount == 0 && !isSpawning) waveModel?.MarkWaveCleared();
+                return;
+            }
             if (activeEnemyCount == 0 && !isSpawning)
             {
                 DelayedNextWaveAsync().Forget();

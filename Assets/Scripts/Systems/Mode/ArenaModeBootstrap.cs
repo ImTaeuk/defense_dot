@@ -22,6 +22,10 @@ namespace DefenseDot.Systems.Mode
         public override int EnemyDisplayCapacity =>
             arenaView != null && arenaView.Config != null ? arenaView.Config.maxAlive : 80;
 
+        /// <summary> 아레나 모드의 코어 최대 HP = 수용 한계(maxAlive). </summary>
+        public override float CoreMaxHp =>
+            arenaView != null && arenaView.Config != null ? arenaView.Config.maxAlive : 80;
+
         public override IGameMode CreateMode(ModeContext ctx)
         {
             var arenaModel = new ArenaModel();
