@@ -3,7 +3,6 @@ using UnityEngine;
 using DefenseDot.Domain.Models;
 using DefenseDot.Data;
 using DefenseDot.Systems.Tower;
-using DefenseDot.UI.Models;
 using DefenseDot.UI.Views;
 using DefenseDot.UI.Presenters;
 
@@ -16,7 +15,8 @@ namespace DefenseDot.UI.InGame
     public class UIRoot : MonoBehaviour
     {
         [Header("Views")]
-        [SerializeField] private HUDView hudView;
+        [UnityEngine.Serialization.FormerlySerializedAs("hudView")]
+        [SerializeField] private HudRoot hud;   // Arena 또는 Grid HUD (씬에 1개)
         [SerializeField] private TowerBuildModalView buildModalView;
         [SerializeField] private TowerRoster towerRoster;
         [SerializeField] private GameResultView gameResultView;
@@ -24,15 +24,15 @@ namespace DefenseDot.UI.InGame
         private readonly List<IPresenter> presenters = new List<IPresenter>();
 
         /// <summary>
-        /// 합성 루트가 도메인 모델과 적 수용 한계를 주입합니다.
+        /// 합성 루트가 HUD 컨텍스트·게임 흐름·배치 컨트롤러를 주입합니다.
+        /// HUD는 자신이 자신의 프레젠터를 조립하므로 UIRoot은 모드를 알지 못합니다.
         /// </summary>
-        public void Inject(EconomyModel economy, CoreModel core, WaveModel wave, GameFlowModel flow, int enemyCapacity,
-                           TowerPlacementController placement)
+        public void Inject(in HudContext ctx, GameFlowModel flow, TowerPlacementController placement)
         {
-            presenters.Add(new HUDPresenter(hudView, new HUDModel(), economy, core, wave, enemyCapacity));
+            if (hud != null) presenters.Add(hud.Bind(ctx));
 
             if (placement != null && buildModalView != null && towerRoster != null)
-                presenters.Add(new TowerBuildPresenter(buildModalView, towerRoster, economy, placement));
+                presenters.Add(new TowerBuildPresenter(buildModalView, towerRoster, ctx.Economy, placement));
 
             if (gameResultView != null)
                 presenters.Add(new GameResultPresenter(gameResultView, flow));

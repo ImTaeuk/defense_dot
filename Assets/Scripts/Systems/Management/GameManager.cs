@@ -41,6 +41,12 @@ namespace DefenseDot.Systems.Management
         /// <summary>전투 집계 모델입니다.</summary>
         public CombatModel Combat { get; private set; }
 
+        /// <summary>인-런 점수 모델입니다.</summary>
+        public ScoreModel Score { get; private set; }
+
+        /// <summary>라운드 제한시간 모델입니다.</summary>
+        public RoundTimerModel RoundTimer { get; private set; }
+
         // 서비스 (합성 루트가 생성·주입)
         private EnemyRegistry registry;
         private TargetFinder targetFinder;
@@ -59,6 +65,8 @@ namespace DefenseDot.Systems.Management
             Wave = new WaveModel();
             Flow = new GameFlowModel();
             Combat = new CombatModel();
+            Score = new ScoreModel();
+            RoundTimer = new RoundTimerModel();
 
             Economy.Initialize(startGold);
             Core.Configure(modeBootstrap != null ? modeBootstrap.CoreMaxHp : 40f);
@@ -78,7 +86,7 @@ namespace DefenseDot.Systems.Management
             mode = CreateMode();
 
             // 의존성 주입
-            if (spawner != null) spawner.SetContext(mode, registry, Combat, Wave);
+            if (spawner != null) spawner.SetContext(mode, registry, Combat, Wave, RoundTimer, Score);
 
             // 승패 사건 구독
             Core.OnCoreDestroyed += HandleCoreDestroyed;
@@ -86,7 +94,11 @@ namespace DefenseDot.Systems.Management
 
             // UI 연결 (UI 합성 루트에 주입)
             if (uiRoot != null)
-                uiRoot.Inject(Economy, Core, Wave, Flow, modeBootstrap.EnemyDisplayCapacity, modeBootstrap.PlacementController);
+            {
+                var hudContext = new DefenseDot.UI.HudContext(
+                    Economy, Core, Wave, Score, RoundTimer, modeBootstrap.EnemyDisplayCapacity);
+                uiRoot.Inject(hudContext, Flow, modeBootstrap.PlacementController);
+            }
 
             // 게임 시작
             Flow.SetPhase(GamePhase.Playing);
@@ -109,6 +121,9 @@ namespace DefenseDot.Systems.Management
         private void Update()
         {
             if (!Flow.IsPlaying || mode == null || spawner == null) return;
+
+            // 아레나: 라운드 제한시간 진행 (Grid는 내부 가드로 통과)
+            spawner.TickRound(Time.deltaTime);
 
             // 아레나: 코어 HP를 수용 헤드룸(한계−생존수)으로 표시
             if (mode.TryGetCapacityHp(spawner.ActiveEnemyCount, out float capacityHp)) Core.SetCurrent(capacityHp);

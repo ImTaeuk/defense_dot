@@ -23,5 +23,8 @@ namespace DefenseDot.Data
     {
         public List<WaveEntry> entries = new List<WaveEntry>();
         public float nextWaveDelay = 5f;
+        public float duration = 30f;              // 라운드 제한시간(초), Arena
+        public float killScoreMultiplier = 1f;    // 처치 점수 배율, Arena
+        public float timeBonusMultiplier = 1f;    // 시간보너스 배율, Arena
     }
 }
