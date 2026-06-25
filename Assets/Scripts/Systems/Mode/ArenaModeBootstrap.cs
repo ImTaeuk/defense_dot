@@ -1,9 +1,11 @@
 // 아레나 모드 부트스트랩 — ArenaView config로 모델 생성·바인딩 후 ArenaMode 생성
+using System.Collections.Generic;
 using UnityEngine;
 using DefenseDot.Data;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Arena;
 using DefenseDot.Systems.Tower;
+using DefenseDot.Systems.Abilities;
 
 namespace DefenseDot.Systems.Mode
 {
@@ -17,6 +19,12 @@ namespace DefenseDot.Systems.Mode
 
         /// <summary> 중앙에 생성할 타워 데이터입니다. (추후 선택 UI 주입점) </summary>
         [SerializeField] private TowerData centerTowerData;
+
+        /// <summary> 코어 스타터 능력(샷·오비탈 등). 카드 획득(A3) 전 기본 장착. </summary>
+        [SerializeField] private List<AbilityData> starterAbilities = new List<AbilityData>();
+
+        /// <summary> 코어 비주얼로 쓸 Aris 타워 프리팹(애니메이션·연출 포함). </summary>
+        [SerializeField] private GameObject arisTowerPrefab;
 
         /// <summary> 아레나 모드의 적 수 표시 한계(수용 한계)입니다. </summary>
         public override int EnemyDisplayCapacity =>
@@ -56,6 +64,28 @@ namespace DefenseDot.Systems.Mode
             go.transform.position = ctx.CoreCenter;
             tower.Initialize(data);
             tower.SetTargetFinder(ctx.TargetFinder);
+
+            // 코어: 디버그 단일공격 제거 + 능력 시스템 부착
+            TowerBehaviorTree debugBt = go.GetComponent<TowerBehaviorTree>();
+            if (debugBt != null) Destroy(debugBt);
+            CoreAbilitySystem coreAbility = go.AddComponent<CoreAbilitySystem>();
+            coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, starterAbilities);
+
+            SetupArisVisual(go, coreAbility, ctx);
+        }
+
+        /// <summary> 코어의 2D 스프라이트를 숨기고 Aris 3D 연출 타워를 코어 위치에 배치·연동합니다. </summary>
+        private void SetupArisVisual(GameObject coreTower, CoreAbilitySystem coreAbility, ModeContext ctx)
+        {
+            if (arisTowerPrefab == null) return;
+
+            SpriteRenderer[] sprites = coreTower.GetComponentsInChildren<SpriteRenderer>(true);
+            for (int i = 0; i < sprites.Length; i++) sprites[i].enabled = false;
+
+            GameObject aris = Instantiate(arisTowerPrefab, ctx.CoreCenter, Quaternion.identity);
+            aris.name = "Aris_CoreTower";
+            ArisTowerVisual visual = aris.GetComponent<ArisTowerVisual>();
+            if (visual != null) visual.Setup(coreAbility, ctx.TargetFinder, ctx.Flow, ctx.Core);
         }
     }
 }

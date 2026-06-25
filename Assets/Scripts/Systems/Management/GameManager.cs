@@ -114,7 +114,7 @@ namespace DefenseDot.Systems.Management
             }
             Vector3 origin = spawner != null ? spawner.transform.position : transform.position;
             Vector3 center = coreController != null ? coreController.CorePosition : transform.position;
-            var ctx = new ModeContext(Core, Economy, targetFinder, origin, center);
+            var ctx = new ModeContext(Core, Economy, targetFinder, origin, center, Flow);
             return modeBootstrap.CreateMode(ctx);
         }
 

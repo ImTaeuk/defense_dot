@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.ArenaConfig
   arenaRadius: 29
   coreRadius: 2.2
-  spawnInnerMargin: 4
+  spawnInnerMargin: 11
   spawnOuterMargin: 2
   maxAlive: 80
   baseAngularSpeed: 0.5

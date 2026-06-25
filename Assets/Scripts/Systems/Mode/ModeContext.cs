@@ -20,14 +20,17 @@ namespace DefenseDot.Systems.Mode
         public readonly Vector3 SpawnOrigin;
         /// <summary> 아레나 중심 (코어 위치) </summary>
         public readonly Vector3 CoreCenter;
+        /// <summary> 게임 진행 단계 모델 (능력 구동 게이트용) </summary>
+        public readonly GameFlowModel Flow;
 
-        public ModeContext(CoreModel core, EconomyModel economy, TargetFinder targetFinder, Vector3 spawnOrigin, Vector3 coreCenter)
+        public ModeContext(CoreModel core, EconomyModel economy, TargetFinder targetFinder, Vector3 spawnOrigin, Vector3 coreCenter, GameFlowModel flow)
         {
             Core = core;
             Economy = economy;
             TargetFinder = targetFinder;
             SpawnOrigin = spawnOrigin;
             CoreCenter = coreCenter;
+            Flow = flow;
         }
     }
 }

@@ -217,6 +217,10 @@ MonoBehaviour:
   postFxBinder: {fileID: 27475965}
   arenaView: {fileID: 878275005}
   centerTowerData: {fileID: 11400000, guid: 3abfda84f33119d4626aad661bc55ad6, type: 2}
+  starterAbilities:
+  - {fileID: 11400000, guid: d7292e215a9d97e4cb6163bdbe06f306, type: 2}
+  - {fileID: 11400000, guid: 301b691825a438f44ad99a99cbc480b1, type: 2}
+  arisTowerPrefab: {fileID: 3195259666355612045, guid: f9a691d0a30c652419657c498617e751, type: 3}
 --- !u!114 &27475965
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1678,6 +1682,30 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6953406362689088862, guid: d40d903c92bea8d449ee3949b08e5035, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130597070244395556, guid: d40d903c92bea8d449ee3949b08e5035, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130597070244395556, guid: d40d903c92bea8d449ee3949b08e5035, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130597070244395556, guid: d40d903c92bea8d449ee3949b08e5035, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130597070244395556, guid: d40d903c92bea8d449ee3949b08e5035, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130597070244395556, guid: d40d903c92bea8d449ee3949b08e5035, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7130597070244395556, guid: d40d903c92bea8d449ee3949b08e5035, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
