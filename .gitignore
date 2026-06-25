@@ -113,3 +113,10 @@ InitTestScene*.unity*
 /[Gg]enerated[Aa]ssets/
 /[Aa]ssets/AI Toolkit/
 /[Aa]ssets/AI Toolkit.meta
+
+# Cygwin/Git Bash crash dumps
+*.stackdump
+
+# Editor screenshots (folder)
+/[Aa]ssets/[Ss]creenshots/
+/[Aa]ssets/[Ss]creenshots.meta
