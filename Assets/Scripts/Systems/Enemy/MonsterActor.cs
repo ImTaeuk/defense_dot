@@ -13,6 +13,16 @@ namespace DefenseDot.Systems.Enemy
         private IMovementStrategy movement;
         private EnemySpawner spawner;
         private bool resolved;   // 처치/도달 이중 정산 방지
+        private IDeathVisual deathVisual;   // 사망 연출(있으면 지연 반환)
+
+        /// <summary> 피격(데미지 수신) 시 발생합니다. (3D 연출 구독용) </summary>
+        public event System.Action OnHit;
+
+        // 피격 플래시 (Visual 스프라이트만)
+        private SpriteRenderer[] flashRenderers;
+        private Color[] flashBaseColors;
+        private float hitFlashTimer;
+        private const float HitFlashDuration = 0.09f;
 
         /// <summary>
         /// 이 적의 데이터입니다. (풀 회수 시 prefab 식별용)
@@ -62,6 +72,11 @@ namespace DefenseDot.Systems.Enemy
             movement = null;
             if (data != null) currentHealth = data.health;
             SetState(ActorState.Idle);
+
+            hitFlashTimer = 0f;
+            if (flashRenderers != null)
+                for (int i = 0; i < flashRenderers.Length; i++)
+                    if (flashRenderers[i] != null) flashRenderers[i].color = flashBaseColors[i];
         }
 
         public void OnDespawn()
@@ -76,6 +91,38 @@ namespace DefenseDot.Systems.Enemy
             base.Initialize(actorData);
             currentHealth = actorData.health;
             resolved = false;
+            CacheFlashRenderers();
+            if (deathVisual == null) deathVisual = GetComponentInChildren<IDeathVisual>(true);
+        }
+
+        private void CacheFlashRenderers()
+        {
+            if (flashRenderers != null) return;
+            SpriteRenderer[] all = GetComponentsInChildren<SpriteRenderer>(true);
+            int n = 0;
+            for (int i = 0; i < all.Length; i++) if (!all[i].gameObject.name.Contains("Shadow")) n++;
+            flashRenderers = new SpriteRenderer[n];
+            flashBaseColors = new Color[n];
+            int k = 0;
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i].gameObject.name.Contains("Shadow")) continue;
+                flashRenderers[k] = all[i];
+                flashBaseColors[k] = all[i].color;
+                k++;
+            }
+        }
+
+        private void Update()
+        {
+            if (hitFlashTimer <= 0f || flashRenderers == null) return;
+            hitFlashTimer -= Time.deltaTime;
+            float t = Mathf.Clamp01(hitFlashTimer / HitFlashDuration);
+            for (int i = 0; i < flashRenderers.Length; i++)
+            {
+                if (flashRenderers[i] == null) continue;
+                flashRenderers[i].color = Color.Lerp(flashBaseColors[i], Color.white, t);
+            }
         }
 
         public override void TakeDamage(float amount)
@@ -83,6 +130,8 @@ namespace DefenseDot.Systems.Enemy
             if (currentState == ActorState.Dead || resolved) return;
 
             currentHealth -= amount;
+            hitFlashTimer = HitFlashDuration;   // 2D 스프라이트 플래시
+            OnHit?.Invoke();                     // 3D 연출 통지
             if (currentHealth <= 0f) Resolve(reached: false);
         }
 
@@ -98,7 +147,8 @@ namespace DefenseDot.Systems.Enemy
             resolved = true;
             SetState(ActorState.Dead);
 
-            if (reached) spawner?.HandleEnemyReached(this);
+            if (reached) { spawner?.HandleEnemyReached(this); return; }
+            if (deathVisual != null) deathVisual.PlayDeath(() => spawner?.HandleEnemyKilled(this));
             else spawner?.HandleEnemyKilled(this);
         }
     }
