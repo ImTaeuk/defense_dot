@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dot Defense — HD-2D 프로토타입</title>
+<style>
+  html,body { margin:0; height:100%; background:#02030a; overflow:hidden; font-family:sans-serif; }
+  #info { position:fixed; top:10px; left:10px; z-index:10; color:#cfe3ff;
+    background:rgba(8,10,22,0.85); border-radius:8px;
+    font-size:13px; line-height:1.6; border:1px solid #2a3550; max-width:270px;
+    transition:max-width .2s; }
+  #infoHead { display:flex; align-items:center; justify-content:space-between;
+    gap:10px; padding:9px 12px; cursor:pointer; user-select:none; }
+  #infoHead b { color:#ffd479; }
+  #toggleBtn { background:#1c2540; border:1px solid #3a4870; color:#cfe3ff;
+    border-radius:5px; width:26px; height:24px; font-size:13px; line-height:1;
+    cursor:pointer; flex:none; }
+  #toggleBtn:hover { background:#28345c; }
+  #panelBody { padding:0 12px 10px; overflow:hidden; }
+  #info.collapsed #panelBody { display:none; }
+  #info.collapsed { max-width:none; }
+  .ctrl label { display:block; font-size:12px; color:#9ab; margin-top:5px; }
+  .ctrl input[type=range] { width:100%; }
+  #fps { color:#88ff88; }
+  #err { position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+         color:#ff8888; background:#02030a; z-index:100; font-size:15px; text-align:center; padding:30px; line-height:1.8; }
+</style>
+</head>
+<body>
+<div id="err"></div>
+<div id="info">
+  <div id="infoHead" onclick="document.getElementById('info').classList.toggle('collapsed');
+       this.querySelector('#toggleBtn').textContent=document.getElementById('info').classList.contains('collapsed')?'▸':'▾';">
+    <b>🌌 HD-2D 프로토타입</b>
+    <button id="toggleBtn" type="button">▾</button>
+  </div>
+  <div id="panelBody">
+    실제 도트 캐릭터(아리아) + 적 + 능력 이펙트<br>
+    <span style="color:#7a8aa0">캐릭터는 icons/characters/aria.png · Live Server(http)로 열기</span>
+    <div class="ctrl">
+      <label>캐릭터</label>
+      <select id="charSel" style="width:100%; background:#1c2540; color:#cfe3ff; border:1px solid #3a4870; border-radius:5px; padding:4px;">
+        <option value="aria">아리아</option>
+        <option value="misaki">미사키</option>
+        <option value="luna">루나</option>
+        <option value="sakura">사쿠라</option>
+        <option value="solar">솔라</option>
+        <option value="marine">마린</option>
+        <option value="gravitas">그라비타스</option>
+      </select>
+      <label>카메라 각도 <span id="angVal">25°</span></label>
+      <input id="ang" type="range" min="10" max="80" value="25">
+      <label>줌(거리) <span id="zoomVal">344</span></label>
+      <input id="zoom" type="range" min="180" max="600" value="344">
+      <label>블룸(빛 번짐) <span id="bloomVal">0.9</span></label>
+      <input id="bloom" type="range" min="0" max="2" step="0.05" value="0.9">
+      <label>캐릭터 크기 <span id="csizeVal">0.60</span></label>
+      <input id="csize" type="range" min="0.4" max="2.5" step="0.05" value="0.6">
+      <label><input id="rotate" type="checkbox"> 카메라 회전</label>
+      <label><input id="fire" type="checkbox" checked> 능력 발동</label>
+    </div>
+    <div style="margin-top:6px;">FPS: <span id="fps">-</span></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+
+<script>
+function showErr(m){const e=document.getElementById('err');e.style.display='flex';e.innerHTML=m;}
+addEventListener('error',ev=>showErr('⚠️ 오류: '+(ev.message||ev)));
+addEventListener('load',()=>{ if(typeof THREE==='undefined'){showErr('⚠️ Three.js 로드 실패 — 인터넷 연결 확인');return;}
+  try{init();}catch(e){showErr('⚠️ 실행 오류: '+e.message);console.error(e);} });
+
+function init(){
+  const W=innerWidth,H=innerHeight,ARENA_R=130;
+  const scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x03040c);
+  scene.fog=new THREE.Fog(0x05060f,400,1100);
+  const camera=new THREE.PerspectiveCamera(45,W/H,1,4000);
+  const renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(W,H); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  document.body.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xaab4e0,0.55));
+  const sun=new THREE.DirectionalLight(0xfff0d8,1.4); sun.position.set(120,260,140); scene.add(sun);
+  const fill=new THREE.PointLight(0x88aaff,0.6,800); fill.position.set(-120,90,-90); scene.add(fill);
+
+  // ===== 우주 배경 =====
+  const sGeo=new THREE.BufferGeometry(),sp=[];
+  for(let i=0;i<3000;i++){const r=900+Math.random()*1500,th=Math.random()*6.28,ph=Math.acos(2*Math.random()-1);
+    sp.push(r*Math.sin(ph)*Math.cos(th),r*Math.cos(ph),r*Math.sin(ph)*Math.sin(th));}
+  sGeo.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
+  const stars=new THREE.Points(sGeo,new THREE.PointsMaterial({color:0xffffff,size:2.5,transparent:true,opacity:0.9}));
+  scene.add(stars);
+  function nebula(color,size,x,y,z,op){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+    const rg=g.createRadialGradient(128,128,10,128,128,128);rg.addColorStop(0,color);rg.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=rg;g.fillRect(0,0,256,256);const t=new THREE.CanvasTexture(c);
+    const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false}));
+    s.scale.set(size,size,1);s.position.set(x,y,z);scene.add(s);}
+  nebula('rgba(120,90,200,0.9)',900,-300,150,-600,0.5);
+  nebula('rgba(60,120,200,0.9)',800,400,100,-500,0.45);
+  nebula('rgba(200,90,150,0.8)',700,100,-200,-700,0.35);
+
+  // ===== 원형 아레나 (우주 정거장 플랫폼 느낌) =====
+  // 바닥 텍스처를 캔버스로 생성 — 금속 패널 + 동심원 + 발광 룬
+  function makeFloorTex(){
+    const S=1024, c=document.createElement('canvas'); c.width=c.height=S; const g=c.getContext('2d');
+    const cx=S/2, cy=S/2;
+    // 베이스 그라데이션 (중앙 밝고 가장자리 어둡게)
+    const bg=g.createRadialGradient(cx,cy,40,cx,cy,S/2);
+    bg.addColorStop(0,'#3a4768'); bg.addColorStop(0.6,'#2a3450'); bg.addColorStop(1,'#1a2138');
+    g.fillStyle=bg; g.fillRect(0,0,S,S);
+    // 방사형 패널 분할선 (16조각)
+    g.strokeStyle='rgba(120,150,200,0.25)'; g.lineWidth=3;
+    for(let i=0;i<16;i++){const a=i/16*Math.PI*2;
+      g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(a)*S/2,cy+Math.sin(a)*S/2); g.stroke();}
+    // 동심원 (3개)
+    g.strokeStyle='rgba(140,180,230,0.3)';
+    [0.35,0.62,0.88].forEach(r=>{g.lineWidth=4;g.beginPath();g.arc(cx,cy,S/2*r,0,Math.PI*2);g.stroke();});
+    // 동심원 사이 발광 룬 점선
+    g.strokeStyle='rgba(100,200,255,0.5)'; g.lineWidth=2; g.setLineDash([8,16]);
+    g.beginPath();g.arc(cx,cy,S/2*0.5,0,Math.PI*2);g.stroke();
+    g.beginPath();g.arc(cx,cy,S/2*0.75,0,Math.PI*2);g.stroke(); g.setLineDash([]);
+    // 중앙 코어 발판 (밝은 원 + 룬 글로우)
+    const cg=g.createRadialGradient(cx,cy,0,cx,cy,90);
+    cg.addColorStop(0,'rgba(120,200,255,0.5)'); cg.addColorStop(1,'rgba(120,200,255,0)');
+    g.fillStyle=cg; g.beginPath();g.arc(cx,cy,90,0,Math.PI*2);g.fill();
+    g.strokeStyle='rgba(150,220,255,0.7)';g.lineWidth=3;g.beginPath();g.arc(cx,cy,70,0,Math.PI*2);g.stroke();
+    // 패널 리벳/디테일 점들
+    g.fillStyle='rgba(180,210,255,0.4)';
+    for(let i=0;i<16;i++){const a=i/16*Math.PI*2;[0.45,0.7].forEach(r=>{
+      g.beginPath();g.arc(cx+Math.cos(a)*S/2*r,cy+Math.sin(a)*S/2*r,3,0,Math.PI*2);g.fill();});}
+    // 가장자리 어두운 비네팅
+    const vg=g.createRadialGradient(cx,cy,S/2*0.7,cx,cy,S/2);
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.55)');
+    g.fillStyle=vg; g.fillRect(0,0,S,S);
+    return new THREE.CanvasTexture(c);
+  }
+  const floorTex=makeFloorTex();
+  const floor=new THREE.Mesh(new THREE.CylinderGeometry(ARENA_R,ARENA_R,16,72),
+    new THREE.MeshStandardMaterial({color:0xffffff,map:floorTex,roughness:0.7,metalness:0.35}));
+  floor.position.y=-8; floor.receiveShadow=true; scene.add(floor);
+  // 바닥 윗면에만 텍스처 보이게 — 옆면은 어두운 금속
+  floor.material.onBeforeCompile=()=>{};
+  // 측면 테두리 (두꺼운 금속 림)
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(ARENA_R,6,20,90),
+    new THREE.MeshStandardMaterial({color:0x4a5470,roughness:0.5,metalness:0.7}));
+  rim.rotation.x=Math.PI/2; rim.position.y=0; scene.add(rim);
+  // 발광 에너지 링 (테두리 위)
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(ARENA_R-2,2.5,16,90),
+    new THREE.MeshStandardMaterial({color:0x66ccff,emissive:0x44aaff,emissiveIntensity:2.0}));
+  ring.rotation.x=Math.PI/2; ring.position.y=2; scene.add(ring);
+  // 바깥 받침대 (정거장 느낌 — 아래로 좁아지는 기둥)
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(ARENA_R*0.7,ARENA_R*0.35,40,32),
+    new THREE.MeshStandardMaterial({color:0x1a2030,roughness:0.6,metalness:0.5}));
+  base.position.y=-32; scene.add(base);
+
+  // ===== 도트 스프라이트 헬퍼 =====
+  function dotSprite(draw,px){
+    const c=document.createElement('canvas');c.width=c.height=px||40;
+    draw(c.getContext('2d'),c.width);
+    const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;t.minFilter=THREE.NearestFilter;
+    return new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true}));
+  }
+
+  // ===== 캐릭터 — 실제 인게임 도트 캐릭터 이미지 (icons/characters/) =====
+  // 로딩 전/실패 시 임시 빛 구슬 플레이스홀더
+  const charSp=new THREE.Sprite(new THREE.SpriteMaterial({
+    map:(()=>{const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');
+      const rg=g.createRadialGradient(32,32,4,32,32,32);rg.addColorStop(0,'rgba(190,215,255,0.9)');rg.addColorStop(1,'rgba(190,215,255,0)');
+      g.fillStyle=rg;g.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})(),
+    transparent:true}));
+  charSp.scale.set(48,48,1); charSp.position.set(0,26,0); charSp.userData={baseY:26}; scene.add(charSp);
+
+  // 캐릭터 크기/비율 — 슬라이더로 조절
+  let charAspect=1, charBaseH=54, charSize=0.6;
+  function applyCharScale(){
+    const h=charBaseH*charSize;
+    charSp.scale.set(h*charAspect,h,1);
+    charSp.userData.baseY=h/2+2; charSp.position.y=charSp.userData.baseY;
+  }
+
+  // 테두리에서 flood-fill로 "검은 배경"만 투명 처리 (내부 외곽선 검정은 보존)
+  function removeBlackBG(img){
+    const cw=img.naturalWidth||img.width, ch=img.naturalHeight||img.height;
+    const cv=document.createElement('canvas'); cv.width=cw; cv.height=ch;
+    const ctx=cv.getContext('2d'); ctx.drawImage(img,0,0);
+    let dat; try{ dat=ctx.getImageData(0,0,cw,ch); }catch(e){ return cv; } // tainted(file://) → 원본 반환
+    const d=dat.data, THR=42;                       // 이 밝기 이하 = 배경 검정 후보
+    const isBlk=i=>d[i]<THR&&d[i+1]<THR&&d[i+2]<THR;
+    const seen=new Uint8Array(cw*ch), stack=[];
+    const push=(x,y)=>{ if(x<0||y<0||x>=cw||y>=ch)return; const p=y*cw+x; if(seen[p])return; seen[p]=1;
+      if(isBlk(p*4)){ d[p*4+3]=0; stack.push(x,y); } };
+    for(let x=0;x<cw;x++){ push(x,0); push(x,ch-1); }   // 위/아래 테두리에서 시작
+    for(let y=0;y<ch;y++){ push(0,y); push(cw-1,y); }   // 좌/우 테두리에서 시작
+    while(stack.length){ const y=stack.pop(), x=stack.pop(); push(x+1,y); push(x-1,y); push(x,y+1); push(x,y-1); }
+    ctx.putImageData(dat,0,0);
+    return cv;
+  }
+
+  // 실제 도트 캐릭터 PNG 로드 (http:// 서버에서만 — file://은 CORS 차단)
+  function loadChar(name){
+    const img=new Image();
+    img.onload=()=>{ try{
+      const cv=removeBlackBG(img);
+      const tex=new THREE.CanvasTexture(cv);
+      tex.magFilter=THREE.NearestFilter; tex.minFilter=THREE.LinearMipmapLinearFilter; tex.colorSpace=THREE.SRGBColorSpace;
+      charAspect=cv.width/cv.height;
+      charSp.material.map=tex; charSp.material.needsUpdate=true;
+      applyCharScale();
+    }catch(e){ console.warn('캐릭터 텍스처 처리 실패 — Live Server(http)로 열기', e); } };
+    img.onerror=()=>console.warn('캐릭터 이미지 로드 실패 — Live Server(http://)로 열어야 함');
+    img.src='icons/characters/'+name+'.png';
+  }
+  loadChar('aria');
+  const aura=new THREE.PointLight(0x88aaff,1.6,170); aura.position.set(0,24,0); scene.add(aura);
+  // 캐릭터 발밑 마법진
+  const circ=new THREE.Mesh(new THREE.RingGeometry(14,20,32),
+    new THREE.MeshBasicMaterial({color:0x88ccff,transparent:true,opacity:0.4,side:THREE.DoubleSide}));
+  circ.rotation.x=-Math.PI/2; circ.position.y=0.8; scene.add(circ);
+
+  // ===== 적 도트 =====
+  function makeEnemy(color,type){
+    return dotSprite((x,s)=>{
+      const px=(a,b,w,h,c)=>{x.fillStyle=c;x.fillRect(Math.round(a*s),Math.round(b*s),Math.ceil(w*s),Math.ceil(h*s));};
+      if(type===0){ // 둥근 슬라임형
+        px(0.22,0.30,0.56,0.50,color); px(0.18,0.45,0.10,0.30,color); px(0.72,0.45,0.10,0.30,color);
+      }else if(type===1){ // 각진 로봇형
+        px(0.25,0.22,0.50,0.56,color); px(0.18,0.30,0.08,0.20,color); px(0.74,0.30,0.08,0.20,color);
+        px(0.30,0.14,0.05,0.10,color); px(0.65,0.14,0.05,0.10,color); // 안테나
+      }else{ // 뾰족 운석형
+        x.fillStyle=color; x.beginPath(); x.moveTo(0.5*s,0.15*s); x.lineTo(0.82*s,0.5*s); x.lineTo(0.5*s,0.85*s); x.lineTo(0.18*s,0.5*s); x.closePath(); x.fill();
+      }
+      px(0.36,0.40,0.09,0.10,'#fff'); px(0.55,0.40,0.09,0.10,'#fff');
+      px(0.39,0.43,0.04,0.05,'#ff3344'); px(0.58,0.43,0.04,0.05,'#ff3344');
+    },32);
+  }
+  const ec=['#88ccff','#ff9966','#88ffaa','#cc88ff','#ffe070','#ff7799'];
+  const enemies=[],shadows=[];
+  const shMat=new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:0.3});
+  function spawnEnemy(isBoss){
+    const sz = isBoss ? 30 : 9;                            // 일반 적은 작게(캐릭터의 약 1/4), 보스는 크게
+    const col = isBoss ? '#ff5566' : ec[Math.floor(Math.random()*ec.length)];
+    const sp=makeEnemy(col, isBoss ? 1 : Math.floor(Math.random()*3));
+    const ang=Math.random()*6.28,r=ARENA_R*(0.40+Math.random()*0.55);
+    const byY = sz*0.5 + 1;                                // 바닥에 발 닿게
+    sp.userData={ang,r,speed:(isBoss?0.0007:0.0014+Math.random()*0.0032),bob:Math.random()*7,byY,sz,boss:!!isBoss};
+    sp.position.set(Math.cos(ang)*r, byY, Math.sin(ang)*r); sp.scale.set(sz,sz,1);
+    scene.add(sp); enemies.push(sp);
+    const sh=new THREE.Mesh(new THREE.CircleGeometry(sz*0.36,16),shMat);
+    sh.rotation.x=-Math.PI/2; sh.position.y=0.6; scene.add(sh); shadows.push(sh);
+  }
+  for(let i=0;i<70;i++) spawnEnemy(false);               // 100마리 웨이브 느낌
+  spawnEnemy(true); spawnEnemy(true);                     // 크기 비교용 보스 2기
+
+  // ===== 능력별 이펙트 (종류마다 다름) =====
+  const fx=[];           // 이펙트 객체들
+  const particles=[];
+  function explode(x,y,z,col,n,spread){
+    for(let i=0;i<(n||14);i++){
+      const p=new THREE.Mesh(new THREE.SphereGeometry(1.6,6,6),new THREE.MeshBasicMaterial({color:col,transparent:true}));
+      p.position.set(x,y,z);
+      const a=Math.random()*6.28,e=Math.random()*3.14-1.57,s=(spread||3)*(0.5+Math.random());
+      p.userData={vx:Math.cos(a)*Math.cos(e)*s,vy:Math.sin(e)*s+1,vz:Math.sin(a)*Math.cos(e)*s,life:1};
+      scene.add(p); particles.push(p);
+    }
+  }
+  // 능력 종류 4가지: 0=유도탄, 1=레이저빔, 2=광역노바, 3=연쇄
+  const ABILITIES=[
+    {name:'유도탄',col:0x88ffff},{name:'레이저',col:0xff66ff},
+    {name:'광역노바',col:0xffaa44},{name:'연쇄번개',col:0x88ff88}
+  ];
+  function cast(){
+    const pool=enemies.filter(e=>!e.userData.boss);     // 보스는 표적/처치 제외 → 크기 비교용으로 유지
+    if(!pool.length) return;
+    const ab=ABILITIES[Math.floor(Math.random()*ABILITIES.length)];
+    const cx=0,cy=charSp.position.y,cz=0;
+    if(ab.name==='유도탄'){
+      const t=pool[Math.floor(Math.random()*pool.length)];
+      const b=new THREE.Mesh(new THREE.SphereGeometry(3,8,8),new THREE.MeshBasicMaterial({color:ab.col}));
+      b.position.set(cx,cy,cz); b.userData={kind:'bullet',target:t,col:ab.col,speed:3.5}; scene.add(b); fx.push(b);
+    } else if(ab.name==='레이저'){
+      const t=pool[Math.floor(Math.random()*pool.length)];
+      const dir=new THREE.Vector3().subVectors(t.position,new THREE.Vector3(cx,cy,cz));
+      const len=dir.length(); const geo=new THREE.CylinderGeometry(1.5,1.5,len,8);
+      const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:ab.col,transparent:true,opacity:0.9}));
+      const mid=new THREE.Vector3(cx,cy,cz).add(t.position).multiplyScalar(0.5);
+      m.position.copy(mid); m.lookAt(t.position); m.rotateX(Math.PI/2);
+      m.userData={kind:'beam',life:1,target:t,col:ab.col}; scene.add(m); fx.push(m);
+      explode(t.position.x,t.position.y,t.position.z,ab.col,8,2);
+    } else if(ab.name==='광역노바'){
+      const r=new THREE.Mesh(new THREE.RingGeometry(2,5,40),
+        new THREE.MeshBasicMaterial({color:ab.col,transparent:true,opacity:0.8,side:THREE.DoubleSide}));
+      r.rotation.x=-Math.PI/2; r.position.set(cx,4,cz); r.userData={kind:'nova',life:1,col:ab.col}; scene.add(r); fx.push(r);
+    } else { // 연쇄번개
+      let prev=new THREE.Vector3(cx,cy,cz);
+      const hits=pool.slice().sort(()=>Math.random()-0.5).slice(0,4);
+      hits.forEach((t,i)=>{
+        const dir=new THREE.Vector3().subVectors(t.position,prev); const len=dir.length();
+        const m=new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,len,6),
+          new THREE.MeshBasicMaterial({color:ab.col,transparent:true,opacity:0.95}));
+        const mid=new THREE.Vector3().copy(prev).add(t.position).multiplyScalar(0.5);
+        m.position.copy(mid); m.lookAt(t.position); m.rotateX(Math.PI/2);
+        m.userData={kind:'beam',life:1,col:ab.col}; scene.add(m); fx.push(m);
+        explode(t.position.x,t.position.y,t.position.z,ab.col,6,1.5);
+        prev=t.position.clone();
+      });
+    }
+  }
+
+  // 포스트프로세싱
+  let composer=null,bloom=null;
+  try{ if(THREE.EffectComposer&&THREE.UnrealBloomPass){
+    composer=new THREE.EffectComposer(renderer);
+    composer.addPass(new THREE.RenderPass(scene,camera));
+    bloom=new THREE.UnrealBloomPass(new THREE.Vector2(W,H),0.9,0.6,0.82);
+    composer.addPass(bloom);
+  }}catch(e){console.warn(e);}
+
+  let camAng=25,camZoom=344,rotating=false,firing=true,camSpin=0,castT=0;
+  const $=id=>document.getElementById(id);
+  $('ang').oninput=e=>{camAng=+e.target.value;$('angVal').textContent=camAng+'°';};
+  $('zoom').oninput=e=>{camZoom=+e.target.value;$('zoomVal').textContent=camZoom;};
+  $('bloom').oninput=e=>{if(bloom)bloom.strength=+e.target.value;$('bloomVal').textContent=e.target.value;};
+  $('csize').oninput=e=>{charSize=+e.target.value;$('csizeVal').textContent=charSize.toFixed(2);applyCharScale();};
+  $('charSel').onchange=e=>loadChar(e.target.value);
+  $('rotate').onchange=e=>rotating=e.target.checked;
+  $('fire').onchange=e=>firing=e.target.checked;
+
+  let frames=0,fpsT=performance.now();
+  function loop(){
+    const now=performance.now();
+    if(rotating)camSpin+=0.0025;
+    const rad=camAng*Math.PI/180;
+    camera.position.set(Math.sin(camSpin)*camZoom*Math.cos(rad),camZoom*Math.sin(rad),Math.cos(camSpin)*camZoom*Math.cos(rad));
+    camera.lookAt(0,12,0);
+    stars.rotation.y+=0.0002;
+
+    enemies.forEach((sp,i)=>{const u=sp.userData;u.ang+=u.speed;
+      sp.position.x=Math.cos(u.ang)*u.r;sp.position.z=Math.sin(u.ang)*u.r;
+      sp.position.y=u.byY+Math.sin(now*0.003+u.bob)*(u.boss?2.5:1.2);
+      shadows[i].position.x=sp.position.x;shadows[i].position.z=sp.position.z;});
+
+    if(firing&&now-castT>500){cast();castT=now;}
+
+    // 이펙트 업데이트
+    for(let i=fx.length-1;i>=0;i--){
+      const o=fx[i],u=o.userData;
+      if(u.kind==='bullet'){
+        if(!u.target||!u.target.parent){scene.remove(o);fx.splice(i,1);continue;}
+        const d=new THREE.Vector3().subVectors(u.target.position,o.position);
+        if(d.length()<8){explode(o.position.x,o.position.y,o.position.z,u.col,14,3);
+          const idx=enemies.indexOf(u.target);
+          if(idx>=0){scene.remove(u.target);scene.remove(shadows[idx]);enemies.splice(idx,1);shadows.splice(idx,1);setTimeout(spawnEnemy,400);}
+          scene.remove(o);fx.splice(i,1);continue;}
+        d.normalize().multiplyScalar(u.speed);o.position.add(d);
+      }else if(u.kind==='beam'){
+        u.life-=0.06;o.material.opacity=Math.max(0,u.life);
+        if(u.life<=0){if(u.target&&u.target.parent){const idx=enemies.indexOf(u.target);
+          if(idx>=0){scene.remove(u.target);scene.remove(shadows[idx]);enemies.splice(idx,1);shadows.splice(idx,1);setTimeout(spawnEnemy,400);}}
+          scene.remove(o);fx.splice(i,1);}
+      }else if(u.kind==='nova'){
+        u.life-=0.025;const sc=1+(1-u.life)*40;o.scale.set(sc,sc,1);o.material.opacity=Math.max(0,u.life*0.8);
+        if(u.life<=0){ // 노바 끝 → 범위 내 일반 적 처치 (보스 제외)
+          for(let k=enemies.length-1;k>=0;k--){if(!enemies[k].userData.boss&&enemies[k].position.length()<ARENA_R*0.7&&Math.random()<0.3){
+            explode(enemies[k].position.x,enemies[k].userData.byY,enemies[k].position.z,u.col,8,2);
+            scene.remove(enemies[k]);scene.remove(shadows[k]);enemies.splice(k,1);shadows.splice(k,1);setTimeout(()=>spawnEnemy(false),400);}}
+          scene.remove(o);fx.splice(i,1);}
+      }
+    }
+    for(let i=particles.length-1;i>=0;i--){const p=particles[i],u=p.userData;
+      p.position.x+=u.vx;p.position.y+=u.vy;p.position.z+=u.vz;u.vy-=0.12;u.life-=0.04;
+      p.material.opacity=Math.max(0,u.life);p.scale.setScalar(Math.max(0.1,u.life));
+      if(u.life<=0){scene.remove(p);particles.splice(i,1);}}
+
+    charSp.position.y=charSp.userData.baseY+Math.sin(now*0.002)*1.5;
+    aura.intensity=1.4+Math.sin(now*0.004)*0.5;
+    circ.rotation.z+=0.01; circ.material.opacity=0.3+Math.sin(now*0.003)*0.15;
+    ring.material.emissiveIntensity=1.1+Math.sin(now*0.002)*0.4;
+
+    if(composer)composer.render();else renderer.render(scene,camera);
+    frames++;if(now-fpsT>500){$('fps').textContent=Math.round(frames*1000/(now-fpsT));frames=0;fpsT=now;}
+    requestAnimationFrame(loop);
+  }
+  loop();
+  addEventListener('resize',()=>{const w=innerWidth,h=innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);if(composer)composer.setSize(w,h);});
+}
+</script>
+</body>
+</html>
