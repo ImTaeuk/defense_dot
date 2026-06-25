@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SP1 Grid 빌드 모달 설계 보고서</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Grid 타워 빌드 모달 (SP1) — 슬롯 선택·강조 + 구매 설치 설계</h1>
+  <div class="sub">
+    <span class="tag must">설계 제안서</span>
+    <span class="tag opt">검토 대기</span>
+    TASK-005 B · 풀 모달 분해 1/3 · 2026-06-09
+  </div>
+
+  <h2>1. 제보 요지</h2>
+  <div class="panel">
+    <p>"<strong>TowerPlacementController 가 완성일리가 없는데? 선택한 위치에 어떤 타워를 두거나 업그레이드 할지에 대한 시스템이나 UI도 없고, 눌렀을 때 해당 타워 슬롯을 강조하는 효과도 안 만들었는데?</strong>"</p>
+    <p>앞서 "코드 완성"이라고 보고한 것은 과장이었음을 인정하고, 실제 배치 UX(슬롯 강조 → 타워 선택/구매 모달 → 설치)를 정식 설계한다.</p>
+    <div class="note">
+      핵심: 현재 <code><strong>TowerPlacementController</strong></code> 는 <strong>클릭 → 하드코딩 단일 타워 즉시 설치</strong>인 P0 스텁뿐. 선택·강조·구매 UI가 전무하다. SP1 은 빈 슬롯에 한해 강조 + 빌드 모달을 도입한다.
+    </div>
+  </div>
+
+  <h2>2. 현재 동작 (재현 경로)</h2>
+  <div class="panel">
+    <ol>
+      <li>GridScene 플레이 중 빈 타워 슬롯 좌클릭</li>
+      <li><code><strong>TowerPlacementController.cs:68-74 OnClick()</strong></code> 가 곧바로 <code><strong>TryPlace(CurrentCell())</strong></code> 호출</li>
+      <li><code><strong>TowerPlacementController.cs:92-111 TryPlace()</strong></code> 가 TowerSlot 검증 → 점유 검사 → <code>economy.TrySpend(cost)</code> → <strong>직렬화된 단일 <code>towerData</code></strong> 를 즉시 생성</li>
+      <li>슬롯 강조도, 어떤 타워를 둘지 선택할 UI도 없이 한 번의 클릭으로 종료</li>
+    </ol>
+    <div class="note">즉 "입력 감지 + 설치"가 한 경로에 직결되어 있어, 사용자가 원하는 <strong>선택·강조·구매</strong> 단계가 끼어들 여지가 구조적으로 없다.</div>
+  </div>
+
+  <h2>3. 근본 원인</h2>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Tower/TowerPlacementController.cs · OnClick / TryPlace L68-111</div>
+    <pre><code><span class="cmt">private void OnClick(InputAction.CallbackContext ctx)
+{
+    if (mapData == null || towerData == null || economy == null) return;
+    if (pointAction == null || targetCamera == null) return;
+</span>
+<span class="hl-line">    TryPlace(CurrentCell());   <span class="hl-inline">// ← 클릭 즉시 설치, 선택/모달 단계 없음</span></span>
+<span class="cmt">}
+
+private void TryPlace(Vector2Int cell)
+{
+    if (mapData.GetCellType(cell.x, cell.y) != CellType.TowerSlot) return;
+    if (occupied.ContainsKey(cell)) return;
+    if (!economy.TrySpend(towerData.cost)) return;
+</span>
+<span class="hl-line">    GameObject go = Instantiate(<span class="hl-inline">towerData</span>.prefab, ...);   // ← 단일 타워 종류 하드코딩</span>
+<span class="cmt">    ...
+}</span></code></pre>
+    <p>두 가지 구조적 한계: ① <strong>입력→설치 직결</strong>로 선택·강조·구매 UI가 들어설 자리가 없다. ② <code>towerData</code> 단일 직렬화 필드라 "어떤 타워를 둘지"라는 개념 자체가 부재하다. SP1 은 이 경로를 <strong>"슬롯 선택(이벤트) ↔ 설치(메서드)"</strong> 로 분리한다.</p>
+  </div>
+
+  <h2>4. 기획 요구사항 (사용자 확정)</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>목표 = 원작 풀 모달</strong>: 빈 슬롯 클릭 → 타워 선택/구매 모달 → 설치, 기존 타워 클릭 → 업그레이드 모달</li>
+      <li>한 스펙에 다 담기엔 커서 <strong>3개 서브프로젝트로 분해 합의</strong> — SP1(빌드 모달), SP2(관리 모달: 업그레이드·판매), SP3(로스터 확장·밸런싱)</li>
+      <li><strong>"SP1 부터 할게"</strong> — 이번 범위는 빈 슬롯 강조 + 타워 선택·구매·설치까지. 업그레이드·판매는 SP2 로 제외</li>
+      <li>슬롯 클릭 시 <strong>해당 슬롯 강조</strong> 효과 포함</li>
+    </ul>
+  </div>
+
+  <h2>5. 설계 원칙 — 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>통일감 있는 구현을 위해 프로젝트 내 두 레퍼런스의 사상을 결합한다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr>
+        <td><strong>HUD MVP</strong></td>
+        <td><code><strong>UIRoot.cs · Inject() L31-39</strong></code></td>
+        <td><strong>View / Presenter / Model 분리</strong> — UIRoot 가 도메인 모델을 주입해 Presenter 를 한 줄로 조립. 빌드 모달도 동일 패턴으로 합류</td>
+      </tr>
+      <tr>
+        <td><strong>합성 루트 주입</strong></td>
+        <td><code><strong>GameManager.cs · CreateMode() L97-108</strong></code> · <code><strong>ModeContext.cs</strong></code></td>
+        <td>의존성을 <code>ModeContext</code> 로 묶어 모드별로 주입. 게임플레이↔UI 연결도 이 주입 흐름에 얹음</td>
+      </tr>
+    </table>
+    <div class="note">
+      <strong>결합 결론</strong>: 모달은 HUD 와 동일한 MVP(View+Presenter)로 만들어 <code>UIRoot.Inject</code> 한 줄로 합류시키고, 게임플레이 측 <code>TowerPlacementController</code> 와 UI 측 Presenter 의 연결은 합성 루트 주입 경로(<code>ModeBootstrap → GameManager → UIRoot</code>)를 그대로 따른다.
+    </div>
+  </div>
+
+  <h3>레퍼런스 ① HUD MVP — UIRoot 조립</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/InGame/UIRoot.cs · Inject() L31-39</div>
+    <pre><code>public void Inject(EconomyModel economy, CoreModel core, WaveModel wave, int enemyCapacity)
+{
+<span class="hl-line">    presenters.Add(new HUDPresenter(hudView, new HUDModel(), economy, core, wave, enemyCapacity));</span>
+    <span class="cmt">// 새 UI 는 여기에 추가</span>
+    foreach (IPresenter presenter in presenters) presenter.Initialize();
+}</code></pre>
+    <p>View 참조는 직렬화, Presenter 는 도메인 모델을 받아 생성. 빌드 모달도 <code>buildModalView</code> 직렬화 + <code>TowerBuildPresenter</code> 한 줄 추가로 동일하게 합류한다.</p>
+  </div>
+
+  <h3>레퍼런스 ② 합성 루트 주입 — ModeContext</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Management/GameManager.cs · CreateMode() L97-108</div>
+    <pre><code>private IGameMode CreateMode()
+{
+    ...
+    var ctx = new ModeContext(Core, Economy, <span class="hl-inline">targetFinder</span>, origin, center);
+    return modeBootstrap.CreateMode(ctx);
+}</code></pre>
+    <p>의존성을 한 곳에서 묶어 모드 부트스트랩에 주입하는 흐름. 빌드 모달이 필요로 하는 <code>TowerPlacementController</code> 도 이 부트스트랩이 노출하고 GameManager 가 UIRoot 로 전달한다.</p>
+  </div>
+
+  <h2>6. 해결 방안 — 변경 사항</h2>
+
+  <h3>(1) TowerPlacementController — 선택/설치 분리 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Tower/TowerPlacementController.cs</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">[SerializeField] private TowerData towerData;   // P0 단일</span>
+<span class="cmt">private EconomyModel economy;</span>
+
+<span class="del">public void Bind(EconomyModel economyModel, TargetFinder finder)</span>
+<span class="del">{ economy = economyModel; targetFinder = finder; }</span>
+
+<span class="cmt">private void OnClick(InputAction.CallbackContext ctx)
+{</span>
+<span class="del">    TryPlace(CurrentCell());   // 클릭 즉시 설치</span>
+<span class="cmt">}</span>
+
+<span class="del">private void TryPlace(Vector2Int cell)   // 검증+골드+생성 일체</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">[SerializeField] private GameObject highlight;   // 선택 슬롯 강조</span>
+<span class="add">public event System.Action&lt;Vector2Int, Vector3&gt; OnSlotSelected;</span>
+<span class="add">public event System.Action OnSlotDeselected;</span>
+
+<span class="add">public void Bind(TargetFinder finder) { targetFinder = finder; }   // economy 제거</span>
+
+<span class="cmt">private void OnClick(InputAction.CallbackContext ctx)
+{</span>
+<span class="add">    if (EventSystem.current != null &amp;&amp; EventSystem.current.IsPointerOverGameObject()) return;</span>
+<span class="add">    Vector2Int cell = CurrentCell();</span>
+<span class="add">    if (IsBuildableEmpty(cell)) Select(cell);   // 강조 ON + OnSlotSelected</span>
+<span class="add">    else Deselect();                            // 강조 OFF + OnSlotDeselected</span>
+<span class="cmt">}</span>
+
+<span class="add">public bool PlaceAt(Vector2Int cell, TowerData data)   // 순수 설치 (골드 무관)</span>
+<span class="add">{ /* 슬롯·점유 재검증 → 생성 → Initialize → SetTargetFinder → occupied 등록 → true */ }</span></pre>
+
+    <h3>핵심 변경 포인트</h3>
+    <ul>
+      <li><strong>책임 분리</strong>: "슬롯 선택(<code>OnSlotSelected</code> 발행)"과 "설치(<code>PlaceAt</code>)"를 떼어내 그 사이에 모달이 끼어들게 함 — SP2 관리 모달도 같은 이벤트에 얹힘</li>
+      <li><strong>골드 이관</strong>: <code>Bind</code> 에서 <code>economy</code> 제거. 구매 차감은 Presenter 가 담당</li>
+      <li><code>IsPointerOverGameObject()</code> 가드로 모달 버튼 클릭이 월드 클릭으로 새는 것을 차단</li>
+    </ul>
+  </div>
+
+  <h3>(2) UIRoot.Inject — 빌드 Presenter 조건부 합류 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/InGame/UIRoot.cs</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">[SerializeField] private HUDView hudView;</span>
+
+<span class="del">public void Inject(EconomyModel economy, CoreModel core, WaveModel wave, int enemyCapacity)</span>
+<span class="cmt">{
+    presenters.Add(new HUDPresenter(hudView, new HUDModel(), economy, core, wave, enemyCapacity));</span>
+<span class="cmt">    ...
+}</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">[SerializeField] private HUDView hudView;</span>
+<span class="add">[SerializeField] private TowerBuildModalView buildModalView;</span>
+<span class="add">[SerializeField] private TowerRoster towerRoster;</span>
+
+<span class="add">public void Inject(EconomyModel economy, CoreModel core, WaveModel wave, int enemyCapacity,</span>
+<span class="add">                   TowerPlacementController placement)</span>
+<span class="cmt">{
+    presenters.Add(new HUDPresenter(hudView, new HUDModel(), economy, core, wave, enemyCapacity));</span>
+<span class="add">    if (placement != null &amp;&amp; buildModalView != null &amp;&amp; towerRoster != null)</span>
+<span class="add">        presenters.Add(new TowerBuildPresenter(buildModalView, towerRoster, economy, placement));</span>
+<span class="cmt">    ...
+}</span></pre>
+    <div class="note"><code>placement == null</code>(Arena 모드)이면 빌드 Presenter 를 만들지 않아 모달이 생기지 않는다. GameManager 는 모드 비종속을 유지.</div>
+  </div>
+
+  <h3>(3) ModeBootstrap / GridDefenseModeBootstrap — controller 노출 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Mode/ModeBootstrap.cs · GridDefenseModeBootstrap.cs</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">// ModeBootstrap (base) — PlacementController 개념 없음</span>
+
+<span class="cmt">// GridDefenseModeBootstrap.CreateMode</span>
+<span class="del">if (placement != null) placement.Bind(ctx.Economy, ctx.TargetFinder);</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">// ModeBootstrap (base)</span>
+<span class="add">public virtual TowerPlacementController PlacementController =&gt; null;</span>
+
+<span class="cmt">// GridDefenseModeBootstrap</span>
+<span class="add">public override TowerPlacementController PlacementController =&gt; placement;</span>
+<span class="add">// CreateMode 내:</span>
+<span class="add">if (placement != null) placement.Bind(ctx.TargetFinder);   // economy 인자 제거</span></pre>
+  </div>
+
+  <h3>(4) 신규 — 로스터 · 모달 뷰 · Presenter <span class="tag must">신규</span></h3>
+  <div class="panel">
+    <div class="file">신규 3종 (요지)</div>
+<pre class="after"><span class="add">// TowerRoster.cs  (ScriptableObject)</span>
+<span class="add">public TowerData[] towers;   // 구매 가능 목록 (SP1 테스트용 2~3종)</span>
+
+<span class="add">// TowerBuildModalView.cs  (uGUI, dumb View)</span>
+<span class="add">public void Show(TowerRoster roster, int gold);   // cost &gt; gold 면 버튼 비활성</span>
+<span class="add">public void Hide();</span>
+<span class="add">public event System.Action&lt;TowerData&gt; OnTowerChosen;</span>
+
+<span class="add">// TowerBuildPresenter.cs  (MVP Presenter)</span>
+<span class="add">HandleSlotSelected(cell, pos): currentCell = cell; view.Show(roster, economy.Gold);</span>
+<span class="add">HandleTowerChosen(data): if (economy.TrySpend(data.cost))</span>
+<span class="add">    { if (!placement.PlaceAt(currentCell, data)) economy.AddGold(data.cost); else view.Hide(); }</span>
+<span class="add">HandleDeselected(): view.Hide();</span></pre>
+    <div class="note"><code>EconomyModel</code> API 확정: <code>Gold</code>(getter) · <code>CanAfford(int)</code> · <code>TrySpend(int)</code> · <code>AddGold(int)</code> — affordability·차감·환불에 그대로 사용.</div>
+  </div>
+
+  <h3>(5) GameManager.Start — 인자 1개 추가 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Management/GameManager.cs · Start()</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">uiRoot.Inject(Economy, Core, Wave, modeBootstrap.EnemyDisplayCapacity);</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">uiRoot.Inject(Economy, Core, Wave, modeBootstrap.EnemyDisplayCapacity, modeBootstrap.PlacementController);</span></pre>
+  </div>
+
+  <h2>7. 영향 범위 및 부수 효과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>분석</th></tr>
+      <tr><td>Arena 모드</td><td><span class="ok">안전</span> — <code>PlacementController</code> 가 null 이라 빌드 모달 미생성, 기존 동작 그대로</td></tr>
+      <tr><td>HUD / 기존 Presenter</td><td><span class="ok">불변</span> — <code>Inject</code> 인자만 추가, HUDPresenter 경로 그대로</td></tr>
+      <tr><td>도메인 모델</td><td><span class="ok">불변</span> — <code>EconomyModel</code> 기존 API 만 사용</td></tr>
+      <tr><td>P0 즉시설치</td><td><span class="warn">제거됨</span> — 클릭 즉시 설치 경로 삭제, 모달 경유로 대체</td></tr>
+      <tr><td>씬 결선</td><td><span class="warn">에디터 작업 필요</span> — 모달 프리팹·강조 오브젝트 제작, <code>UIRoot</code>/<code>TowerPlacementController</code> 결선, <code>TowerRoster</code> 에셋 작성 (사용자)</td></tr>
+      <tr><td>InputSystem</td><td><span class="warn">확인</span> — <code>IsPointerOverGameObject()</code> 가 InputSystem UI 모듈과 함께 정상 동작하는지 PlayMode 확인</td></tr>
+    </table>
+  </div>
+
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <p>UI·입력 중심이라 PlayMode 수동 검증을 우선한다. (Presenter 로직은 SP2 에서 시임 분리 시 EditMode 화 재검토)</p>
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대 동작</th></tr>
+      <tr><td>1</td><td>빈 슬롯 좌클릭</td><td><span class="ok">슬롯 강조 + 빌드 모달 오픈, 즉시 설치 안 됨</span></td></tr>
+      <tr><td>2</td><td>모달에서 살 수 있는 타워 선택</td><td><span class="ok">골드 차감 + 해당 슬롯에 설치 + 모달 닫힘</span></td></tr>
+      <tr><td>3</td><td>골드 부족 타워</td><td><span class="ok">버튼 비활성, 설치 불가</span></td></tr>
+      <tr><td>4</td><td>모달 열린 채 바깥/다른 빈 슬롯 클릭</td><td><span class="ok">닫힘·강조 해제 / 새 슬롯으로 전환</span></td></tr>
+      <tr><td>5</td><td>점유 슬롯 클릭</td><td><span class="ok">강조만</span> <span class="warn">(관리 모달은 SP2)</span></td></tr>
+      <tr><td>6</td><td>Arena 씬 진입</td><td><span class="ok">빌드 모달 없음, 기존 동작 유지</span></td></tr>
+    </table>
+  </div>
+
+  <h2>9. 수정 파일 요약</h2>
+  <table>
+    <tr><th>파일</th><th>변경 내용</th></tr>
+    <tr><td><code><strong>TowerPlacementController.cs</strong></code></td><td>선택(이벤트)/설치(<code>PlaceAt</code>) 분리, 강조, economy 제거, UI 가드</td></tr>
+    <tr><td><code><strong>UIRoot.cs</strong></code></td><td><code>Inject</code> 에 controller 인자 + 빌드 Presenter 조건부 생성, 모달뷰·로스터 직렬화</td></tr>
+    <tr><td><code><strong>ModeBootstrap.cs</strong></code></td><td><code>virtual PlacementController =&gt; null</code> 추가</td></tr>
+    <tr><td><code><strong>GridDefenseModeBootstrap.cs</strong></code></td><td><code>PlacementController</code> override, <code>Bind</code> 에서 economy 제거</td></tr>
+    <tr><td><code><strong>GameManager.cs</strong></code></td><td><code>Inject</code> 호출에 <code>PlacementController</code> 전달 (1줄)</td></tr>
+    <tr><td><code><strong>TowerRoster.cs</strong></code> <span class="tag must">신규</span></td><td>구매 가능 <code>TowerData[]</code> SO</td></tr>
+    <tr><td><code><strong>TowerBuildModalView.cs</strong></code> <span class="tag must">신규</span></td><td>uGUI dumb View — 로스터 버튼·affordability·닫기</td></tr>
+    <tr><td><code><strong>TowerBuildPresenter.cs</strong></code> <span class="tag must">신규</span></td><td>MVP Presenter — 선택→모달→구매→설치 중재</td></tr>
+  </table>
+  <div class="note">도메인 모델·HUD·기존 MVP 구조는 변경 없음. 업그레이드·판매(SP2)·로스터 밸런싱(SP3)은 범위 밖.</div>
+
+  <p class="foot">SP1 설계 보고서 — 다음 단계: 사용자 검토 후 writing-plans 로 구현 계획 작성</p>
+
+</div>
+</body>
+</html>

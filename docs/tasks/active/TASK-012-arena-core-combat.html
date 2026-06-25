@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arena A2 코어 자동전투 설계 보고서</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Arena A2 — 코어 자동전투(능력 실행) 설계</h1>
+  <div class="sub">
+    <span class="tag must">설계 제안서</span>
+    <span class="tag opt">설계 확정</span>
+    설계 확정 · 2026-06-16 · TASK-012 (A1 후속) · 풀링은 TASK-013 분리
+  </div>
+
+  <h2>1. 제보 요지</h2>
+  <div class="panel">
+    <p>"코어 자동 전투로 넘어가자." A1에서 능력 데이터 골격만 구축됐고 실제 능력·전투 연결이 없다. A2는 코어가 능력으로 자동 전투하도록 실행 시스템 + 스타터 능력을 만든다.</p>
+    <div class="note">
+      핵심: <strong>능력 종류를 서브클래스로 가르지 않고, 단일 <code>Tick</code> + 합성(쿨다운 헬퍼 / 상시 인터페이스)으로 조합한다. 시간축 거동(지속성)은 능력이 아니라 자가구동 효과 엔티티에 캡슐화한다.</strong>
+    </div>
+  </div>
+
+  <h2>2. 현재 동작 (재현 경로)</h2>
+  <div class="panel">
+    <ol>
+      <li>A1: <code><strong>ActiveAbilityData.cs:16</strong></code> 의 <code>abstract Execute(ctx, self)</code> — 1회 발동만 표현(주석 "가동 루프는 A2")</li>
+      <li>중앙 타워 전투는 전부 DEBUG: <code><strong>TowerActor.cs:55-68</strong></code> 의 토글(single/aoe/projectile) → <code>IAttackBehavior.Execute</code>, <code><strong>CombatLogic.cs:30</strong></code> 단일 attackSpeed 게이트</li>
+      <li>데미지 경로: <code><strong>SingleTargetAttack.cs:15</strong></code> <code>target is IDamageable d → d.TakeDamage()</code></li>
+      <li>투사체: <code><strong>DebugProjectile.cs:22</strong></code> 자가 구동(이동·유도·관통)이나 매 발 <code>CreatePrimitive</code>+<code>Destroy</code></li>
+    </ol>
+  </div>
+
+  <h2>3. 근본 원인</h2>
+  <div class="panel">
+    <div class="file">Assets/Reference/dot-defense-main/index.html · 능력 tick 모델</div>
+    <pre><code><span class="cmt">// 원작: 매 프레임 tick(ab) — 두 부류 혼재</span>
+<span class="hl-line">nova.tick:    for(w of ab.waves) w.r += 5; ...   <span class="hl-inline">// 지속(매 프레임 상태 갱신)</span></span>
+<span class="hl-line">shot.tick:    if(--ab.cooldown>0) return; fire() <span class="hl-inline">// 이산(쿨다운 발동)</span></span>
+orbital.tick: ab.angle += rotSpeed; ...          // 지속(상시 회전)</code></pre>
+    <p>A1의 <code>Execute</code>(1회)만으로는 지속형(노바·오비탈)을 표현할 수 없다. 또한 이산/지속을 <strong>상호배타 서브클래스</strong>로 가르면 "둘 다 가진 능력"(터렛=상시 소환+주기 발사)에서 단일 상속이 막힌다.</p>
+  </div>
+
+  <h2>4. 기획 요구사항 (사용자 확정)</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>추상화를 완벽히</strong> 잡고, 원작 종류(아키타입)마다 디폴트 템플릿 1개씩. 나머지는 추후 원작에 맞춤.</li>
+      <li><strong>합성 기반</strong>: 상위 단일 <code>Tick</code> + 쿨다운 헬퍼 + <code>IAbilityLifecycle</code> 인터페이스 → 한 능력이 쿨다운+상시 동시 보유 가능 (사용자 지적 반영).</li>
+      <li><strong>A2 범위</strong>: 추상화 + 러너 + 코어 배선 + 2 파운데이션(샷=이산, 오비탈=상시). 나머지 4종류 추후.</li>
+      <li><strong>풀링은 TASK-013 분리</strong> (현재 범용 풀 없음). A2는 교체 심만 두고 단순 구현.</li>
+      <li><strong>VFX는 ExternalResources/Hovl Studio 조합</strong> 검토·결정 (직접 제작 X).</li>
+    </ul>
+  </div>
+
+  <h2>5. 설계 원칙 — 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>프로젝트 내 두 레퍼런스에서 공통 사상을 차용했다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr>
+        <td><strong>Context Object</strong></td>
+        <td><code><strong>AbilityContext.cs</strong></code>, <code><strong>HudContext.cs</strong></code></td>
+        <td><strong>입력 묶음 파라미터 오브젝트</strong> — <code>AbilityContext</code>에 <code>Effects</code> 추가</td>
+      </tr>
+      <tr>
+        <td><strong>자가구동 + IPoolable</strong></td>
+        <td><code><strong>DebugProjectile.cs</strong></code>, <code><strong>MonsterActor</strong></code></td>
+        <td>효과 엔티티 = 자가 Update + 풀링 가능 MB. DebugProjectile을 <code>ProjectileEffect</code>로 승격</td>
+      </tr>
+    </table>
+    <div class="note">
+      <strong>결합 결론</strong>: 능력=스케줄/스폰, 효과 엔티티=시간축 거동·데미지로 관심사를 분리하고, 입력은 Context로 묶으며, 풀링은 <code>IEffectSpawner</code> 심으로 나중에 무수정 교체한다.
+    </div>
+  </div>
+
+  <h3>레퍼런스 ① Hovl Studio VFX — 아키타입 1:1 매핑</h3>
+  <div class="panel">
+    <div class="file">Assets/ExternalResources/Hovl Studio/...</div>
+    <pre><code>Projectile : AAA Projectiles Vol 1/Projectiles(transform)/Projectile 2 electro ...
+Beam       : 3D Lasers Pack/Laser beam ...
+Strike     : AOE Magic spells Vol.1/Meteor ...
+Chain      : RPG VFX Bundle/Chain strike
+AreaWave   : 2D Projectile 17/18 nova, Magic circles
+Orbital    : Magic circles / orb</code></pre>
+    <p>transform-projectile은 "외부 스크립트가 이동"하는 용도라 우리 효과 MB와 정확히 맞는다. 비주얼 직접 제작 불필요.</p>
+  </div>
+
+  <h2>6. 해결 방안 — 변경 사항</h2>
+
+  <h3>(1) ActiveAbilityData — Execute→Tick + 쿨다운 헬퍼 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Abilities/ActiveAbilityData.cs</div>
+    <div class="lbl before">▼ BEFORE (A1)</div>
+<pre class="before"><span class="cmt">public abstract class ActiveAbilityData : AbilityData {
+    public float baseCooldown = 1f;</span>
+<span class="del">    // 1회 발동(투사체·데미지 등). 가동 루프는 A2.</span>
+<span class="del">    public abstract void Execute(in AbilityContext ctx, AbilityInstance self);</span>
+<span class="cmt">}</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">public abstract class ActiveAbilityData : AbilityData {
+    public float baseCooldown = 1f;</span>
+<span class="hl-line"><span class="add">    public abstract void Tick(in AbilityContext ctx, AbilityInstance self, float dt);</span></span>
+<span class="add">    protected bool TickCooldown(AbilityInstance self, float dt)        // 감소·준비여부(리셋 X)</span>
+<span class="add">        { self.cooldownRemaining -= dt; return self.cooldownRemaining <= 0f; }</span>
+<span class="add">    protected void ResetCooldown(AbilityInstance self, in AbilityContext ctx)  // 발동 성공 후</span>
+<span class="add">        { self.cooldownRemaining = Mathf.Max(0.05f, CooldownAtLevel(self.level) - ctx.Modifiers.cooldownReduction); }</span>
+<span class="cmt">}
+// 상시 수명만 구현 (러너가 add/remove 시 호출)</span>
+<span class="add">public interface IAbilityLifecycle { void OnEquip(in AbilityContext, AbilityInstance); void OnUnequip(in AbilityContext, AbilityInstance); }</span></pre>
+    <h3>핵심 변경 포인트</h3>
+    <ul>
+      <li><code>Execute</code>(1회) → <code>Tick</code>(매 프레임) — 이산/지속 모두 수용</li>
+      <li>쿨다운은 헬퍼 2분리: <code>TickCooldown</code>(준비여부) + <code>ResetCooldown</code>(발동 후) → 타겟 없으면 준비 유지(원작 충실)</li>
+      <li>상시 수명은 별도 인터페이스 <code>IAbilityLifecycle</code> — 서브클래스 강제 없이 조합</li>
+      <li><code>AbilityInstance</code>에 <code>object runtimeState</code>, <code>AbilityContext</code>에 <code>IEffectSpawner Effects</code> 추가</li>
+    </ul>
+  </div>
+
+  <h3>(2) 효과 엔티티 레이어 — 자가구동 + 풀링 심 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Abilities/Effects/*.cs (신규)</div>
+<pre><code><span class="add">abstract class AbilityEffect : MonoBehaviour, IPoolable {</span>
+<span class="add">    protected IEffectSpawner spawner; public void Bind(IEffectSpawner s){ spawner = s; }</span>
+<span class="hl-line"><span class="add">    protected void Release() => spawner.Release(this);   // Destroy 대신 (풀링 심)</span></span>
+<span class="add">}</span>
+<span class="add">interface IEffectSpawner { T Spawn&lt;T&gt;(T prefab) where T : AbilityEffect; void Release(AbilityEffect fx); }</span>
+
+<span class="cmt">// A2 구현 2종 (Hovl 프리팹 비주얼 + 우리 로직)</span>
+<span class="add">class ProjectileEffect : AbilityEffect  // DebugProjectile 승격: 유도·이동·관통·TakeDamage, 소진 시 Release</span>
+<span class="add">class OrbiterSetEffect : AbilityEffect  // 회전·반경추종·접촉 데미지(재타격 Map), OnUnequip서 Release</span></code></pre>
+    <div class="note">풀링 구현(<code>IEffectSpawner</code>의 풀 버전)은 <strong>TASK-013</strong>. A2는 <code>SimpleEffectSpawner</code>(Instantiate/Destroy)로 시작 → 무수정 교체.</div>
+  </div>
+
+  <h3>(3) 구체 능력 2종 + 러너 + 코어 배선 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+<pre><code><span class="add">class ProjectileAbilityData : ActiveAbilityData {            // 샷 (이산)</span>
+<span class="add">  Tick: if(!TickCooldown(self,dt)) return;</span>
+<span class="add">        var t = ctx.Finder.FindNearest(ctx.Origin, range); if(t==null) return;  // 준비 유지</span>
+<span class="add">        ctx.Effects.Spawn(projectilePrefab).Activate(ctx.Origin, t, dmg, speed, pierce, ctx.Finder);</span>
+<span class="add">        ResetCooldown(self, ctx); }</span>
+<span class="add">class OrbitalAbilityData : ActiveAbilityData, IAbilityLifecycle {  // 오비탈 (상시)</span>
+<span class="add">  OnEquip: self.runtimeState = ctx.Effects.Spawn(orbiterPrefab); ((OrbiterSetEffect)..).Activate(...);</span>
+<span class="add">  OnUnequip: if(self.runtimeState is AbilityEffect fx) ctx.Effects.Release(fx); }</span>
+
+<span class="add">class AbilityRunner {  // 순수 C#: Tick(dt)→액티브마다 data.Tick; Equip/Unequip→IAbilityLifecycle 호출 }</span>
+<span class="add">class CoreAbilitySystem : MonoBehaviour {  // Arena 코어: loadout+runner, Update서 flow.IsPlaying 게이트로 Tick }</span></code></pre>
+    <p><code><strong>ArenaModeBootstrap</strong></code>에 <code>starterAbilities</code>(샷·오비탈) 직렬화 + 코어에 <code>CoreAbilitySystem</code> 부착·Setup. 코어는 디버그 단일공격 경로 미사용.</p>
+  </div>
+
+  <h3>(4) 디버그 공격계 — 코어 경로 미사용 <span class="tag opt">Grid 잔존</span></h3>
+  <div class="panel">
+    <p><code><strong>IAttackBehavior·DebugProjectile·AttackContext·TowerActor 토글</strong></code>은 코어 경로에서 쓰지 않는다. Grid 배치 타워는 이 경로를 유지하므로 <strong>제거하지 않는다</strong>(Grid 실타워 도입 시 별도 정리).</p>
+  </div>
+
+  <h2>7. 영향 범위 및 부수 효과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>분석</th></tr>
+      <tr><td>A1 Execute 교체</td><td><span class="ok">안전</span> — 미사용(러너·구체 능력 없음)이라 Tick 전환 무영향</td></tr>
+      <tr><td>Grid 타워</td><td><span class="ok">무영향</span> — 능력계는 코어 한정, 디버그계 잔존</td></tr>
+      <tr><td>합성 확장성</td><td><span class="ok">쿨다운+상시 동시 보유 가능</span> — 6종류·터렛류 수용</td></tr>
+      <tr><td>VFX</td><td><span class="ok">Hovl 조합</span> — 직접 제작 불필요</td></tr>
+      <tr><td>성능(효과 스폰)</td><td><span class="warn">A2는 Instantiate/Destroy — 풀링은 TASK-013</span></td></tr>
+      <tr><td>코어 전투 신설</td><td><span class="warn">A0/HUD 처치·점수 흐름과 통합 — Play 검증 필요</span></td></tr>
+    </table>
+  </div>
+
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <p>순수 모델(쿨다운 헬퍼·러너)은 EditMode 자동. 효과·코어 통합은 Play 수동.</p>
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대</th></tr>
+      <tr><td>1</td><td><strong>Grid 회귀</strong></td><td><span class="ok">Grid 타워 단일공격 정상(능력계 미개입)</span></td></tr>
+      <tr><td>2</td><td>EditMode 단위</td><td><span class="ok">TickCooldown/ResetCooldown 타이밍, 러너 Tick·OnEquip/OnUnequip 호출</span></td></tr>
+      <tr><td>3</td><td>Arena 진입(샷·오비탈)</td><td><span class="ok">코어 자동 샷 발사 + 위성 회전</span></td></tr>
+      <tr><td>4</td><td>샷</td><td><span class="ok">쿨다운마다 유도 투사체→명중 데미지·관통</span></td></tr>
+      <tr><td>5</td><td>오비탈</td><td><span class="ok">회전·반경추종·접촉 데미지</span></td></tr>
+      <tr><td>6</td><td>처치 연동</td><td><span class="ok">골드·점수 반영(기존 HUD)</span></td></tr>
+      <tr><td>7</td><td>일시정지/게임오버</td><td><span class="ok">능력 정지</span></td></tr>
+    </table>
+  </div>
+
+  <h2>9. 신규/수정 파일 요약</h2>
+  <table>
+    <tr><th>파일</th><th>변경</th></tr>
+    <tr><td><code><strong>ActiveAbilityData.cs</strong></code></td><td>Execute→Tick + TickCooldown/ResetCooldown</td></tr>
+    <tr><td><code><strong>AbilityInstance.cs / AbilityContext.cs</strong></code></td><td>runtimeState / Effects 추가</td></tr>
+    <tr><td><code><strong>IAbilityLifecycle · AbilityRunner</strong></code></td><td>신규(상시 수명 / 매프레임 러너)</td></tr>
+    <tr><td><code><strong>AbilityEffect · IEffectSpawner · SimpleEffectSpawner · ProjectileEffect · OrbiterSetEffect</strong></code></td><td>신규 효과 레이어</td></tr>
+    <tr><td><code><strong>ProjectileAbilityData · OrbitalAbilityData</strong></code></td><td>신규 구체 능력 2종</td></tr>
+    <tr><td><code><strong>CoreAbilitySystem.cs · ArenaModeBootstrap.cs</strong></code></td><td>코어 배선·스타터 주입</td></tr>
+    <tr><td><code><strong>효과 프리팹(Hovl 조합) · 능력 SO(샷·오비탈) · EditMode 테스트</strong></code></td><td>신규 에셋·테스트</td></tr>
+  </table>
+  <div class="note">풀링 구현은 본 작업 제외 → <strong>TASK-013</strong>. 디버그 공격계·Grid 타워·A1 PassiveAbilityData는 변경 없다.</div>
+
+  <p class="foot">설계 확정 — 다음: 사용자 스펙 검토 → 구현 계획(writing-plans)</p>
+
+</div>
+</body>
+</html>

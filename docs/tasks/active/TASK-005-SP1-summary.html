@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TASK-005 SP1 완료 요약</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>TASK-005 타워 배치 시스템 — SP1 완료 요약</h1>
+  <div class="sub">
+    <span class="tag must">진행 요약</span>
+    <span class="tag opt">SP1 완료 (미커밋)</span>
+    PlayMode 검증 완료 · 2026-06-10
+  </div>
+
+  <h2>1. 개요 &amp; 현재 위치</h2>
+  <div class="panel">
+    <p>TASK-005 는 원작 dot-defense 의 <strong>모드별 타워 등장·배치</strong>를 정식 구현하는 작업이다. Arena = 중앙 단일 타워, Grid = 슬롯 클릭 배치. "풀 모달"이 커서 3개 서브프로젝트로 분해했고, 이번 세션은 그중 <strong>SP1(Grid 슬롯 선택·강조 + 빌드 모달 구매·설치)</strong> 를 완성했다.</p>
+    <div class="note">
+      현재: <strong>A-1(Arena 중앙 타워) 커밋 완료</strong>, <strong>SP1(Grid 빌드 모달) 구현·검증 완료(미커밋)</strong>. 다음은 SP1 커밋 후 다음 TASK 선정.
+    </div>
+  </div>
+
+  <h2>2. 완료 동작 (현재 플레이 가능)</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>Arena 모드</strong> — 시작 시 중앙에 타워 1개 자동 배치, 사거리=맵 전체로 공전 적 공격 (<code><strong>ArenaModeBootstrap</strong></code>, 커밋 4ee53a8e/26a9db17)</li>
+      <li><strong>Grid 모드 (SP1)</strong> — 빈 타워 슬롯 좌클릭 → 슬롯 강조 + <strong>화면 하단 가로 카드 모달</strong> → 타워(Tower Test/Sniper/Cannon) 선택 → 골드 차감·설치 → 모달 닫힘. 골드 부족 버튼 비활성, 점유 슬롯은 강조만, Arena 엔 모달 미생성.</li>
+    </ul>
+    <div class="note">SP1 흐름은 <strong>PlayMode 실증 완료</strong> — 클릭→모달→구매→설치·차감 확인됨.</div>
+  </div>
+
+  <h2>3. SP1 아키텍처 — 핵심 리팩토링</h2>
+  <div class="panel">
+    <p>기존 <code><strong>TowerPlacementController</strong></code> 는 "클릭 시 하드코딩 단일 타워 즉시 설치"하는 P0 스텁이었다. 이를 <strong>"슬롯 선택(이벤트)"과 "설치(<code>PlaceAt</code>)"로 분리</strong>해, 그 사이에 빌드 모달(MVP)이 개입하게 했다.</p>
+    <div class="file">Assets/Scripts/Systems/Tower/TowerPlacementController.cs</div>
+
+    <div class="lbl before">▼ BEFORE (P0 스텁)</div>
+<pre class="before"><span class="cmt">private void OnClick(InputAction.CallbackContext ctx)
+{</span>
+<span class="del">    TryPlace(CurrentCell());   // 클릭 즉시 단일 towerData 설치</span>
+<span class="cmt">}</span></pre>
+
+    <div class="lbl after">▼ AFTER (선택/설치 분리)</div>
+<pre class="after"><span class="cmt">private void OnClick(InputAction.CallbackContext ctx)
+{
+    if (EventSystem.current.IsPointerOverGameObject()) return;
+    Vector2Int cell = CurrentCell();</span>
+<span class="add">    if (IsBuildableEmpty(cell)) Select(cell);   // 강조 + OnSlotSelected 발행</span>
+<span class="add">    else Deselect();</span>
+<span class="cmt">}</span>
+<span class="add">public bool PlaceAt(Vector2Int cell, TowerData data) { /* 순수 설치 */ }</span></pre>
+
+    <p>빌드 모달은 기존 HUD 와 동일한 MVP 로 구성: <code><strong>TowerBuildModalView</strong></code>(uGUI) + <code><strong>TowerBuildPresenter</strong></code> + <code><strong>TowerRoster</strong></code>(SO). 게임플레이↔UI 연결은 <code>ModeBootstrap.PlacementController</code> 를 <code>GameManager</code> 가 <code>UIRoot.Inject</code> 로 전달하는 합성 루트 주입으로 처리(Arena 는 null → 모달 미생성).</p>
+  </div>
+
+  <h2>4. 확정된 설계 결정</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>방향 (가)</strong>: SP1 은 "건설 파이프라인 토대". 원작의 <strong>가챠(3장 카드 뽑기)·능력(ability)</strong> 방식은 <span class="warn">TASK-005 C(Skill 시스템)로 이월</span> — 파이프라인이 같아 나중에 모달 내용만 교체.</li>
+      <li><strong>UI 원작화</strong>: 중앙 패널 → <strong>화면 하단 가로 카드 바</strong>로 리모델 (원작 <code>tdTowerModal</code> 의 bottom 정렬 차용).</li>
+      <li><strong>이벤트 컨벤션</strong>: event 는 <code>On*</code>, 구독 핸들러는 <code>Handle*</code> (CLAUDE.md 코딩 컨벤션에 추가).</li>
+      <li><strong>구조</strong>: <code>UIRoot</code> 가 0-사이즈라 하단 바 stretch 가 무너져, <code>BuildModal</code> 서브트리를 <code>Canvas</code> 직하로 이동·전체화면화 (HUD·참조 불변).</li>
+    </ul>
+  </div>
+
+  <h2>5. 설계 원칙 — 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>SP1 은 신규 패턴 없이 프로젝트의 두 기존 사상에 정렬했다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr>
+        <td><strong>HUD MVP</strong></td>
+        <td><code><strong>UIRoot.cs · Inject()</strong></code></td>
+        <td>View/Presenter 분리, <code>UIRoot</code> 에 Presenter 한 줄 추가로 합류</td>
+      </tr>
+      <tr>
+        <td><strong>합성 루트 주입</strong></td>
+        <td><code><strong>GameManager.cs · CreateMode()</strong></code> · <code><strong>ModeContext</strong></code></td>
+        <td>의존성을 묶어 모드별 주입 — 게임플레이↔UI 연결도 이 흐름에 얹음</td>
+      </tr>
+    </table>
+    <div class="note"><strong>결합</strong>: 모달은 HUD 와 같은 MVP, 컨트롤러↔Presenter 연결은 <code>ModeBootstrap → GameManager → UIRoot</code> 주입 경로. 모드 분기는 <code>placement != null</code> if 한 줄.</div>
+  </div>
+
+  <h2>6. 검증 결과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>결과</th></tr>
+      <tr><td>1</td><td>컴파일 (MCP read_console)</td><td><span class="ok">에러 0</span></td></tr>
+      <tr><td>2</td><td>에디터 결선 (EventSystem·모달·로스터·강조)</td><td><span class="ok">전부 결선 확인</span></td></tr>
+      <tr><td>3</td><td>UI 레이아웃 (하단 바 1896×170·카드 3장)</td><td><span class="ok">수치 검증</span></td></tr>
+      <tr><td>4</td><td><strong>PlayMode</strong> — 슬롯 클릭→모달→구매→설치·차감</td><td><span class="ok">동작 확인 (사용자)</span></td></tr>
+    </table>
+  </div>
+
+  <h2>7. 남은 작업 &amp; 다음 TASK 후보</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>내용</th><th>상태</th></tr>
+      <tr><td><strong>SP1 마무리</strong></td><td>씬 저장 → lint → scoped 커밋</td><td><span class="warn">대기 (이번 직후)</span></td></tr>
+      <tr><td>SP2</td><td>점유 타워 클릭 → <strong>관리 모달(업그레이드·판매)</strong></td><td>미착수</td></tr>
+      <tr><td>SP3</td><td>타워 다종·비용·스탯 <strong>밸런싱</strong></td><td>미착수</td></tr>
+      <tr><td>TASK-005 C</td><td><strong>Skill 시스템</strong> (원작 가챠·능력) — 디버그 공격 토글 대체</td><td>설계 등록됨</td></tr>
+      <tr><td>(별도) Actor BT</td><td>BT+Animator 프레임워크 Phase 1 (다른 세션)</td><td>실행 대기</td></tr>
+    </table>
+    <div class="note">다음 TASK 후보: <strong>SP2(업그레이드·판매)</strong> 로 Grid 배치 완성도 ↑, 또는 <strong>Skill 시스템(C)</strong> 로 디버그 공격 토글을 정식화 — 둘 중 선택.</div>
+  </div>
+
+  <h2>8. 파일 / 커밋 현황</h2>
+  <table>
+    <tr><th>구분</th><th>대상</th></tr>
+    <tr><td>커밋 완료 (A-1)</td><td><code><strong>4ee53a8e</strong></code> 중앙 타워·AoE / <code><strong>26a9db17</strong></code> 씬 결선</td></tr>
+    <tr><td>SP1 신규 코드 <span class="tag must">미커밋</span></td><td><code><strong>TowerRoster.cs</strong></code>, <code><strong>TowerBuildModalView.cs</strong></code>, <code><strong>TowerBuildPresenter.cs</strong></code> (+meta)</td></tr>
+    <tr><td>SP1 수정 코드 <span class="tag must">미커밋</span></td><td><code><strong>TowerPlacementController.cs</strong></code>, <code><strong>ModeBootstrap.cs</strong></code>, <code><strong>GridDefenseModeBootstrap.cs</strong></code>, <code><strong>UIRoot.cs</strong></code>, <code><strong>GameManager.cs</strong></code></td></tr>
+    <tr><td>SP1 에셋 <span class="tag must">미커밋</span></td><td><code><strong>TowerRoster.asset</strong></code>, <code><strong>TowerData_Sniper/Cannon.asset</strong></code>, <code><strong>TowerButtonPrefab.prefab</strong></code>, <code><strong>Mat_Slot_Highlight.mat</strong></code>, <code><strong>GridScene.unity</strong></code></td></tr>
+  </table>
+  <div class="note">SP1 일체 <strong>미커밋</strong> 상태. 씬 저장 여부 확인 후 lint → 사용자 승인 하에 scoped 커밋 예정.</div>
+
+  <p class="foot">SP1 완료 요약 — 다음: 씬 저장·커밋 후 SP2 또는 Skill(C) 중 다음 TASK 선정</p>
+
+</div>
+</body>
+</html>
