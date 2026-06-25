@@ -1,9 +1,10 @@
 using UnityEngine;
 using DefenseDot.Systems.Tower;
+using DefenseDot.Systems.Abilities.Effects;
 
 namespace DefenseDot.Systems.Abilities
 {
-    /// <summary> 능력 1회 발동에 필요한 입력 묶음(Context Object)입니다. </summary>
+    /// <summary> 능력 구동 입력 묶음(Context Object)입니다. </summary>
     public readonly struct AbilityContext
     {
         /// <summary> 투사체 생성 등에 쓰는 호스트 MonoBehaviour. </summary>
@@ -14,13 +15,20 @@ namespace DefenseDot.Systems.Abilities
         public readonly TargetFinder Finder;
         /// <summary> 패시브 합산 보정. </summary>
         public readonly AbilityModifiers Modifiers;
+        /// <summary> 효과 엔티티 스포너. </summary>
+        public readonly IEffectSpawner Effects;
+        /// <summary> 시전(애니 동반 발사) 요청 대상. null이면 즉시 발사. </summary>
+        public readonly ICastHost Cast;
 
-        public AbilityContext(MonoBehaviour host, Vector3 origin, TargetFinder finder, AbilityModifiers modifiers)
+        public AbilityContext(MonoBehaviour host, Vector3 origin, TargetFinder finder,
+            AbilityModifiers modifiers, IEffectSpawner effects, ICastHost cast = null)
         {
             Host = host;
             Origin = origin;
             Finder = finder;
             Modifiers = modifiers;
+            Effects = effects;
+            Cast = cast;
         }
     }
 }

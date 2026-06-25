@@ -8,7 +8,8 @@ namespace DefenseDot.Tests.EditMode
     {
         private sealed class StubActive : ActiveAbilityData
         {
-            public override void Execute(in AbilityContext ctx, AbilityInstance self) { }
+            public override void Tick(in AbilityContext ctx, AbilityInstance self, float deltaTime) { }
+            protected override void Fire(in AbilityContext ctx, AbilityInstance self, DefenseDot.Core.ITargetable target) { }
         }
         private sealed class StubPassive : PassiveAbilityData
         {

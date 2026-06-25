@@ -9,6 +9,8 @@ namespace DefenseDot.Systems.Abilities
         public int level;
         /// <summary> 남은 쿨다운(초, 액티브용). </summary>
         public float cooldownRemaining;
+        /// <summary> 효과 핸들·커스텀 런타임 상태(상시형 사용). </summary>
+        public object runtimeState;
 
         public AbilityInstance(AbilityData data, int level = 1)
         {

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e387753030e57947b71a8a4a1f27799, type: 3}
+  m_Name: Ability_Shot
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.Definitions.ProjectileAbilityData
+  id: shot
+  displayName: "\uC0F7"
+  icon: {fileID: 0}
+  rarity: 0
+  maxLevel: 5
+  baseCooldown: 0.4
+  castAnimation: {fileID: 7400000, guid: b67b5b6acf7081e42b9a4e70ad535d22, type: 2}
+  projectilePrefab: {fileID: 6069573825396825265, guid: 6a69eecf8d11bfc43a543e8ac90745bc, type: 3}
+  baseDamage: 1
+  damagePerLevel: 1
+  speed: 35
+  pierce: 1
+  range: 30
+  muzzlePrefab: {fileID: 6120445964550834281, guid: aa7f91c6190ce6540a0b18ab3483498d, type: 3}
