@@ -15,5 +15,7 @@ namespace DefenseDot.Systems.Abilities
         public int rarity;
         /// <summary> 최대 레벨. </summary>
         public int maxLevel = 5;
+        /// <summary> 카드 표시용 설명(선택). </summary>
+        [TextArea] public string description;
     }
 }

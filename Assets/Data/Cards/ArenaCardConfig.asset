@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecc34ce443083194bb8851ace875962b, type: 3}
+  m_Name: ArenaCardConfig
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Cards.ArenaCardConfig
+  pauseOnCardSelect: 1
+  choiceCount: 3
+  curveBase: 8
+  curvePerLevel: 4
+  newCardChanceEarly: 0.75
+  newCardChanceLate: 0.45
+  earlyLevelThreshold: 4
+  enableLucky: 0
+  enableCombo: 0
+  enableBonus: 0
+  luckyChance: 0.12
+  superLuckyChance: 0.03
+  tierSet: {fileID: 11400000, guid: 81049c19b3d9fb7489aae8dddaa699e6, type: 2}

@@ -3,6 +3,7 @@ using UnityEngine;
 using DefenseDot.Domain.Models;
 using DefenseDot.Data;
 using DefenseDot.Systems.Tower;
+using DefenseDot.Systems.Cards;
 using DefenseDot.UI.Views;
 using DefenseDot.UI.Presenters;
 
@@ -20,6 +21,7 @@ namespace DefenseDot.UI.InGame
         [SerializeField] private TowerBuildModalView buildModalView;
         [SerializeField] private TowerRoster towerRoster;
         [SerializeField] private GameResultView gameResultView;
+        [SerializeField] private CardSelectionView cardSelectionView;
 
         private readonly List<IPresenter> presenters = new List<IPresenter>();
 
@@ -27,7 +29,7 @@ namespace DefenseDot.UI.InGame
         /// 합성 루트가 HUD 컨텍스트·게임 흐름·배치 컨트롤러를 주입합니다.
         /// HUD는 자신이 자신의 프레젠터를 조립하므로 UIRoot은 모드를 알지 못합니다.
         /// </summary>
-        public void Inject(in HudContext ctx, GameFlowModel flow, TowerPlacementController placement)
+        public void Inject(in HudContext ctx, GameFlowModel flow, TowerPlacementController placement, in CardContext card)
         {
             if (hud != null) presenters.Add(hud.Bind(ctx));
 
@@ -36,6 +38,10 @@ namespace DefenseDot.UI.InGame
 
             if (gameResultView != null)
                 presenters.Add(new GameResultPresenter(gameResultView, flow));
+
+            if (cardSelectionView != null && card.Level != null && card.Config != null && card.Core != null)
+                presenters.Add(new CardSelectionPresenter(cardSelectionView, card.Level,
+                    new CardChoiceGenerator(), card.Core, card.Config, card.Pool, card.Flow));
 
             foreach (IPresenter presenter in presenters) presenter.Initialize();
         }

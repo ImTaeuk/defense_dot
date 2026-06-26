@@ -47,6 +47,9 @@ namespace DefenseDot.Systems.Management
         /// <summary>라운드 제한시간 모델입니다.</summary>
         public RoundTimerModel RoundTimer { get; private set; }
 
+        /// <summary>플레이어 레벨·처치 누적 모델입니다. (Arena 카드 허브)</summary>
+        public LevelModel Level { get; private set; }
+
         // 서비스 (합성 루트가 생성·주입)
         private EnemyRegistry registry;
         private TargetFinder targetFinder;
@@ -92,12 +95,25 @@ namespace DefenseDot.Systems.Management
             Core.OnCoreDestroyed += HandleCoreDestroyed;
             Wave.OnWaveCleared += HandleVictory;
 
+            // 레벨·카드 시스템 (Arena 전용) — CombatModel 처치 → LevelModel 레벨업
+            var arenaBoot = modeBootstrap as ArenaModeBootstrap;
+            DefenseDot.Systems.Cards.ArenaCardConfig cardConfig = arenaBoot != null ? arenaBoot.CardConfig : null;
+            DefenseDot.Systems.Cards.AbilityPool abilityPool = arenaBoot != null ? arenaBoot.AbilityPool : null;
+            System.Func<int, int> curve;
+            if (cardConfig != null) curve = cardConfig.KillsToNextLevel;
+            else curve = lv => Mathf.Max(3, 8 + lv * 4);
+            Level = new LevelModel(curve);
+            Combat.OnEnemyKilled += HandleEnemyKilledForLevel;
+
             // UI 연결 (UI 합성 루트에 주입)
             if (uiRoot != null)
             {
                 var hudContext = new DefenseDot.UI.HudContext(
                     Economy, Core, Wave, Score, RoundTimer, modeBootstrap.EnemyDisplayCapacity);
-                uiRoot.Inject(hudContext, Flow, modeBootstrap.PlacementController);
+                DefenseDot.Systems.Abilities.ICardCommandTarget coreTarget =
+                    arenaBoot != null ? arenaBoot.CoreAbility : null;
+                var cardContext = new DefenseDot.UI.CardContext(Level, cardConfig, abilityPool, coreTarget, Flow);
+                uiRoot.Inject(hudContext, Flow, modeBootstrap.PlacementController, cardContext);
             }
 
             // 게임 시작
@@ -132,6 +148,11 @@ namespace DefenseDot.Systems.Management
             if (mode.CheckDefeat(spawner.ActiveEnemyCount)) TriggerGameOver();
         }
 
+        private void HandleEnemyKilledForLevel(int reward)
+        {
+            if (Level != null) Level.RegisterKill();
+        }
+
         private void HandleCoreDestroyed() => TriggerGameOver();
 
         private void TriggerGameOver()
@@ -151,6 +172,7 @@ namespace DefenseDot.Systems.Management
             economyController?.Dispose();
             if (Core != null) Core.OnCoreDestroyed -= HandleCoreDestroyed;
             if (Wave != null) Wave.OnWaveCleared -= HandleVictory;
+            if (Combat != null) Combat.OnEnemyKilled -= HandleEnemyKilledForLevel;
         }
     }
 }

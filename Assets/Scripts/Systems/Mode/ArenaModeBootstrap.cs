@@ -26,6 +26,24 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 코어 비주얼로 쓸 Aris 타워 프리팹(애니메이션·연출 포함). </summary>
         [SerializeField] private GameObject arisTowerPrefab;
 
+        [Header("카드 시스템 (A3)")]
+        /// <summary> 카드 선택 허브 설정(정지·곡선·티어). </summary>
+        [SerializeField] private DefenseDot.Systems.Cards.ArenaCardConfig cardConfig;
+
+        /// <summary> "신규 능력" 카드 후보 풀. </summary>
+        [SerializeField] private DefenseDot.Systems.Cards.AbilityPool abilityPool;
+
+        private CoreAbilitySystem coreAbility;
+
+        /// <summary> 카드 허브 설정. </summary>
+        public DefenseDot.Systems.Cards.ArenaCardConfig CardConfig => cardConfig;
+
+        /// <summary> 신규 카드 능력 풀. </summary>
+        public DefenseDot.Systems.Cards.AbilityPool AbilityPool => abilityPool;
+
+        /// <summary> 코어 능력 시스템(카드 명령 대상). CreateMode 이후 non-null. </summary>
+        public CoreAbilitySystem CoreAbility => coreAbility;
+
         /// <summary> 아레나 모드의 적 수 표시 한계(수용 한계)입니다. </summary>
         public override int EnemyDisplayCapacity =>
             arenaView != null && arenaView.Config != null ? arenaView.Config.maxAlive : 80;
@@ -68,7 +86,7 @@ namespace DefenseDot.Systems.Mode
             // 코어: 디버그 단일공격 제거 + 능력 시스템 부착
             TowerBehaviorTree debugBt = go.GetComponent<TowerBehaviorTree>();
             if (debugBt != null) Destroy(debugBt);
-            CoreAbilitySystem coreAbility = go.AddComponent<CoreAbilitySystem>();
+            coreAbility = go.AddComponent<CoreAbilitySystem>();
             coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, starterAbilities);
 
             SetupArisVisual(go, coreAbility, ctx);
