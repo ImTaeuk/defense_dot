@@ -1,7 +1,7 @@
 # TASK-002: 게임 종료·결과·재시작 (플레이 루프 클로징)
 
 **작성일**: 2026-06-07 (2026-06-11 분리)
-**상태**: 분석 완료 (착수 예정)
+**상태**: 구현 완료 (코드 + ArenaScene 배선 확인 / Play 시각검증·Grid 씬 배선 확인 남음)
 **우선순위**: 높음 — 게임 성립의 마지막 관문
 **출처**: 구 TASK-002 플레이 루프 P1 (진입=TASK-008, 정리=TASK-009 로 분리)
 
@@ -19,14 +19,19 @@
 
 ## 2. TODO
 
-### A. 결과·재시작
-- [ ] **A-1.** `GameResultPresenter`(POCO·IPresenter) → `OnPhaseChanged` 구독 → 승/패 처리. `UIRoot` 에 한 줄(HUDPresenter 패턴). **이벤트 이미 존재, 소비자만 추가**
-- [ ] **A-2.** 결과 패널 프리팹 (승/패 메시지 + 재시작 버튼, uGUI 공통 HUD 컨벤션)
-- [ ] **A-3.** 재시작 = `SceneManager.LoadScene(현재 씬)` 또는 도메인 리셋
-- [ ] **A-4.** 게임오버 후 스폰·입력 정지 (`Flow.IsPlaying` 체크 확장 — 현재 `GameManager.Update` 1곳뿐)
+### A. 결과·재시작 ✅ 구현 완료 (코드 + ArenaScene 배선)
+- [x] **A-1.** `GameResultPresenter`(IPresenter) → `OnPhaseChanged` 구독 → Victory/GameOver 분기. `UIRoot.Inject` 에서 조립·등록.
+- [x] **A-2.** 결과 패널 — `GameResultView`(panel/messageText/restartButton) + ArenaScene `GameResult` 오브젝트에 Panel/Message/RestartButton 배선 확인.
+- [x] **A-3.** 재시작 = `SceneManager.LoadScene(현재 씬 buildIndex)` (`HandleRestart`).
+- [x] **A-4.** 게임오버 후 정지 — `Time.timeScale=0`(Victory/GameOver), 재시작·Initialize 시 1f 복구. 스폰·이동 일괄 정지.
 
 ### B. Arena 종료 규칙
-- [ ] **B-1.** **Arena 무한화** — Arena 에서 `OnWaveCleared`→Victory 미발생하도록 모드별 분기(원작=무한 생존). **선행: Arena 방향(a/b) 결정**
+- [x] **B-1.** Arena 종료 규칙 → [[TASK-012]] A0(유한 연속 웨이브 + 전멸 시 승리)로 교정·흡수·완료.
+
+### C. 잔여 검증 (구현 외)
+- [ ] **C-1.** Play 시각 검증 — 승/패 발생 시 패널 표시·재시작 동작 (사용자 Unity).
+- [ ] **C-2.** Grid 씬(GridScene)에도 동일 배선 여부 확인 (Arena 우선이라 후순위).
+- [ ] **C-3.** `Message` 텍스트 폰트 neodgm 적용 여부 확인.
 
 ## 3. 선행/연계
 

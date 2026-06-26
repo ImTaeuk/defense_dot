@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dot Defense 원작 v480→v608 갱신 분석 — Unity 이식 작업 분류</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Dot Defense 원작 v480 → v608 갱신 분석 — Unity 이식 작업 분류</h1>
+  <div class="sub">
+    <span class="tag must">분석 보고서</span>
+    <span class="tag opt">TASK-012 연동</span>
+    분석 완료 · 2026-06-26 · 정본 <code>index.html</code> APP_VERSION 608
+  </div>
+
+  <!-- 1. 요청 요지 -->
+  <h2>1. 요청 요지</h2>
+  <div class="panel">
+    <p>레퍼런스 웹게임(<code><strong>Assets/Reference/dot-defense-main/index.html</strong></code>)이 갱신되었다. "시스템적으로 무엇이 바뀌었는지" 원작을 다시 분석하고, 그 결과를 <strong>① 개발비용 ② 개발중요도</strong> 두 기준으로 분류하여 요약한다. 분석 결과는 로드맵 <code><strong>TASK-012</strong></code> 에 반영했다.</p>
+    <div class="note">
+      결론: 직전 커밋본 <strong>v480</strong> → 현재 <strong>v608</strong> (버전 128 증가). diff <strong class="ok">+3,155</strong> / <strong class="warn">−599</strong>줄. <strong>신규 6 · 변경 4 = 총 10개 시스템</strong>이 추가/대폭 변경됨. 핵심 가성비 1순위 = <strong>순수 패시브 4종</strong>(저비용·고중요), 최대 공수 = <strong>HUD 리스킨 · 계보 공명</strong>.
+    </div>
+  </div>
+
+  <!-- 2. 갱신 규모 (검증) -->
+  <h2>2. 갱신 규모 (정량 검증)</h2>
+  <div class="panel">
+    <p>직전 커밋 <code><strong>dad82a8b</strong></code>(APP_VERSION 480) 와 현재 워킹본(608)의 diff 및 키워드 빈도로 변경 강도를 정량 검증했다. <span class="ok">유물·승천(MAX_ASCENSION)·조합(COMBO_RECIPES)은 빈도 불변</span> = 구조 변경 없음. <span class="warn">계보·공명·진화·업적은 폭증</span> = 신규/대폭 확장.</p>
+    <table>
+      <tr><th>키워드</th><th>v480</th><th>v608</th><th>증감</th><th>판정</th></tr>
+      <tr><td><code>계보</code> (lineage)</td><td>2</td><td>29</td><td><span class="ok">+27</span></td><td>신규 시스템</td></tr>
+      <tr><td><code>공명</code> (resonance)</td><td>9</td><td>30</td><td><span class="ok">+21</span></td><td>신규 시스템</td></tr>
+      <tr><td><code>진화</code> (evolution)</td><td>69</td><td>89</td><td><span class="ok">+20</span></td><td>확장</td></tr>
+      <tr><td><code>가챠</code> (gacha)</td><td>132</td><td>141</td><td><span class="ok">+9</span></td><td>소폭 확장</td></tr>
+      <tr><td><code>업적</code> (achievement)</td><td>63</td><td>69</td><td><span class="ok">+6</span></td><td>확장</td></tr>
+      <tr><td><code>유물</code> (relic)</td><td>131</td><td>131</td><td>0</td><td><span class="ok">불변</span></td></tr>
+      <tr><td><code>MAX_ASCENSION</code> (승천)</td><td>22</td><td>22</td><td>0</td><td><span class="ok">불변</span></td></tr>
+      <tr><td><code>COMBO_RECIPES</code> (조합)</td><td>14</td><td>14</td><td>0</td><td><span class="ok">불변</span></td></tr>
+    </table>
+    <div class="note">신규 정의 추가 확인: <code>const RANKS</code> · <code>LINEAGE_RESONANCE</code> · <code>PLANET_TIERS</code> · <code>ABILITY_DOCK</code> · <code>accountLevelInfo()</code> · <code>checkUnlockAchievements()</code> · <code>onslaughtBonus</code> 모두 v480본에 <strong>0회</strong> → 전부 이번 갱신 신규.</div>
+  </div>
+
+  <!-- 3. 신규/변경 시스템 10종 -->
+  <h2>3. 신규/변경 시스템 10종 (원작 근거)</h2>
+  <div class="panel">
+    <table>
+      <tr><th>#</th><th>시스템</th><th>구분</th><th>핵심 내용</th><th>원작 근거</th></tr>
+      <tr><td>1</td><td><strong>순수 패시브 4종</strong></td><td><span class="ok">신규</span> v607</td><td>맹공(&gt;50%HP)·토벌(비보스)·쇄도(적수)·각성(라운드) 조건부 데미지 배수</td><td><code><strong>onslaughtBonus:11028</strong></code>, 적용 <code><strong>:21082</strong></code></td></tr>
+      <tr><td>2</td><td><strong>계보 공명</strong></td><td><span class="ok">신규</span> v608</td><td>23계보 × 5축(blast 8·pierce 6·shock 5·echo 3·ice 1), SR+SSR 조합 발동, 온히트+틱 비주얼</td><td><code><strong>LINEAGE_RESONANCE:28644</strong></code></td></tr>
+      <tr><td>3</td><td><strong>행성 난이도 선택</strong></td><td><span class="ok">신규</span> v500/518</td><td>3티어(테라/이그니스/아비스 = 기본/승천/초월), 31단계 래더, 캐러셀 진입</td><td><code><strong>PLANET_TIERS</strong></code>, <code><strong>planetSvg</strong></code></td></tr>
+      <tr><td>4</td><td><strong>계정 레벨·계급</strong></td><td><span class="ok">신규</span> v501/502</td><td>계정XP·8계급(생도→총사령관)·chevron 계급장·진급 시네마틱·함장 ID카드</td><td><code><strong>RANKS</strong></code>, <code><strong>accountLevelInfo</strong></code></td></tr>
+      <tr><td>5</td><td><strong>업적 해금</strong></td><td><span class="ok">신규</span> v504</td><td>조건 달성 해금 + 연대기 훈장소(업적 63→69)</td><td><code><strong>checkUnlockAchievements</strong></code></td></tr>
+      <tr><td>6</td><td><strong>기록·블랙박스 분석</strong></td><td><span class="ok">신규</span> v510/511</td><td>성과 추이 area chart·와이어프레임 함선·난이도 포함 항해 진행도</td><td>v510 / v511</td></tr>
+      <tr><td>7</td><td><strong>글로벌 랭킹 강화</strong></td><td><span class="warn">변경</span> v514/574</td><td>명예의 전당 리워크·계급장·Top3 아바타·프로필 모달·기기로컬 시즌최고점</td><td><code><strong>submitGlobalScore</strong></code> 리워크</td></tr>
+      <tr><td>8</td><td><strong>HUD/UI 리스킨</strong></td><td><span class="warn">변경</span> v575~606</td><td>메카닉 HUD(네온·코너꺾쇠)·능력 도크(칩그리드)·세로 상단바·배속/일시정지·보조정보 트레이·타이포 교체</td><td>v575~v606, <code><strong>ABILITY_DOCK</strong></code></td></tr>
+      <tr><td>9</td><td><strong>승천/초월 난이도 완화</strong></td><td><span class="warn">변경·밸런스</span> v514</td><td>≤30R 승천 추가난이도 점진 적용(R1≈15% → R30 100%)</td><td>v514</td></tr>
+      <tr><td>10</td><td><strong>진화 힌트 개선</strong></td><td><span class="warn">변경·소</span> v608</td><td>미보유 파트너(가챠 고유·진화루트)를 힌트에서 제외</td><td>v608</td></tr>
+    </table>
+  </div>
+
+  <!-- 4. 주요 신규 시스템 근거 (코드 인용) -->
+  <h2>4. 주요 신규 시스템 근거 (코드 인용)</h2>
+
+  <h3>① 순수 패시브 4종 — 데미지 계산 곱연산 훅</h3>
+  <div class="panel">
+    <div class="file">index.html · 데미지 적용 L21082-21085</div>
+    <pre><code><span class="hl-line">      if (!e.isBoss &amp;&amp; mm.onslaughtBonus &amp;&amp; e.hp/e.maxHp &gt; 0.5) mul *= (1 + cap(mm.onslaughtBonus));  <span class="hl-inline">// 맹공</span></span>
+      if (!e.isBoss &amp;&amp; mm.cullBonus) mul *= (1 + cap(mm.cullBonus));    <span class="cmt">// 토벌: 비보스</span>
+      if (mm.pressBonus)  mul *= (1 + cap(mm.pressBonus));              <span class="cmt">// 쇄도: 적 수</span>
+      if (mm.awakenBonus) mul *= (1 + cap(mm.awakenBonus));             <span class="cmt">// 각성: 라운드 램프</span></code></pre>
+    <p>단순 <code>metaMods</code> 배수 4개 + 데미지 훅 곱연산. Unity 이식 시 데이터 4개 + 계산 훅 1곳 → <span class="ok">최소 공수</span>. 빌드 밸런스에 직접 기여 → <strong>가성비 1순위</strong>.</p>
+  </div>
+
+  <h3>② 계보 공명 — 23계보 × 5축 데이터</h3>
+  <div class="panel">
+    <div class="file">index.html · LINEAGE_RESONANCE L28644~</div>
+    <pre><code><span class="cmt">const LINEAGE_RESONANCE = {</span>
+<span class="hl-line">  starfall_aria: { sr:'solar', ssr:'aria', <span class="hl-inline">axis:'blast'</span>, name:'유성 교향곡', lines:[...] },</span>
+  thunder_misaki: { sr:'gravitas', ssr:'misaki', axis:'shock', name:'뇌전 태엽', lines:[...] },
+  <span class="cmt">// ... 총 23계보 (blast 8 · pierce 6 · shock 5 · echo 3 · ice 1)</span>
+<span class="cmt">};</span></code></pre>
+    <p>데이터(23계보)는 싸지만, <strong>축별 온히트/틱 비주얼 메커닉</strong>이 비용의 본체(★★★★). A2 능력 실행계 위에 얹히며 <span class="warn">가챠/진화 인프라(A7) 선행 필요</span>.</p>
+  </div>
+
+  <h3>③ 계급(RANKS) · 행성 난이도(PLANET_TIERS) — 데이터 주도 메타</h3>
+  <div class="panel">
+    <div class="file">index.html · RANKS / PLANET_TIERS</div>
+    <pre><code><span class="cmt">const RANKS = [ {min:1,name:'생도'}, {min:5,name:'소위'}, ... {min:90,name:'총사령관'} ];  // 8계급</span>
+<span class="cmt">const PLANET_TIERS = [</span>
+  { key:'terra', name:'테라',   ascMin:0,             ascMax:0 },              <span class="cmt">// 기본</span>
+  { key:'ignis', name:'이그니스', ascMin:1,             ascMax:MAX_ASCENSION },  <span class="cmt">// 승천 1~15</span>
+  { key:'abyss', name:'아비스',  ascMin:MAX_ASCENSION+1, ascMax:MAX_DIFFICULTY }, <span class="cmt">// 초월 1~15</span>
+<span class="cmt">];</span></code></pre>
+    <p>둘 다 <strong>표/상수 데이터</strong> → ScriptableObject/JSON 이관으로 저렴(중간). 계급은 계정 진행감(중요도 낮음), 행성은 난이도 진입점(중요도 중간).</p>
+  </div>
+
+  <!-- 5. 분류: 개발비용 × 개발중요도 -->
+  <h2>5. 분류 — ① 개발비용 × ② 개발중요도</h2>
+  <div class="panel">
+    <p>기준 — <strong>개발비용</strong> = Unity 재구현 공수(데이터 이관/로직/UI/VFX), <strong>개발중요도</strong> = Arena 정체성·플레이어 체감 가치 기여. 우선순위는 두 축의 조합(저비용·고중요 = 최우선).</p>
+    <table>
+      <tr><th>#</th><th>시스템</th><th>① 개발비용</th><th>② 개발중요도</th><th>우선순위</th><th>로드맵 슬롯</th></tr>
+      <tr><td>1</td><td><strong>순수 패시브 4종</strong></td><td><span class="ok">낮음</span></td><td><span class="warn">높음</span></td><td><span class="ok">⭐ 최우선</span></td><td>A5-2</td></tr>
+      <tr><td>8</td><td><strong>HUD/UI 리스킨</strong></td><td><span class="warn">높음</span></td><td><span class="warn">높음</span></td><td><span class="ok">⭐ 높음</span></td><td>B-1~B-3</td></tr>
+      <tr><td>3</td><td>행성 난이도 선택</td><td>중간</td><td>중간</td><td>중간</td><td>A7-4</td></tr>
+      <tr><td>9</td><td>승천/초월 완화</td><td><span class="ok">낮음</span></td><td>중간</td><td>중간</td><td>A7-4</td></tr>
+      <tr><td>2</td><td>계보 공명</td><td><span class="warn">높음</span></td><td>중간</td><td>중간(인프라 선행)</td><td>A8</td></tr>
+      <tr><td>4</td><td>계정 레벨·계급</td><td>중간</td><td><span class="warn">낮음</span></td><td>낮음</td><td>A7-5</td></tr>
+      <tr><td>5</td><td>업적 해금</td><td><span class="ok">낮음</span></td><td><span class="warn">낮음</span></td><td>낮음</td><td>A7-6</td></tr>
+      <tr><td>10</td><td>진화 힌트 개선</td><td><span class="ok">낮음</span></td><td><span class="warn">낮음</span></td><td>낮음</td><td>B-4</td></tr>
+      <tr><td>6</td><td>기록·블랙박스 분석</td><td>중간</td><td><span class="warn">낮음</span></td><td>후순위</td><td>A7-7</td></tr>
+      <tr><td>7</td><td>글로벌 랭킹 강화</td><td>중간</td><td><span class="warn">낮음</span></td><td>최후순위(서버 필요)</td><td>A7-8</td></tr>
+    </table>
+  </div>
+
+  <h3>5b. 2D 우선순위 매트릭스 (비용 ↔ 중요도)</h3>
+  <div class="panel">
+    <p>세로 = 개발중요도, 가로 = 개발비용. <strong>좌상단(고중요·저비용)이 최고 가성비</strong>, 우하단(저중요·고비용)이 최저.</p>
+    <table>
+      <tr><th>↓중요도 \ 비용→</th><th>비용 낮음</th><th>비용 중간</th><th>비용 높음</th></tr>
+      <tr>
+        <td><strong>중요도 높음</strong></td>
+        <td><span class="ok">⭐ 순수 패시브 4종</span></td>
+        <td><span class="cmt">—</span></td>
+        <td><span class="ok">HUD/UI 리스킨</span></td>
+      </tr>
+      <tr>
+        <td><strong>중요도 중간</strong></td>
+        <td>승천/초월 완화</td>
+        <td>행성 난이도 선택</td>
+        <td><span class="warn">계보 공명</span></td>
+      </tr>
+      <tr>
+        <td><strong>중요도 낮음</strong></td>
+        <td>업적 해금 · 진화 힌트</td>
+        <td>계정 레벨·계급 · 기록·블랙박스 · 글로벌 랭킹</td>
+        <td><span class="cmt">—</span></td>
+      </tr>
+    </table>
+    <div class="note"><strong>해석</strong> — <span class="ok">즉시 착수</span>: 순수 패시브 4종(저비용·고중요). <span class="ok">진행분과 합산</span>: HUD 리스킨(고비용이나 이미 <code>arena-hud-replacement</code> 진행 중). <span class="warn">신중</span>: 계보 공명(고비용·콘텐츠 깊이지만 가챠/진화 선행). 저중요 메타군은 코어 완성 후 일괄.</div>
+  </div>
+
+  <!-- 6. 로드맵 반영 -->
+  <h2>6. 로드맵(TASK-012) 반영 요약</h2>
+  <div class="panel">
+    <p><code><strong>docs/tasks/active/TASK-012-arena-mode-roadmap.md</strong></code> 에 §7(v480→v608 갱신 반영) 신설, §2 시스템 목록·§3 TODO·§4 Phase 순서 갱신 완료.</p>
+    <table>
+      <tr><th>로드맵 슬롯</th><th>편입 내용</th><th>의존</th></tr>
+      <tr><td><code>A5-2</code></td><td>순수 패시브 4종 (카드 풀 편입)</td><td>A3 직후 권장</td></tr>
+      <tr><td><code>A7-4</code></td><td>행성 난이도 선택 + 승천/초월 완화</td><td>메타층</td></tr>
+      <tr><td><code>A7-5~A7-7</code></td><td>계정 레벨·계급 / 업적 해금 / 기록·블랙박스</td><td>메타층</td></tr>
+      <tr><td><code>A7-8</code></td><td>글로벌 랭킹 강화</td><td><span class="warn">서버 연동</span></td></tr>
+      <tr><td><code>A8</code></td><td>계보 공명 (23계보×5축 + 비주얼)</td><td><span class="warn">가챠/진화 선행</span></td></tr>
+      <tr><td><code>B-1~B-4</code></td><td>HUD 리스킨 · 능력 도크 · 상단바 · 진화 힌트</td><td>횡단(arena-hud-replacement 통합)</td></tr>
+    </table>
+  </div>
+
+  <!-- 7. 권장 작업 순서 -->
+  <h2>7. 권장 작업 순서</h2>
+  <div class="panel">
+    <ol>
+      <li><strong>A3 (레벨업·카드 허브)</strong> 완성 — 기존 진행 중. 모든 능력 콘텐츠의 진입점.</li>
+      <li><strong class="ok">A5-2 순수 패시브 4종</strong> — A3 직후 끼워넣기. 데이터 4개+곱연산 1곳, 빌드 밸런스 즉시 향상.</li>
+      <li><strong>B (HUD 리스킨)</strong> — A3 UI 시점에 <code>arena-hud-replacement</code> 진행분과 합쳐 일괄 적용.</li>
+      <li>A4(강화) → A5-1(조합) → A6(보스) — 코어 루프 완성.</li>
+      <li><strong>A7 메타군</strong> — 행성난이도·승천완화 우선, 계정레벨·업적·기록은 후순위, 글로벌 랭킹은 서버 준비 후.</li>
+      <li><strong class="warn">A8 계보 공명</strong> — A7 가챠/진화 인프라 완성 후 최후미. 비주얼 메커닉 공수 큼.</li>
+    </ol>
+  </div>
+
+  <!-- 8. 요약 -->
+  <h2>8. 요약</h2>
+  <div class="panel">
+    <div class="note">
+      원작 <strong>v480→v608</strong> 갱신의 본질은 ① <strong>메타/진행 레이어 대폭 강화</strong>(행성난이도·계정계급·업적·기록·랭킹) ② <strong>전투 깊이 추가</strong>(순수 패시브 4종·계보 공명) ③ <strong>UI 전면 리스킨</strong>(SF 메카닉 HUD). 코어 전투 규칙(웨이브·패배·조합·유물·승천)은 <span class="ok">구조 불변</span> — 기존 TASK-012 A0~A7 골격은 유효하며, 신규분은 <strong>A5-2·A7-4~8·A8·B</strong>로 흡수했다.
+    </div>
+    <p>Unity 이식 관점 핵심: 신규 시스템 대부분은 <strong>데이터 주도(저~중 비용)</strong>라 싸게 옮겨지고, 진짜 공수는 <strong>HUD 리스킨</strong>과 <strong>계보 공명의 비주얼 메커닉</strong>에 집중된다. 가성비 최우선은 <strong class="ok">순수 패시브 4종</strong>.</p>
+  </div>
+
+  <p class="foot">분석 완료 — TASK-012 §7 반영 · 정본 index.html v608 기준 · 2026-06-26</p>
+
+</div>
+</body>
+</html>
