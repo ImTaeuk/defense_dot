@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09ccc4d758f394f439bf37c50662a7c7, type: 3}
+  m_Name: Passive_Press
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.PureDamagePassiveData
+  id: Press
+  displayName: "\uC1C4\uB3C4"
+  icon: {fileID: 21300000, guid: 23959d43ce4ee1c4aa9fc9f584791b94, type: 3}
+  rarity: 0
+  maxLevel: 5
+  description: "\uC0DD\uC874\uD55C \uC801\uC774 \uB9CE\uC744\uC218\uB85D \uB370\uBBF8\uC9C0
+    \uC99D\uAC00"
+  kind: 2

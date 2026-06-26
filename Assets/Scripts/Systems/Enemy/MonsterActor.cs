@@ -8,7 +8,7 @@ namespace DefenseDot.Systems.Enemy
     /// <summary>
     /// 적(몬스터) 액터입니다. 주입된 이동 전략으로 이동하며, 처치/도달을 스포너에 통지합니다.
     /// </summary>
-    public class MonsterActor : ActorBase<EnemyData>, IMovableActor, ITargetable, IPoolable
+    public class MonsterActor : ActorBase<EnemyData>, IMovableActor, ITargetable, ICombatTargetInfo, IPoolable
     {
         private IMovementStrategy movement;
         private EnemySpawner spawner;
@@ -63,6 +63,13 @@ namespace DefenseDot.Systems.Enemy
 
         #region ITargetable Implementation
         public bool IsActive => currentState != ActorState.Dead;
+        #endregion
+
+        #region ICombatTargetInfo Implementation
+        /// <summary> 보스 여부. 보스 시스템 도입 전이라 항상 false. </summary>
+        public bool IsBoss => false;
+        /// <summary> 현재 체력 비율(0~1). </summary>
+        public float HealthRatio => (data != null && data.health > 0f) ? Mathf.Clamp01(currentHealth / data.health) : 1f;
         #endregion
 
         #region IPoolable Implementation

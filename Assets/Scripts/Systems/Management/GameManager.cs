@@ -15,7 +15,7 @@ namespace DefenseDot.Systems.Management
     /// 게임 전역을 총괄하는 합성 루트(Composition Root)입니다.
     /// 모든 도메인 모델을 생성·보유하고 하위 시스템에 주입하며, 승패를 판정합니다.
     /// </summary>
-    public class GameManager : MonoBehaviour
+    public class GameManager : MonoBehaviour, DefenseDot.Core.ICombatState
     {
         [Header("Startup")]
         [SerializeField] private ModeBootstrap modeBootstrap;
@@ -49,6 +49,11 @@ namespace DefenseDot.Systems.Management
 
         /// <summary>플레이어 레벨·처치 누적 모델입니다. (Arena 카드 허브)</summary>
         public LevelModel Level { get; private set; }
+
+        /// <summary>현재 라운드(웨이브). 조건부 데미지(각성)용.</summary>
+        public int Round => Wave != null ? Wave.Current : 1;
+        /// <summary>생존 적 수. 조건부 데미지(쇄도)용.</summary>
+        public int AliveEnemyCount => spawner != null ? spawner.ActiveEnemyCount : 0;
 
         // 서비스 (합성 루트가 생성·주입)
         private EnemyRegistry registry;
@@ -130,7 +135,7 @@ namespace DefenseDot.Systems.Management
             }
             Vector3 origin = spawner != null ? spawner.transform.position : transform.position;
             Vector3 center = coreController != null ? coreController.CorePosition : transform.position;
-            var ctx = new ModeContext(Core, Economy, targetFinder, origin, center, Flow);
+            var ctx = new ModeContext(Core, Economy, targetFinder, origin, center, Flow, this);
             return modeBootstrap.CreateMode(ctx);
         }
 

@@ -24,8 +24,11 @@ namespace DefenseDot.Systems.Abilities
         {
             if (ability == null || instance == null) return 0f;
             float dmg = ability.ValueAtLevel(instance.level);
-            if (modifiers != null) dmg += modifiers.damageBonus;
-            // Phase B: 순수 패시브 조건부 곱연산을 여기서 적용 예정.
+            if (modifiers != null)
+            {
+                dmg += modifiers.damageBonus;
+                dmg *= modifiers.ConditionalMultiplier(target as ICombatTargetInfo);
+            }
             return dmg;
         }
     }

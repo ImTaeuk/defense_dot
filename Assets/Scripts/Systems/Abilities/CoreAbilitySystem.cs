@@ -27,10 +27,11 @@ namespace DefenseDot.Systems.Abilities
 
         /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. </summary>
         public void Setup(TargetFinder finder, Vector3 origin, GameFlowModel gameFlow,
-            IReadOnlyList<AbilityData> starters)
+            ICombatState combatState, IReadOnlyList<AbilityData> starters)
         {
             flow = gameFlow;
             loadout = new AbilityLoadout();
+            loadout.Modifiers.combatState = combatState;
             if (starters != null)
                 for (int i = 0; i < starters.Count; i++)
                     if (starters[i] != null) loadout.TryAdd(starters[i]);

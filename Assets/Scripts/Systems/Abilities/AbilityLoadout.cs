@@ -75,8 +75,7 @@ namespace DefenseDot.Systems.Abilities
 
         private void RecalculateModifiers()
         {
-            modifiers.damageBonus = 0f;
-            modifiers.cooldownReduction = 0f;
+            modifiers.ResetAccumulated();
             for (int i = 0; i < passives.Count; i++)
             {
                 var p = passives[i].data as PassiveAbilityData;

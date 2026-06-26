@@ -1,5 +1,6 @@
 // 모드 생성에 필요한 공통 입력 묶음
 using UnityEngine;
+using DefenseDot.Core;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Tower;
 
@@ -22,8 +23,10 @@ namespace DefenseDot.Systems.Mode
         public readonly Vector3 CoreCenter;
         /// <summary> 게임 진행 단계 모델 (능력 구동 게이트용) </summary>
         public readonly GameFlowModel Flow;
+        /// <summary> 실시간 전투 상태 (조건부 데미지: 라운드·생존 적 수) </summary>
+        public readonly ICombatState CombatState;
 
-        public ModeContext(CoreModel core, EconomyModel economy, TargetFinder targetFinder, Vector3 spawnOrigin, Vector3 coreCenter, GameFlowModel flow)
+        public ModeContext(CoreModel core, EconomyModel economy, TargetFinder targetFinder, Vector3 spawnOrigin, Vector3 coreCenter, GameFlowModel flow, ICombatState combatState)
         {
             Core = core;
             Economy = economy;
@@ -31,6 +34,7 @@ namespace DefenseDot.Systems.Mode
             SpawnOrigin = spawnOrigin;
             CoreCenter = coreCenter;
             Flow = flow;
+            CombatState = combatState;
         }
     }
 }
