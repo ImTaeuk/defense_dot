@@ -81,7 +81,7 @@ Arena = 원작의 **`standard`(클래식) 모드**. 원형 경기장에서 중�
 - [x] **A3-1.** kills 누적→레벨업 트리거(`killsToNextLevel` 곡선, `LevelModel`)
 - [x] **A3-2.** 카드 3장 생성(신규/레벨업) + `timeScale=0` 선택 모달(`CardSelectionPresenter`·`pauseOnCardSelect` 토글)
 - [x] **A3-3.** 선택 적용 → 슬롯/레벨 반영(`CoreAbilitySystem.AddAbility`/`LevelUpAbility`, 러너 동기화)
-- [ ] **🔴 A3-D (디자인 최우선).** 등급별 효과·이미지 차별화 — 임시 셰이더(`CardBackground`) **폐기**, 현재 카드 = **일반 Image 단색(균일)**. `CardTierSet`(SO) 데이터 기반으로 등급별 색/이미지/연출 재도입. **사용자 지정 디자인 스펙 대기 → 수령 즉시 적용.**
+- [x] **A3-D (디자인).** 등급별 카드 비주얼 — 블랭크 스킬 카드 스프라이트(등급색) + `HologramFoilTinted` 셰이더 홀로그램 포일. `CardTier` 5등급 확장 + `CardTierSet`(스프라이트+머티리얼) 데이터 주도, `CardSelectionView.Bind` 자동 적용. 매핑: 신규=블루/강화=그린/조합=퍼플/럭키=옐로우/슈퍼=레드. (코어는 신규·레벨업만 등장, 나머지는 향후 겹 활성 시 자동)
 
 ### A4. 인게임 강화
 - [ ] **A4-1.** 골드(Economy)로 능력 레벨업/삭제 UI·로직 (`enhanceCost` 라운드 비례)
