@@ -70,7 +70,18 @@ namespace DefenseDot.UI.Views
             if (item.kindText != null) item.kindText.text = disp.kindTag;
             if (item.descText != null) item.descText.text = disp.desc;
             if (item.icon != null) { item.icon.sprite = disp.icon; item.icon.enabled = disp.icon != null; }
-            // 등급별 효과·이미지 차별화는 후속(TASK 최우선)에서 적용. 현재는 일반 Image(프리팹 단색) 유지.
+
+            // 등급별 카드 스프라이트 + 홀로그램 포일 적용
+            if (config != null && config.tierSet != null && item.background != null)
+            {
+                CardTierSet.TierStyle s = config.tierSet.Get(disp.tier);
+                if (s.cardSprite != null) item.background.sprite = s.cardSprite;
+                if (s.foilMaterial != null) item.background.material = s.foilMaterial;
+                item.background.color = Color.white;
+                item.background.type = Image.Type.Simple;
+                item.background.preserveAspect = false;
+                if (item.border != null) item.border.enabled = false; // 카드 스프라이트가 프레임 제공
+            }
         }
 
         private void StartEntrance()

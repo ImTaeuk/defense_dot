@@ -11,12 +11,8 @@ namespace DefenseDot.Systems.Cards
         public struct TierStyle
         {
             public CardTier tier;
-            public Color borderColor;
-            public Color bgTop;
-            public Color bgBottom;
-            public Color glowColor;
-            public float glowIntensity;
-            public bool useParticle;
+            public Sprite cardSprite;      // 카드 모양 배경 스프라이트(등급색)
+            public Material foilMaterial;  // 홀로그램 포일 머티리얼(등급색)
         }
 
         public List<TierStyle> styles = new List<TierStyle>();

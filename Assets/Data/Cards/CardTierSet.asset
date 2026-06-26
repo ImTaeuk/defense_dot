@@ -14,16 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Cards.CardTierSet
   styles:
   - tier: 0
-    borderColor: {r: 0.902, g: 0.902, b: 0.925, a: 1}
-    bgTop: {r: 0.11, g: 0.118, b: 0.149, a: 1}
-    bgBottom: {r: 0.039, g: 0.047, b: 0.078, a: 1}
-    glowColor: {r: 0.9, g: 0.9, b: 0.95, a: 1}
-    glowIntensity: 0.35
-    useParticle: 0
+    cardSprite: {fileID: 21300000, guid: aecd0ef79b6319b4a9d7c642934ae243, type: 3}
+    foilMaterial: {fileID: 2100000, guid: 40867f101abd43a4b96e1bd1838198d6, type: 2}
   - tier: 1
-    borderColor: {r: 0.533, g: 0.784, b: 1, a: 1}
-    bgTop: {r: 0.102, g: 0.188, b: 0.314, a: 1}
-    bgBottom: {r: 0.039, g: 0.078, b: 0.141, a: 1}
-    glowColor: {r: 0.533, g: 0.784, b: 1, a: 1}
-    glowIntensity: 0.6
-    useParticle: 1
+    cardSprite: {fileID: 21300000, guid: 992011c5208abab4681c1197a6ada421, type: 3}
+    foilMaterial: {fileID: 2100000, guid: 8bc8634844a7f824190cb81d6f00a390, type: 2}
+  - tier: 2
+    cardSprite: {fileID: 21300000, guid: 436eaf454f0d05847b9ec73e8dd55da5, type: 3}
+    foilMaterial: {fileID: 2100000, guid: 188670f844901504a8df5631b0c15b57, type: 2}
+  - tier: 3
+    cardSprite: {fileID: 21300000, guid: ce5036429b0dd234ba2cc1fd01a50b2e, type: 3}
+    foilMaterial: {fileID: 2100000, guid: a971339d0c5dac44599e51e4e2718467, type: 2}
+  - tier: 4
+    cardSprite: {fileID: 21300000, guid: 7ee9d2afb4dd8f4438054cdc8be40c8f, type: 3}
+    foilMaterial: {fileID: 2100000, guid: d527e4e743f3b7e408c6fa89df5a7e9e, type: 2}
