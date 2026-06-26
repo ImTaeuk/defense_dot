@@ -28,8 +28,8 @@ namespace DefenseDot.Systems.Abilities.Definitions
             if (target == null) return;
 
             AreaZoneEffect fx = ctx.Effects.Spawn(zonePrefab);
-            float dmg = ValueAtLevel(self.level) + ctx.Modifiers.damageBonus;
-            fx.Activate(target.Position, radius, dmg, duration, ctx.Finder);
+            DamageSource src = new DamageSource(this, self, ctx.Modifiers);
+            fx.Activate(target.Position, radius, src, duration, ctx.Finder);
         }
     }
 }

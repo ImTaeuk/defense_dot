@@ -29,8 +29,8 @@ namespace DefenseDot.Systems.Abilities.Definitions
             if (target == null) return;
 
             ProjectileEffect fx = ctx.Effects.Spawn(projectilePrefab);
-            float dmg = ValueAtLevel(self.level) + ctx.Modifiers.damageBonus;
-            fx.Activate(ctx.Origin, target, dmg, speed, pierce, range, ctx.Finder);
+            DamageSource src = new DamageSource(this, self, ctx.Modifiers);
+            fx.Activate(ctx.Origin, target, src, speed, pierce, range, ctx.Finder);
             if (muzzlePrefab != null)
             {
                 Vector3 dir = target.Position - ctx.Origin;

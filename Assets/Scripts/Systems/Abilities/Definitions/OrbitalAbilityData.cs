@@ -19,8 +19,8 @@ namespace DefenseDot.Systems.Abilities.Definitions
         {
             if (orbiterPrefab == null) return;
             OrbiterSetEffect fx = ctx.Effects.Spawn(orbiterPrefab);
-            float dmg = ValueAtLevel(self.level) + ctx.Modifiers.damageBonus;
-            fx.Activate(ctx.Origin, 1 + self.level, dmg, rotSpeed, ctx.Finder);
+            DamageSource src = new DamageSource(this, self, ctx.Modifiers);
+            fx.Activate(ctx.Origin, 1 + self.level, src, rotSpeed, ctx.Finder);
             self.runtimeState = fx;
         }
 

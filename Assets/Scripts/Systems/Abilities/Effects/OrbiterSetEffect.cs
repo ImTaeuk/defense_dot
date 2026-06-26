@@ -16,7 +16,7 @@ namespace DefenseDot.Systems.Abilities.Effects
         [SerializeField] private float maxRadius = 12f;
 
         private TargetFinder finder;
-        private float damage;
+        private DamageSource source;
         private float rotSpeed;
         private Vector3 center;
         private float angle;
@@ -26,10 +26,10 @@ namespace DefenseDot.Systems.Abilities.Effects
         private readonly Dictionary<ITargetable, float> rehit = new Dictionary<ITargetable, float>();
 
         /// <summary> 위성 집합을 활성화합니다. </summary>
-        public void Activate(Vector3 center, int count, float damage, float rotSpeed, TargetFinder finder)
+        public void Activate(Vector3 center, int count, DamageSource source, float rotSpeed, TargetFinder finder)
         {
             this.center = center;
-            this.damage = damage;
+            this.source = source;
             this.rotSpeed = rotSpeed;
             this.finder = finder;
             transform.position = center;
@@ -95,7 +95,7 @@ namespace DefenseDot.Systems.Abilities.Effects
             {
                 ITargetable c = cands[i];
                 if (rehit.ContainsKey(c)) continue;
-                if (c is IDamageable d) d.TakeDamage(damage);
+                if (c is IDamageable d) d.TakeDamage(source.Resolve(c));
                 rehit[c] = rehitCooldown;
             }
             UnityEngine.Pool.ListPool<ITargetable>.Release(cands);

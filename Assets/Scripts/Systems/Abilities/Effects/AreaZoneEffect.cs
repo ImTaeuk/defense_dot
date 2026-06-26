@@ -15,17 +15,17 @@ namespace DefenseDot.Systems.Abilities.Effects
 
         private TargetFinder finder;
         private float radius;
-        private float damage;
+        private DamageSource source;
         private float life;
         private Transform visual;
         private readonly Dictionary<ITargetable, float> rehit = new Dictionary<ITargetable, float>();
 
         /// <summary> AOE 존을 활성화합니다. </summary>
-        public void Activate(Vector3 center, float radius, float damage, float duration, TargetFinder finder)
+        public void Activate(Vector3 center, float radius, DamageSource source, float duration, TargetFinder finder)
         {
             transform.position = center;
             this.radius = radius;
-            this.damage = damage;
+            this.source = source;
             this.life = duration;
             this.finder = finder;
             rehit.Clear();
@@ -59,7 +59,7 @@ namespace DefenseDot.Systems.Abilities.Effects
             {
                 ITargetable c = cands[i];
                 if (rehit.ContainsKey(c)) continue;
-                if (c is IDamageable d) d.TakeDamage(damage);
+                if (c is IDamageable d) d.TakeDamage(source.Resolve(c));
                 rehit[c] = rehitCooldown;
             }
             UnityEngine.Pool.ListPool<ITargetable>.Release(cands);

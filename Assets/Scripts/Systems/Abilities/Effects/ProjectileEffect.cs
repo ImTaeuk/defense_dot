@@ -14,7 +14,7 @@ namespace DefenseDot.Systems.Abilities.Effects
 
         private TargetFinder finder;
         private ITargetable target;
-        private float damage;
+        private DamageSource source;
         private float speed;
         private float range;
         private int pierceRemaining;
@@ -22,11 +22,11 @@ namespace DefenseDot.Systems.Abilities.Effects
         private readonly HashSet<ITargetable> hit = new HashSet<ITargetable>();
 
         /// <summary> 투사체를 활성화합니다. </summary>
-        public void Activate(Vector3 origin, ITargetable target, float damage, float speed, int pierce, float range, TargetFinder finder)
+        public void Activate(Vector3 origin, ITargetable target, DamageSource source, float speed, int pierce, float range, TargetFinder finder)
         {
             transform.position = origin;
             this.target = target;
-            this.damage = damage;
+            this.source = source;
             this.speed = speed;
             this.pierceRemaining = Mathf.Max(1, pierce);
             this.range = range;
@@ -65,7 +65,7 @@ namespace DefenseDot.Systems.Abilities.Effects
 
             if (hitVfxPrefab != null)
                 VfxPlayer.SpawnOneShot(hitVfxPrefab, transform.position, Quaternion.identity);
-            if (target is IDamageable damageable) damageable.TakeDamage(damage);
+            if (target is IDamageable damageable) damageable.TakeDamage(source.Resolve(target));
             hit.Add(target);
             pierceRemaining--;
             if (pierceRemaining <= 0) { Release(); return; }
