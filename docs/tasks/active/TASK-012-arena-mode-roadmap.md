@@ -76,10 +76,12 @@ Arena = 원작의 **`standard`(클래식) 모드**. 원형 경기장에서 중�
 - [x] **A2-1.** 능력 3종(투사체/궤도/영역) tick 자동공격 — 투사체·이펙트 풀링 프리팹 포함
 - [x] **A2-2.** 능력별 타게팅·발사 연동 (`AbilityContext`+`TargetFinder`, 시전 발사 프레임 `NotifyFireFrame`)
 
-### A3. 레벨업·카드 선택 ★핵심 허브
-- [ ] **A3-1.** kills 누적→레벨업 트리거(`killsToNextLevel` 곡선)
-- [ ] **A3-2.** 카드 3장 생성(신규/레벨업) + `timeScale=0` 선택 모달(GameManager 정지·HUD 재사용)
-- [ ] **A3-3.** 선택 적용 → 슬롯/레벨 반영
+### A3. 레벨업·카드 선택 ★핵심 허브 ✅ 코어 완료 (디자인 후속 대기 · 미커밋)
+> 신규: `Systems/Cards/*`(ArenaCardConfig·AbilityPool·CardTierSet·CardChoice·CardChoiceGenerator·CardPresentation)·`LevelModel`·`CardSelectionView`/`CardSelectionPresenter`·`ICardCommandTarget`·`ICardSelectionView`·`CardContext`. 배선: GameManager(LevelModel 생성·CombatModel 구독)·UIRoot.Inject·ArenaModeBootstrap(CardConfig/AbilityPool/CoreAbility 노출). 플레이 검증(처치→레벨업→모달+정지→선택→능력추가+러너장착→복귀), EditMode 90/90.
+- [x] **A3-1.** kills 누적→레벨업 트리거(`killsToNextLevel` 곡선, `LevelModel`)
+- [x] **A3-2.** 카드 3장 생성(신규/레벨업) + `timeScale=0` 선택 모달(`CardSelectionPresenter`·`pauseOnCardSelect` 토글)
+- [x] **A3-3.** 선택 적용 → 슬롯/레벨 반영(`CoreAbilitySystem.AddAbility`/`LevelUpAbility`, 러너 동기화)
+- [ ] **🔴 A3-D (디자인 최우선).** 등급별 효과·이미지 차별화 — 임시 셰이더(`CardBackground`) **폐기**, 현재 카드 = **일반 Image 단색(균일)**. `CardTierSet`(SO) 데이터 기반으로 등급별 색/이미지/연출 재도입. **사용자 지정 디자인 스펙 대기 → 수령 즉시 적용.**
 
 ### A4. 인게임 강화
 - [ ] **A4-1.** 골드(Economy)로 능력 레벨업/삭제 UI·로직 (`enhanceCost` 라운드 비례)
