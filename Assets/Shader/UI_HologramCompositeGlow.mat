@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: UI_HologramCompositeGlow
+  m_Shader: {fileID: 4800000, guid: 64d5e396037fe9541a1e9c2c059c1ef5, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _BackScale: 1
+    - _ColorMask: 15
+    - _FoilAngle: 0.65
+    - _FoilScale: 0.5
+    - _FoilSpeed: 0.3
+    - _FoilStrength: 0.11
+    - _FrontScale: 1
+    - _GlowEdge: 0.35
+    - _GlowEdgeSize: 1.6
+    - _GlowFill: 0.344
+    - _GlowSoftness: 0.7
+    - _GlowStrength: 8
+    - _ShineStrength: 0.1
+    - _ShineWidth: 0.25
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _UseUIAlphaClip: 0
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _GlowColor: {r: 2.536649, g: 2.536649, b: 2.536649, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
