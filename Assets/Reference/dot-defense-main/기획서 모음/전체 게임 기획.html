@@ -1,0 +1,743 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>전체 게임 기획</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+
+	table.collection-content {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.collection-content th,
+	table.collection-content td {
+		overflow-wrap: anywhere;
+	}
+
+	table.collection-content td > .user,
+	table.collection-content td > time {
+		white-space: pre-wrap;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content-wrapper {
+	overflow-x: auto;
+}
+
+@media only print {
+	.collection-content-wrapper {
+		overflow-x: visible;
+	}
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+table {
+	border-collapse: collapse;
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol.numbered-list.numbered-list-digits-2 {
+	padding-inline-start: 2em;
+}
+
+ol.numbered-list.numbered-list-digits-3plus {
+	padding-inline-start: 2.4em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="38377447-5413-80ee-8185-ca5c71c17bb5" class="page sans"><header><h1 class="page-title" dir="auto">전체 게임 기획</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><div style="display:contents" dir="auto"><h1 id="38377447-5413-8187-8cee-ed61b1fb77ef" class="">Dot Defense - 게임 기획서</h1></div><div style="display:contents" dir="auto"><p id="38377447-5413-81e5-8135-e6df79aaf428" class="">로그라이크 타워 디펜스 게임. 매 게임마다 새로운 R등급 타워로 시작하여, 능력 선택과 진화를 통해 강력한 SSR 타워로 성장시키는 게임입니다.</p></div><div style="display:contents" dir="auto"><hr id="38377447-5413-81f4-8220-cea7a3d68fa2"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-8104-a325-cd4fd9af636a" class="">🎮 게임 개요</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-81b7-9979-cddd7ed4dc80" class=""><strong>Dot Defense는 진화 기반 로그라이크 타워 디펜스 게임</strong>입니다. 게임의 핵심은 매 플레이마다 다른 경험을 제공하는 것입니다.</p></div><div style="display:contents" dir="ltr"><figure id="38377447-5413-80fe-be9f-fedc126732b7" class="image"><a href="hiworks_20260616_3808.png"><img style="width:336px" src="hiworks_20260616_3808.png"/></a></figure></div><div style="display:contents" dir="auto"><p id="38377447-5413-801e-8346-fc7f027fb7bf" class="">                                                        ( 게임 플레이 화면 - 3D 비주얼로 변경 예정 )</p></div><div style="display:contents" dir="auto"><ul id="38377447-5413-80e7-81a3-d21ba7687f4a" class="bulleted-list"><li style="list-style-type:disc">기본 구조 - 몰려오는 적을 처치하면 골드 획득, 라운드 진행 또는 레벨에 따라 랜덤 이벤트가 진행되며 이벤트에 따라 타워를 강화 또는 진화시켜 최종 라운드까지 클리어가 목표</li></ul></div><div style="display:contents" dir="ltr"><figure id="38377447-5413-80b0-a8b9-fa804821efb2" class="image"><a href="image.png"><img style="width:576px" src="image.png"/></a></figure></div><div style="display:contents" dir="ltr"><figure id="38377447-5413-80f8-9133-eb0e9075a4db" class="image"><a href="image%201.png"><img style="width:576px" src="image%201.png"/></a></figure></div><div style="display:contents" dir="auto"><p id="38377447-5413-80bb-a830-e9ebe295b33b" class="">                                                                      ( 추후 변경 그래픽 레퍼런스 )</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81e1-b2e9-c9504deb54f9" class="">게임의 핵심 특징</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8112-9b99-cf9bbc74d9fb" class="bulleted-list"><li style="list-style-type:disc"><strong>진화 시스템:</strong> 각 게임마다 랜덤 R등급 타워로 시작 → 능력 선택으로 진화 경로 결정 → SR/SSR으로 최종 진화</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81ae-a9d5-f1e76d6d0f98" class="bulleted-list"><li style="list-style-type:disc"><strong>능력 조합:</strong> 같은 능력 2개를 조합하면 더 강한 능력으로 진화 (2단계 조합 가능)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8132-a163-e5dfdcf58b6c" class="bulleted-list"><li style="list-style-type:disc"><strong>로그라이크 요소:</strong> 매 게임 다른 능력, 유물, 이벤트로 무한한 조합 가능</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-813a-862c-f0461b6fdab0" class="bulleted-list"><li style="list-style-type:disc"><strong>메타 프로그레션:</strong> 게임 클리어 시 스타더스트 획득 → 영구 강화로 다음 게임을 더 쉽게</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-814c-b9e0-c96477914b17" class="bulleted-list"><li style="list-style-type:disc"><strong>글로벌 랭킹:</strong> 시즌제로 운영되는 글로벌 랭킹 시스템</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-8141-a912-db530d3267ef"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-81e0-8e02-fe345c7decbc" class="">🎯 게임플레이 흐름</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-8111-b1e4-ca1fc9dfafb2" class=""><strong>한 게임의 전체 흐름</strong>은 다음과 같습니다.</p></div><div style="display:contents" dir="auto"><ol type="1" id="38377447-5413-814c-b817-e6a7f137420c" class="numbered-list" start="1"><li><strong>게임 시작:</strong> 13개 타로 테마 중 랜덤 R등급 타워 선택 (또는 자동 배정)</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="38377447-5413-81cb-9d9c-fbeb69e5aa70" class="numbered-list" start="2"><li><strong>라운드 진행:</strong> 매 라운드마다 적들이 나타나고, 타워가 자동으로 공격</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="38377447-5413-81ac-8abf-ddda35a7c1c8" class="numbered-list" start="3"><li><strong>라운드 클리어 후 선택:</strong> 3개 능력 중 1개 선택 (또는 유물, 이벤트 선택)</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="38377447-5413-81ca-8d01-fe8e84c9dc73" class="numbered-list" start="4"><li><strong>능력 강화/조합:</strong> 선택한 능력을 타워에 추가하거나, 같은 능력 2개를 조합해 더 강한 능력으로 진화</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="38377447-5413-8148-87f3-d74f1a4f7911" class="numbered-list" start="5"><li><strong>이벤트 발생:</strong> 무작위로 타로 카드 NPC를 만나 선택지 기반 보상 획득</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="38377447-5413-8138-a2c7-ecb1db455d49" class="numbered-list" start="6"><li><strong>보스 전투:</strong> 특정 라운드에서 특수 기믹을 가진 보스 등장</li></ol></div><div style="display:contents" dir="auto"><ol type="1" id="38377447-5413-8100-8e58-fdf543031778" class="numbered-list" start="7"><li><strong>게임 종료:</strong> R100 클리어 또는 패배 → 스타더스트, 업적, 보상 획득</li></ol></div><div style="display:contents" dir="auto"><hr id="38377447-5413-81fb-8333-c796a01ddeec"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-817c-91d8-db23bc1a02bb" class="">✨ 능력 시스템</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-8133-94b7-ec693cf58857" class=""><strong>능력은 타워의 공격 방식을 결정</strong>하는 핵심 요소입니다. 액티브 능력, 패시브 능력, 조합 능력 등 다양한 종류가 있습니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8113-b224-e5973068c9d7" class="">능력의 종류</h3></div><div style="display:contents" dir="ltr"><figure id="38377447-5413-80d9-bed6-de6189b3cfea" class="image"><a href="sumiReaper.png"><img style="width:240px" src="sumiReaper.png"/></a></figure></div><div style="display:contents" dir="auto"><p id="38377447-5413-805b-80c3-ce04a3888807" class="">                                                                                  (능력 아이콘)</p></div><div style="display:contents" dir="auto"><ul id="38377447-5413-819f-9e3d-c046f688a344" class="bulleted-list"><li style="list-style-type:disc"><strong>액티브 능력:</strong> 쿨다운 기반으로 발동하는 능력 (예: 총알 발사, 레이저, 폭탄 등)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81c4-a804-fef2cb604f62" class="bulleted-list"><li style="list-style-type:disc"><strong>패시브 능력:</strong> 항상 활성화되는 능력 (예: 공격력 증가, 사거리 확대 등)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81f9-95a1-e164781b674c" class="bulleted-list"><li style="list-style-type:disc"><strong>조합 능력:</strong> 같은 능력 2개를 조합해서 만드는 더 강한 능력</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-816e-bb99-f405110ea1f2" class="bulleted-list"><li style="list-style-type:disc"><strong>트리플 조합:</strong> 같은 계보의 조합 능력 3개를 조합해서 만드는 최강 능력</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-8172-a804-f60edc7f7ca2"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-8173-afe6-ebecd94f1300" class="">🌳 진화 시스템 (핵심)</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-81fb-89de-d1d7f9ab22bb" class=""><strong>게임의 가장 중요한 시스템</strong>입니다. 각 게임마다 다른 진화 경로를 선택할 수 있습니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-816b-bafd-f0d33f56755a" class="">4단계 진화 구조</h3></div><div style="display:contents" dir="ltr"><table id="38377447-5413-81bc-89b7-e75548eb4a80" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="38377447-5413-81f0-8780-c97f20715c05"><th id="wkMk" class="simple-table-header-color simple-table-header">단계</th><th id="DyP=" class="simple-table-header-color simple-table-header">이름</th><th id="ew]C" class="simple-table-header-color simple-table-header">설명</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="38377447-5413-81df-8217-c95f3d4282e5"><td id="wkMk" class="">1단계</td><td id="DyP=" class="">R 타워 (기본)</td><td id="ew]C" class="">13개 타로 테마 중 하나 (운명의 수레바퀴, 악마, 별, 태양, 광대, 마법사, 정의, 황제, 세계, 연인, 힘, 전차, 교황 등)</td></tr></div><div style="display:contents" dir="ltr"><tr id="38377447-5413-8169-99a8-d9d4e4533139"><td id="wkMk" class="">2단계</td><td id="DyP=" class="">SR 타워 (진화)</td><td id="ew]C" class="">각 R 타워마다 3가지 SR 진화 경로 중 선택 (능력 선택을 통해 결정)</td></tr></div><div style="display:contents" dir="ltr"><tr id="38377447-5413-8114-a5fb-ca67cdb3ee94"><td id="wkMk" class="">3단계</td><td id="DyP=" class="">SSR 타워 (최종 진화)</td><td id="ew]C" class="">SR 타워에서 특정 조건 충족 시 SSR으로 진화 (게임 내 “진화 게이트” 해금 필요)</td></tr></div><div style="display:contents" dir="ltr"><tr id="38377447-5413-81d5-b25a-c77340138213"><td id="wkMk" class="">4단계</td><td id="DyP=" class="">계보 공명 (최고의 경험)</td><td id="ew]C" class="">R + SR + SSR 타워가 같은 계보 축을 공유할 때 고유 능력명과 특수 효과 발동</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81f6-8198-cc51b186c90f" class="">13개 R 타워와 진화 경로</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8178-aa1a-cffd6fde6256" class="bulleted-list"><li style="list-style-type:disc">🎲 <strong>운명의 수레바퀴 · 카이</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8195-b110-eaeb4845acbc" class="bulleted-list"><li style="list-style-type:disc">😈 <strong>악마 · 마몬</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81c9-ba8f-c63fc461c449" class="bulleted-list"><li style="list-style-type:disc">⭐ <strong>별 · 셀레네</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-815e-8b09-d10431f702d8" class="bulleted-list"><li style="list-style-type:disc">☀️ <strong>태양 · 솔</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8146-bd49-c8b00e3549bc" class="bulleted-list"><li style="list-style-type:disc">🃏 <strong>광대 · 단테</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8178-a9a6-e3e8194b358d" class="bulleted-list"><li style="list-style-type:disc">🧙 <strong>마법사 · 메를린</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81da-9447-fdd0d9f63c24" class="bulleted-list"><li style="list-style-type:disc">⚖️ <strong>정의 · 테미스</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81ee-bee4-c11dc16d22e4" class="bulleted-list"><li style="list-style-type:disc">👑 <strong>황제 · 헤라</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8101-b01b-c1ca1069a46f" class="bulleted-list"><li style="list-style-type:disc">🌍 <strong>세계 · 테라</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8186-9603-e98ed232964d" class="bulleted-list"><li style="list-style-type:disc">💕 <strong>연인 · 큐피드</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81ae-ab92-c34a3c40d7cd" class="bulleted-list"><li style="list-style-type:disc">💪 <strong>힘 · 레오</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-812d-94bf-fa4f69a3676b" class="bulleted-list"><li style="list-style-type:disc">🚗 <strong>전차 · 빅토르</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-814e-8127-c1c20090d987" class="bulleted-list"><li style="list-style-type:disc">📖 <strong>교황 · 그레고르</strong> → 3가지 SR 진화 경로</li></ul></div><div style="display:contents" dir="ltr"><figure id="38377447-5413-8054-af75-e66065d83b9d" class="image"><a href="hiworks_20260618_9944.png"><img style="width:417.984375px" src="hiworks_20260618_9944.png"/></a></figure></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8117-a62c-d668b08c4d06" class="">5가지 계보 축 (공명 시스템)</h3></div><div style="display:contents" dir="auto"><p id="38377447-5413-80cf-828f-ecb92c6e8df9" class="">각 진화 루트의 컨셉을 살리기 위한 시스템</p></div><div style="display:contents" dir="auto"><p id="38377447-5413-80f9-8706-fc6632ee5890" class="">각 진화 루트에 따라 SSR 캐릭터의 능력에 추가 및 이펙트가 부여됩니다.</p></div><div style="display:contents" dir="auto"><ul id="38377447-5413-814f-b345-ead4734d18a4" class="bulleted-list"><li style="list-style-type:disc"><strong>❄️ 얼음 축:</strong> 적 이동 속도 감소, 동결 효과</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8102-8cd4-d7cdbd8ab6e0" class="bulleted-list"><li style="list-style-type:disc"><strong>⚡ 전격 축:</strong> 연쇄 피해, 범위 공격 강화</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81c9-b97a-cb0b625ff826" class="bulleted-list"><li style="list-style-type:disc"><strong>💥 폭발 축:</strong> 데미지 증폭, 광역 피해</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-813d-8e85-f364fadc39e6" class="bulleted-list"><li style="list-style-type:disc"><strong>🎯 관통 축:</strong> 적 관통, 다중 타겟 피해</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-812d-8788-dae4fd7b387c" class="bulleted-list"><li style="list-style-type:disc"><strong>📢 메아리 축:</strong> 능력 중복 발동, 효과 반복</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-81cb-934f-eb2f4adf42ae"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-81b3-8f6b-d268f32f2900" class="">🔗 능력 조합 시스템</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-8139-9fce-ffc2c3e241f0" class=""><strong>같은 능력 2개를 조합하면 더 강한 능력으로 진화</strong>합니다. 조합된 능력은 원래 능력 2개를 소비하고 새로운 능력 1개로 변환됩니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8194-b579-ddd8e8154d33" class="">조합 규칙</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-819c-ae3d-dcc3ef0bb6c6" class="bulleted-list"><li style="list-style-type:disc"><strong>2단계 조합:</strong> 기본 능력 A + 기본 능력 A = 조합 능력 AB</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8109-bf3f-fc919f413721" class="bulleted-list"><li style="list-style-type:disc"><strong>3단계 조합:</strong> 조합 능력 AB + 조합 능력 AB = 트리플 조합 능력 ABC</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8131-8728-e43bca8fbeb4" class="bulleted-list"><li style="list-style-type:disc"><strong>4단계 조합:</strong> 트리플 조합 능력 ABC + 트리플 조합 능력 ABC = 최강 능력 ABCD (불가능 - 최대 3단계)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81fd-b97e-ee19f7b7567c" class="bulleted-list"><li style="list-style-type:disc"><strong>조합 소비:</strong> 조합에 사용된 원래 능력들은 사라지고, 새로운 능력 1개만 남음</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81d4-88b9-fd05d4ffa112" class="bulleted-list"><li style="list-style-type:disc"><strong>조합 이점:</strong> 능력 슬롯을 절약하면서 더 강한 능력 획득</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-8181-abda-e28999cddab8"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-81ff-8360-d2952273caa6" class="">📈 성장 및 강화</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-81f4-a42c-f0c0c1949d87" class=""><strong>게임 내 성장 시스템</strong>은 두 가지 레벨로 나뉩니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81f0-a2e0-ce79b2f259c9" class="">게임 내 성장</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81f8-a120-ca147e103cd2" class="bulleted-list"><li style="list-style-type:disc"><strong>능력 레벨:</strong> 같은 능력을 여러 번 선택하면 Lv1 → Lv2 → … → Lv10으로 강화</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8125-b134-d230a5beecc7" class="bulleted-list"><li style="list-style-type:disc"><strong>능력 강화 효과:</strong> 데미지 +5%, 쿨다운 -5%, 범위 +3% 등 능력마다 다른 효과</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81ee-9794-de386195503c" class="bulleted-list"><li style="list-style-type:disc"><strong>별 강화:</strong> 캐릭터별로 별(⭐)을 모아서 영구 강화 (다음 게임에 영향)</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81c3-9804-e7012070fa55" class="">메타 프로그레션 (영구 강화)</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8119-b1b6-fb4e11bafc4a" class="bulleted-list"><li style="list-style-type:disc"><strong>스타더스트:</strong> 게임 클리어 시 획득하는 재화 (업적, 라운드 도달, 처치 수 등으로 획득)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8163-acb3-dec3ac83ee9a" class="bulleted-list"><li style="list-style-type:disc"><strong>강화소:</strong> 스타더스트로 구매하는 영구 강화 아이템</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81fb-b30f-f3a218bf3289" class="bulleted-list"><li style="list-style-type:disc"><strong>강화 종류:</strong> 능력 데미지 +1%, 보스 데미지 +2%, 적 체력 -1% 등 다양한 효과</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81ae-b3e5-e3c062136ec7" class="bulleted-list"><li style="list-style-type:disc"><strong>누적 효과:</strong> 강화소를 많이 구매할수록 게임이 점점 쉬워짐</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-8180-8160-db3aacade47c"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-8127-8071-e76dfb3be586" class="">🎲 캐릭터 &amp; 가챠</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-8195-8820-f15779532791" class=""><strong>캐릭터는 게임 내 타워를 대표하는 존재</strong>입니다. 각 캐릭터는 고유한 스킨과 능력을 가지고 있습니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81bb-8d20-e9c84c7ea2ba" class="">캐릭터 등급</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81c1-87d5-d2d68776f61e" class="bulleted-list"><li style="list-style-type:disc"><strong>R 등급:</strong> 기본 캐릭터 (마린, 솔라, 그래비타스 등)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8199-9a3e-c90448edf331" class="bulleted-list"><li style="list-style-type:disc"><strong>SR 등급:</strong> 희귀 캐릭터 (사쿠라, 루나 등)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-816d-b98a-cd75c0496a27" class="bulleted-list"><li style="list-style-type:disc"><strong>SSR 등급:</strong> 전설 캐릭터 (아리아, 미사키, 엘레미아, 스미카 등)</li></ul></div><div style="display:contents" dir="ltr"><figure id="38377447-5413-800e-bffc-f9ea481ff330" class="image"><a href="elementia.png"><img style="width:415.984375px" src="elementia.png"/></a></figure></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8144-81c7-ef0449ccc3ab" class="">캐릭터 별 강화</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81e9-ac2c-c90b37366019" class="bulleted-list"><li style="list-style-type:disc"><strong>별 시스템:</strong> 같은 캐릭터를 여러 번 뽑으면 별(⭐)이 증가</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81e0-b240-cb2d62e86ce5" class="bulleted-list"><li style="list-style-type:disc"><strong>1★ ~ 8★:</strong> 각 별 단계마다 고유 칭호 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8106-a02e-c3f1459bea41" class="bulleted-list"><li style="list-style-type:disc"><strong>칭호 효과:</strong> 게임 내 데미지, 골드, 스타더스트 등 수치 증가</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81de-96fb-e4c83feafb74" class="bulleted-list"><li style="list-style-type:disc"><strong>최종 보상:</strong> 8★ 달성 시 해당 캐릭터의 최고 칭호 획득</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-817e-ae3c-e62450dc30d0" class="">가챠 확률</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8174-9d98-eada8cd4bd6b" class="bulleted-list"><li style="list-style-type:disc"><strong>R 등급:</strong> 60% 확률</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81b9-a857-e24ff04244df" class="bulleted-list"><li style="list-style-type:disc"><strong>SR 등급:</strong> 30% 확률</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81a2-85ce-e41b90e15710" class="bulleted-list"><li style="list-style-type:disc"><strong>SSR 등급:</strong> 10% 확률</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-817c-89cd-f8f48804e4fc" class="bulleted-list"><li style="list-style-type:disc"><strong>천장:</strong> 100회 뽑기 시 SSR 보장</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-8141-b72a-d25d8dd73147"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-8131-ac37-c2cdc4ae745a" class="">💎 유물 시스템</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-811b-9830-efaccac8e7ce" class=""><strong>유물은 게임의 규칙을 바꾸는 강력한 패시브 아이템</strong>입니다. 게임 중 특정 라운드에서 유물을 선택할 수 있습니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81da-83e2-c882131c957e" class="">유물 등급</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-813d-b80c-dde4b38a089c" class="bulleted-list"><li style="list-style-type:disc"><strong>일반 등급:</strong> 약한 효과 (예: 데미지 +5%)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81fc-8569-e8a5a2bb0a0a" class="bulleted-list"><li style="list-style-type:disc"><strong>희귀 등급:</strong> 중간 효과 (예: 데미지 +15%, 특수 효과)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8125-bb45-d03bdb50bf6d" class="bulleted-list"><li style="list-style-type:disc"><strong>영웅 등급:</strong> 강한 효과 (예: 데미지 +30%, 게임 메커니즘 변화)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8179-8cda-d05b96b60b00" class="bulleted-list"><li style="list-style-type:disc"><strong>전설 등급:</strong> 매우 강한 효과 (예: 게임 완전 변화, 새로운 능력 추가)</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81a4-9724-d6e1dcaa5665" class="">유물 선택 전략</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81ea-9064-e68e6b8ccaf0" class="bulleted-list"><li style="list-style-type:disc">초반에는 데미지 증가 유물로 기초 구축</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8126-845c-de598db03421" class="bulleted-list"><li style="list-style-type:disc">중반부터 특수 효과 유물로 빌드 강화</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-818d-9c65-d09d3a6c8b59" class="bulleted-list"><li style="list-style-type:disc">후반에는 게임을 완전히 바꾸는 전설 유물 노림</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81fc-a53f-fadf366de6e5" class="bulleted-list"><li style="list-style-type:disc">같은 유물 여러 개 보유 가능 (효과 중복)</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-81a2-ba01-e0675aff6d72"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-810a-9a2c-ce3f3725212e" class="">🌍 난이도 시스템</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-819b-9344-c2340b4cd246" class=""><strong>게임 시작 전 행성을 선택하여 난이도 결정</strong>합니다. 난이도가 높을수록 더 많은 보상을 얻습니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8171-83cc-daa43fcc1b7d" class="">승천 시스템 (Ascension)</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81f7-8118-ed89cb99f2a3" class="bulleted-list"><li style="list-style-type:disc"><strong>승천 0 (기본):</strong> 적 체력 1배, 스타더스트 1배</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81e2-aed1-da2629cf8ae0" class="bulleted-list"><li style="list-style-type:disc"><strong>승천 1~15:</strong> 각 단계마다 적 체력 +10%, 스타더스트 +10%</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8163-8fdd-db356f7167e9" class="bulleted-list"><li style="list-style-type:disc"><strong>승천 15 클리어 시:</strong> 초월 시스템 해금</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8154-9144-fa06d81828fd" class="">초월 시스템 (Transcendence)</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8185-b33e-e5de5b447080" class="bulleted-list"><li style="list-style-type:disc"><strong>초월 1~15:</strong> 승천 15 이후의 추가 난이도 (적 체력 +15%, 스타더스트 +20%)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-819a-888d-e01db7f42c1e" class="bulleted-list"><li style="list-style-type:disc"><strong>초월 15 클리어:</strong> 게임의 최고 난이도 달성</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8103-9dbc-d451d61ea319" class="bulleted-list"><li style="list-style-type:disc"><strong>초월 보상:</strong> 매우 높은 스타더스트 보상</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-81a1-a6e8-c754ba128405"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-8139-a3e0-eb24b6b6e5eb" class="">👹 특수 보스</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-8126-a5b7-ddcdaf1b1ee8" class=""><strong>특정 라운드에서 일반 적이 아닌 특수 기믹을 가진 보스 등장</strong>합니다. 각 보스는 고유한 공격 패턴과 약점을 가지고 있습니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8182-9384-d9bd108032a4" class="">보스 기믹 예시</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-814f-87b7-c63a58425dac" class="bulleted-list"><li style="list-style-type:disc"><strong>분열 보스:</strong> 체력이 줄어들면 작은 보스로 분열 (여러 개 처치 필요)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8119-a844-d5a5df807473" class="bulleted-list"><li style="list-style-type:disc"><strong>봉인 보스:</strong> 특정 능력만 데미지 가능 (다른 능력은 무효)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81f0-9c36-eb470d7608f8" class="bulleted-list"><li style="list-style-type:disc"><strong>재생 보스:</strong> 시간이 지나면 체력 회복 (빠르게 처치 필요)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-815e-92d4-df68227c6b11" class="bulleted-list"><li style="list-style-type:disc"><strong>방어 보스:</strong> 높은 방어력으로 데미지 감소 (관통 능력 필요)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8130-b18f-d766c3227358" class="bulleted-list"><li style="list-style-type:disc"><strong>이동 보스:</strong> 빠르게 이동하는 보스 (범위 능력 필요)</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-813e-b43c-f438a9a95c27"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-818c-a220-ee8be9b244e4" class="">🎪 이벤트 시스템</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-8125-8feb-d1411db08f16" class=""><strong>게임 중 무작위로 타로 카드 NPC를 만나 선택지 기반 보상을 얻는 시스템</strong>입니다. 각 타로 카드 테마의 NPC가 나타나 독특한 이벤트를 제공합니다.</p></div><div style="display:contents" dir="ltr"><figure id="38377447-5413-8095-a3d9-ef8059092253" class="image"><a href="hiworks_20260616_2150.png"><img style="width:480px" src="hiworks_20260616_2150.png"/></a></figure></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81a0-8b09-e9e9400d05df" class="">13개 타로 NPC와 이벤트</h3></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81d2-8ec4-e205fa2f7aec" class="">📖 교황 · 그레고르</h3></div><div style="display:contents" dir="auto"><p id="38377447-5413-81e4-923e-df909730ad69" class="">영적 가르침과 사면. 약한 것을 키우고 저주를 없는다.</p></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8102-a813-c6d27f8daf41" class="bulleted-list"><li style="list-style-type:disc"><strong>약한 능력 강화:</strong> 가장 낮은 레벨 능력 +1 강화</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81a6-ad53-c5d18f969726" class="bulleted-list"><li style="list-style-type:disc"><strong>저주 제거:</strong> 모든 저주·디버프 제거 + 데미지 +5%</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8176-aaca-fa95c49574d8" class="bulleted-list"><li style="list-style-type:disc"><strong>예지:</strong> 다음 라운드 시작 시 모든 적 180프레임 정지</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8104-953d-e2a7f6f22ebd" class="">나머지 12개 NPC</h3></div><div style="display:contents" dir="auto"><p id="38377447-5413-81f7-b783-fbe83232244b" class="">운명의 수레바퀴(카이), 악마(마몬), 별(셀레네), 태양(솔), 광대(단테), 마법사(메를린), 정의(테미스), 황제(헤라), 세계(테라), 연인(큐피드), 힘(레오), 전차(빅토르) 각각 고유한 이벤트와 보상 제공</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-816c-811f-deff56ef2671" class="">이벤트 보상 종류</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8139-846f-fca42940f106" class="bulleted-list"><li style="list-style-type:disc"><strong>골드:</strong> 라운드 기반 계산 (라운드 × 기본값) → 게임이 진행될수록 더 큰 보상</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81a1-bf65-dfae2de02b29" class="bulleted-list"><li style="list-style-type:disc"><strong>능력 강화:</strong> 미보유 능력 우선 → 보유 능력만 남으면 강화로 변환</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8138-8268-dc3b313e5a8f" class="bulleted-list"><li style="list-style-type:disc"><strong>유물 획득:</strong> 특정 이벤트에서만 가능 (교황의 예지, 세계의 위대한 보상 등)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81d1-8b3e-edbf651bce90" class="bulleted-list"><li style="list-style-type:disc"><strong>영구 축복:</strong> 데미지, 보스 데미지, 골드 등 누적 가능</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8113-8a73-f4196846f329" class="bulleted-list"><li style="list-style-type:disc"><strong>저주/디버프:</strong> 일부 이벤트에서 발생 가능 (다른 이벤트로 제거 가능)</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-818d-8e9f-e2569882e0e5"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-817a-8c8d-e73c5cee2af6" class="">🏅 업적 시스템</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-812c-b1ed-edfa0bb07ca8" class=""><strong>게임 내 도전 과제를 완료하면 스타더스트를 획득하고 고유한 칭호를 해금</strong>하는 시스템입니다. 단발 업적과 반복 업적으로 나뉩니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81b9-814b-ee7ca359e79f" class="">단발 업적 (한 번만 획득)</h3></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81ca-bec1-c37f034affb8" class="">진행 업적 (라운드 도달)</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8195-877c-de5cffefd208" class="bulleted-list"><li style="list-style-type:disc">첫 발걸음 (첫 게임 종료) → 20⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81d4-a48f-c64c9c5bbe90" class="bulleted-list"><li style="list-style-type:disc">베테랑 (R10 도달) → 50⭐ + 능력 “자석” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81a1-bf3c-d6d065818084" class="bulleted-list"><li style="list-style-type:disc">엘리트 (R25 도달) → 100⭐ + 캐릭터 “스나이퍼” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-811d-9802-e5a01de41fb6" class="bulleted-list"><li style="list-style-type:disc">레전드 (R50 도달) → 250⭐ + 캐릭터 “마법사” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8181-97e0-c588676d07df" class="bulleted-list"><li style="list-style-type:disc">완전정복 (R100 클리어) → 500⭐ + 캐릭터 “광전사” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81d1-b8ba-f414a2b33372" class="bulleted-list"><li style="list-style-type:disc">75라운드 돌파 (R75 도달) → 350⭐</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81e7-9ae9-c29440280804" class="">빌드 업적 (조합/능력)</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-817b-8bd9-f9c76921e4d8" class="bulleted-list"><li style="list-style-type:disc">조합광 (한 게임 조합 3개) → 60⭐ + 캐릭터 “엔지니어” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8199-a6e6-ca07a03b01f9" class="bulleted-list"><li style="list-style-type:disc">트라이앵글 (트리플 조합 1개) → 200⭐ + 캐릭터 “크로노스” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-817c-95a1-cadf209d52b8" class="bulleted-list"><li style="list-style-type:disc">히든마스터 (한 게임 트리플 3개) → 500⭐ + 캐릭터 “믹서” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81bd-9f0b-d81baef6dcfc" class="bulleted-list"><li style="list-style-type:disc">풀세트 (모든 슬롯 채우기) → 40⭐ + 능력 “별폭” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8107-b8c4-e1c25f4d4e3e" class="bulleted-list"><li style="list-style-type:disc">만렙등반 (능력 Lv10) → 150⭐ + 능력 “죽음의 낫” 해금</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8175-9204-f9f5c8da3a12" class="">처치/점수 업적</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8106-b3cf-e32ba6d0a1c5" class="bulleted-list"><li style="list-style-type:disc">살육자 (500처치) → 80⭐ + 능력 “드론” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8149-97ee-f8d0caf1b422" class="bulleted-list"><li style="list-style-type:disc">학살자 (2000처치) → 200⭐ + 캐릭터 “요원” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8167-b2eb-ec340d8da82a" class="bulleted-list"><li style="list-style-type:disc">백 명의 추적자 (1000처치) → 100⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8153-af24-c8fd3e14dbcb" class="bulleted-list"><li style="list-style-type:disc">대학살 (3000처치) → 250⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8187-be32-cfffa94a4b31" class="bulleted-list"><li style="list-style-type:disc">학살의 신 (5000처치) → 400⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8191-a576-dc8b1a9e0289" class="bulleted-list"><li style="list-style-type:disc">점수기록 (100k) → 100⭐ + 캐릭터 “연구원” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8176-b086-ed6332f7cc1d" class="bulleted-list"><li style="list-style-type:disc">만점왕 (500k) → 300⭐ + 능력 “분노” 해금</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81a8-96bf-ed3e3cea0077" class="">보스/유물 업적</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81a7-98f7-e1b7a5d486fc" class="bulleted-list"><li style="list-style-type:disc">보스킬러 (보스 5마리) → 150⭐ + 능력 “번개” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-810e-9a5c-d2f2ea0ac58a" class="bulleted-list"><li style="list-style-type:disc">보스 학살자 (보스 10마리) → 200⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81a0-8e35-c2727878d3c5" class="bulleted-list"><li style="list-style-type:disc">첫 유물 (유물 1개) → 50⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81b4-a64c-f4d7853425e9" class="bulleted-list"><li style="list-style-type:disc">수집가 (유물 3개) → 100⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8189-b5c0-c3e575fde112" class="bulleted-list"><li style="list-style-type:disc">보물 사냥꾼 (유물 5개) → 200⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81d9-a306-d7d5707dd6d5" class="bulleted-list"><li style="list-style-type:disc">희귀 발견 (희귀 등급 유물) → 100⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81c5-a699-ef3b72e7f45a" class="bulleted-list"><li style="list-style-type:disc">영웅의 보물 (영웅 등급 유물) → 250⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8154-9488-c9321f07fd3c" class="bulleted-list"><li style="list-style-type:disc">전설의 유물 (전설 등급 유물) → 600⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81ac-ba03-d26cb0b32b74" class="bulleted-list"><li style="list-style-type:disc">모든 등급 (4 등급 모두) → 800⭐</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-811c-8333-e1033b83c6e9" class="">특수 업적</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-816e-839d-e21bcd7e62dc" class="bulleted-list"><li style="list-style-type:disc">스피드런 (R10을 4분 이내) → 150⭐ + 능력 “블랙홀” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-817c-9e5e-efbabc6a19ab" class="bulleted-list"><li style="list-style-type:disc">한방능력자 (능력 1개로 R8 도달) → 200⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8190-9758-d57bea896a5e" class="bulleted-list"><li style="list-style-type:disc">진화의 정점 (SSR 타워로 진화) → 300⭐</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81f9-afee-da6baf446582" class="bulleted-list"><li style="list-style-type:disc">도감 절반 (기본 능력 10개 해금) → 100⭐ + 능력 “검” 해금</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81ee-8ab2-f801ac68f051" class="bulleted-list"><li style="list-style-type:disc">도감 마스터 (기본 능력 모두 해금) → 400⭐ + 능력 “부메랑” 해금</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-81ad-8b7b-e5ad3465421c" class="">반복 업적 (게임 종료마다 조건 충족 시 매번 보상)</h3></div><div style="display:contents" dir="auto"><p id="38377447-5413-81e7-913f-e31f1b2086b6" class="">반복 업적은 조건을 충족할 때마다 매번 보상을 받을 수 있습니다. 게임을 많이 할수록 누적되는 스타더스트 획득 경로입니다.</p></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81df-b3a2-f10fd3401d9d" class="bulleted-list"><li style="list-style-type:disc">꾸준한 도전 (게임 종료) → 5⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81cb-a8e6-dd092d4c3987" class="bulleted-list"><li style="list-style-type:disc">베테랑 (반복) (R10 도달) → 15⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81f0-a3cb-fa67aaa1f3d7" class="bulleted-list"><li style="list-style-type:disc">엘리트 (반복) (R25 도달) → 40⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81b5-89c6-dc388cf94dd7" class="bulleted-list"><li style="list-style-type:disc">레전드 (반복) (R50 도달) → 100⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8102-b03c-dc28b5879221" class="bulleted-list"><li style="list-style-type:disc">승리 (반복) (R100 클리어) → 300⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-813b-82a1-ee2e1fd3f002" class="bulleted-list"><li style="list-style-type:disc">학살 (반복) (500처치) → 20⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8178-ae3a-deaec7aae11d" class="bulleted-list"><li style="list-style-type:disc">대학살 (반복) (2000처치) → 80⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81a8-9227-ddbdf7f3d9b0" class="bulleted-list"><li style="list-style-type:disc">히든 사냥 (반복) (트리플 조합 형성) → 50⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8108-a270-f84cfd266a76" class="bulleted-list"><li style="list-style-type:disc">보스 사냥 (반복) (보스 5마리) → 40⭐ 매번</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8179-ba46-cd1e367318e0" class="bulleted-list"><li style="list-style-type:disc">승천 도전 (반복) (승천 클리어) → (승천 단계 × 50)⭐ 동적 계산</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8125-8094-c6378d3f0b67" class="bulleted-list"><li style="list-style-type:disc">초월 도전 (반복) (초월 클리어) → ((초월 단계 - 15) × 200)⭐ 동적 계산</li></ul></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8115-8051-ccb0536bba66" class="">업적 전략</h3></div><div style="display:contents" dir="auto"><p id="38377447-5413-817f-97e3-e0459760cbf6" class="">초반에는 진행 업적(R10, R25)으로 기초 스타더스트를 모으고, 중반부터 빌드 업적(조합, 트리플)으로 다양한 보상을 노린다. 후반에는 반복 업적을 통해 꾸준히 스타더스트를 축적하며, 최종적으로 초월 업적으로 가장 큰 보상을 노린다. 각 업적은 고유한 칭호를 제공하므로, 칭호 수집 자체도 게임의 재미 요소다.</p></div><div style="display:contents" dir="auto"><hr id="38377447-5413-81bb-a240-f5caa6c9a2c5"/></div><div style="display:contents" dir="auto"><h2 id="38377447-5413-8181-8ec0-d38d75659cbf" class="">🏆 글로벌 랭킹</h2></div><div style="display:contents" dir="auto"><p id="38377447-5413-8112-a86c-d5e9f9a75742" class=""><strong>전 세계 플레이어들과 경쟁하는 시즌제 랭킹 시스템</strong>입니다. 매 시즌마다 순위가 초기화되고, 최고 점수를 기록한 플레이어들이 상위 랭크를 차지합니다.</p></div><div style="display:contents" dir="auto"><h3 id="38377447-5413-8176-8e1e-d0c5efb717f7" class="">랭킹 시스템</h3></div><div style="display:contents" dir="auto"><ul id="38377447-5413-81d8-8454-d2a6957f1a69" class="bulleted-list"><li style="list-style-type:disc"><strong>시즌:</strong> 매 2주마다 새로운 시즌 시작 (또는 월간)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-816b-9089-d670f78607ac" class="bulleted-list"><li style="list-style-type:disc"><strong>점수 계산:</strong> 라운드 도달 + 처치 수 + 보스 처치 + 업적 보상 등 종합 계산</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-812e-b7f8-d624295ff068" class="bulleted-list"><li style="list-style-type:disc"><strong>상위 랭커:</strong> 시즌 종료 시 상위 100명에게 특별 보상 (스타더스트, 칭호, 캐릭터 등)</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-8150-aa35-ee7272257ea0" class="bulleted-list"><li style="list-style-type:disc"><strong>계정 연동:</strong> Supabase를 통한 글로벌 계정 관리</li></ul></div><div style="display:contents" dir="auto"><ul id="38377447-5413-813a-96e7-d7c5e96b458d" class="bulleted-list"><li style="list-style-type:disc"><strong>닉네임 &amp; 칭호:</strong> 플레이어가 설정한 닉네임과 업적으로 얻은 칭호 표시</li></ul></div><div style="display:contents" dir="auto"><hr id="38377447-5413-81b2-918c-d9844d131c1e"/></div><div style="display:contents" dir="auto"><p id="38377447-5413-81f6-b736-f2fafac3bcba" class=""><strong>마지막 업데이트:</strong> 2026년 6월 18일</p></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
