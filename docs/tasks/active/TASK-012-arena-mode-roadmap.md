@@ -88,7 +88,7 @@ Arena = 원작의 **`standard`(클래식) 모드**. 원형 경기장에서 중�
 
 ### A5. 능력 조합
 - [ ] **A5-1.** COMBO 레시피(재료2 소진→상위), 카드 풀에 combo 액션 추가
-- [ ] **A5-2.** (v607) **순수 패시브 4종** 카드 풀 편입 — 맹공(>50%HP)/토벌(비보스)/쇄도(적수)/각성(라운드) 조건부 데미지 배수. 데미지 계산 훅 `metaMods` 곱연산. *(비용 낮음·중요도 높음 → A3 직후 우선)*
+- [x] **A5-2.** (v607) **순수 패시브 4종** — 맹공(>50%HP)/토벌(비보스)/쇄도(적수)/각성(라운드) 조건부 데미지 배수. `PureDamagePassiveData`(kind) + `AbilityModifiers.ConditionalMultiplier`(소스당 +500% cap), 명중 시점 적용(`DamageSource`). 적 `ICombatTargetInfo`(보스·HP) + `ICombatState`(라운드·적수) 주입. *(선행: 데미지 산출을 발사→피격 시점으로 리팩토링)*
 
 ### A6. 보스
 - [ ] **A6-1.** N라운드마다 보스(roundConfig isBoss 이식), 보스 보상(A3/A5 재사용)

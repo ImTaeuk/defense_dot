@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TASK-014 — Arena 적 렌더·피격 이펙트 복구</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>TASK-014 — Arena 적 렌더·피격 이펙트 복구</h1>
+  <div class="sub">
+    <span class="tag must">원인 분석</span>
+    <span class="tag opt">정리 완료 · 연출/커밋 대기</span>
+    2026-06-23 → 갱신 2026-06-29
+  </div>
+
+  <!-- 1 -->
+  <h2>1. 제보 요지</h2>
+  <div class="panel">
+    <p>투사체 교체(Projectile_Water)·적 3D화(Sweeper) 이후 <strong>"피격 이펙트가 둘 다 사라졌다"</strong>는 보고로 시작. 추적 과정에서 더 근본적인 문제 — <strong>적 본체가 검은 실루엣으로만 렌더되는 현상</strong> — 이 드러났다. 또한 추적 중 임의로 추가했던 흰색 번쩍임에 대해 사용자가 <strong>"부탁한 적 없다"</strong>고 지적.</p>
+    <div class="note">
+      핵심 결론: 적 검은 실루엣의 정체는 <strong>BA_ToonLit 셰이더의 ForwardLit(본체) 패스가 적 Sweeper 메시에서만 그려지지 않는 것</strong>. 정확한 메커니즘은 미규명이나, <strong>적 머티리얼을 URP/Lit 로 교체</strong>해 우회 해결.
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <h2>2. 현재 동작 (증상 재현)</h2>
+  <div class="panel">
+    <ol>
+      <li>코어 타워가 투사체 발사 → 투사체가 적에 명중 (<code><strong>ProjectileEffect.cs:Update</strong></code>, 적 hp 감소 확인됨 — 명중 자체는 정상)</li>
+      <li>명중 시 <code><strong>VfxPlayer.SpawnOneShot(hitVfxPrefab)</strong></code> 분기 통과 못 함 → 폭발 VFX 안 나옴</li>
+      <li>적 본체가 <strong>검은 실루엣</strong>으로만 표시 → 색·피격 반응·사망 연출 전부 묻힘</li>
+      <li>(추적 중 추가됐던) 흰색 emission 번쩍임 → 사용자 미요청 사항</li>
+    </ol>
+  </div>
+
+  <!-- 3 -->
+  <h2>3. 근본 원인</h2>
+  <div class="panel">
+    <h3>원인 ① 명중 폭발 VFX 부재</h3>
+    <div class="file">Assets/Prefabs/Abilities/Projectile_Water.prefab · ProjectileEffect</div>
+    <pre><code><span class="cmt">// 명중 처리부 — hitVfxPrefab 이 null 이라 분기 통과 못 함</span>
+<span class="hl-line">if (<span class="hl-inline">hitVfxPrefab != null</span>)   // null → 폭발 VFX 스킵</span>
+<span class="cmt">    VfxPlayer.SpawnOneShot(hitVfxPrefab, transform.position, Quaternion.identity);</span></code></pre>
+    <p>원본 Hovl 프리팹의 자체 명중 스폰 스크립트(<code>HS_ProjectileMover</code>)를 제거하면서, 대체할 <code>hitVfxPrefab</code> 을 비워둔 것. → <code>Hit_Water</code> 복사·배선으로 해결.</p>
+
+    <h3>원인 ② 적 검은 실루엣 (핵심)</h3>
+    <div class="file">Assets/ExternalResources/BlueArchive/Aris/Shaders/BA_ToonLit.shader</div>
+    <pre><code><span class="cmt">// frag 를 강제 단색으로 바꿔 패스 렌더 여부 테스트</span>
+half4 frag(Varyings IN) : SV_Target {
+<span class="hl-line">    return half4(0,1,0,1);   <span class="hl-inline">// Aris=초록 적용 / 적=검정 → 적은 패스 자체 누락</span></span>
+}</code></pre>
+    <p>같은 BA_ToonLit 셰이더인데 <strong>큐브·Aris 메시에선 ForwardLit 이 정상, 적 Sweeper 메시에서만 누락</strong>되어 Outline(검정) 패스만 남는다. 셰이더·머티리얼·MPB·스케일 등 모든 변수를 배제했으나(아래 5절) 정확 메커니즘은 도구로 규명 못 함.</p>
+    <div class="note">
+      초기 진단(06-23)은 "<code>_HitFlash</code> MPB 가 SRP Batcher 에 무시됨"으로 봤으나, MPB→material 전환 후에도 적은 검정이었음 → MPB 는 <strong>무관</strong>, 진짜 원인은 ForwardLit 패스 누락이었다.
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. 기획 요구사항 (사용자 확정)</h2>
+  <div class="panel">
+    <ul>
+      <li>흰색 번쩍임(emission)은 요청한 적 없음 → <strong>제거</strong>.</li>
+      <li>피격 이펙트는 <strong>Hovl 피격 파티클</strong> 사용 → <code>Hit 9 water</code> 선택.</li>
+      <li>명중 파티클이 게임에서 안 보이는 것은 <strong>"배경 이미지 작업을 아직 안 한 게 문제, 일단 이대로 갈게"</strong> — 파티클 변경 없이 진행.</li>
+      <li>커밋은 보류(요청 시 진행).</li>
+    </ul>
+  </div>
+
+  <!-- 5 -->
+  <h2>5. 배제 검증 — 진단 매트릭스</h2>
+  <div class="panel">
+    <p>적 검은 실루엣의 원인을 좁히기 위해 가능한 변수를 순차 배제했다. 결론: <strong>적 Sweeper 메시 + BA_ToonLit ForwardLit 조합만 실패, URP/Lit 은 정상</strong>.</p>
+    <table>
+      <tr><th>검증 항목</th><th>결과</th></tr>
+      <tr><td>셰이더 자체 (큐브 + BA_ToonLit)</td><td><span class="ok">정상</span> — 민트색 렌더</td></tr>
+      <tr><td>Aris 메시 + BA_ToonLit</td><td><span class="ok">정상</span></td></tr>
+      <tr><td>적 메시 + URP/Lit</td><td><span class="ok">정상</span> (빨강 테스트)</td></tr>
+      <tr><td>머티리얼(에셋 / new Material), MPB, _DissolveTex</td><td>무관 — 전부 검정 유지</td></tr>
+      <tr><td>GPU skinning (off 포함), bounds / updateWhenOffscreen</td><td>무관</td></tr>
+      <tr><td>ForwardPlus 키워드 (_CLUSTER_LIGHT_LOOP) · instancing 보강</td><td>무관 — 효과 없음</td></tr>
+      <tr><td>DepthOnly · ShadowCaster 패스 추가</td><td>무관 (depthPriming=Disabled)</td></tr>
+      <tr><td>스케일(589배) · 메시 import(normals/optimizeMesh/RW) · vert 변환</td><td>무관</td></tr>
+    </table>
+    <div class="note">
+      <strong>결론</strong>: 같은 적 메시에 URP/Lit 은 정상 렌더되므로, BA_ToonLit ForwardLit 패스 누락을 직접 고치는 대신 <strong>적 색 머티리얼을 URP/Lit 로 교체</strong>해 확실히 우회한다.
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <h2>6. 해결 방안 — 변경 사항</h2>
+
+  <h3>(1) 적 색 머티리얼 — BA_ToonLit → URP/Lit <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/ExternalResources/BlueArchive/Sweeper/Sweeper_{Mint,Pink,Yellow}.mat</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">shader: DefenseDot/BA_ToonLit   // ForwardLit 패스가 적 메시에서 누락 → 검은 실루엣</span>
+<span class="cmt">_BaseMap: (Sweeper 텍스처)</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">shader: Universal Render Pipeline/Lit   // 적 메시 정상 렌더 확인됨</span>
+<span class="cmt">_BaseMap: (Sweeper 텍스처) — 유지</span></pre>
+    <p>적이 색(Mint/Pink/Yellow)으로 정상 표시. 대가로 BA_ToonLit 고유의 <strong>toon 음영·외곽선·dissolve</strong> 는 사라짐(아래 7절 참고).</p>
+  </div>
+
+  <h3>(2) SweeperEnemyVisual — emission 제거, URP/Lit 호환 재작성 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Enemy/SweeperEnemyVisual.cs</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">// 피격 시 머티리얼을 흰색으로 발광 (사용자 미요청)</span>
+<span class="del">private void SetEmission(float t) {</span>
+<span class="del">    runtimeMat.SetColor(EmissionId, Color.white * (t * hitFlashIntensity));</span>
+<span class="del">}</span>
+<span class="cmt">// HandleHit / hitTimer / Update(emission) / OnHit 구독 …</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">// emission·HitFlash·OnHit 구독 전부 제거</span>
+<span class="add">// 이동방향 Y회전(LateUpdate) + 사망 축소(DeathRoutine)만 유지</span>
+<span class="add">private async UniTaskVoid DeathRoutine(System.Action onComplete) {</span>
+<span class="add">    transform.localScale = Vector3.Lerp(initialScale, Vector3.zero, k);  // dissolve 대체</span>
+<span class="add">}</span></pre>
+    <p>흰색 번쩍임을 들어내고, 적 피격 반응은 <strong>명중 폭발 파티클(아래 3번)</strong> 로 일원화. 사망 연출은 셰이더 dissolve 대신 스케일 축소로 대체.</p>
+  </div>
+
+  <h3>(3) Projectile_Water — hitVfxPrefab 배선 <span class="tag opt">완료·유지</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Prefabs/Abilities/Projectile_Water.prefab · ProjectileEffect</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">hitVfxPrefab: None (null)   // 명중 폭발 스킵</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">hitVfxPrefab: Hit_Water   // Hovl "Hit 9 water" 복사본</span></pre>
+    <div class="note">
+      <code>Hit_Water</code> 파티클은 정상 (<code>HS_Blend_CG</code> URP 호환, 35개 emit, 어두운 배경에서 선명). 게임에서 안 보이는 것은 <strong>배경이 밝은 하늘색 placeholder</strong> 라 블렌드 파티클이 묻히는 것 — 배경 작업 후 해소 예정.
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <h2>7. 영향 범위 및 부수 효과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>분석</th></tr>
+      <tr><td>적 본체 렌더</td><td><span class="ok">정상 복구</span> — 색 표시됨 (URP/Lit)</td></tr>
+      <tr><td>흰색 번쩍임</td><td><span class="ok">제거됨</span> — 사용자 요청 반영</td></tr>
+      <tr><td>toon 음영 · 외곽선</td><td><span class="warn">손실</span> — URP/Lit 전환 대가. 필요 시 URP Renderer Feature 등으로 재구현</td></tr>
+      <tr><td>명중 폭발 가시성</td><td><span class="warn">밝은 배경에 묻힘</span> — 배경 작업 후 선명. 파티클 자체는 정상</td></tr>
+      <tr><td>명중 Hit_Water 크기</td><td><span class="warn">scale 1 (적 589배 대비 작을 수)</span> — 배경 후 필요 시 확대</td></tr>
+      <tr><td>"적이 안 죽음"</td><td>밸런스(baseDamage=1 vs health=10), <span class="ok">버그 아님</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 8 -->
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <p>Play 모드 + 메인 카메라(post off) 캡처로 수동 검증.</p>
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대 / 결과</th></tr>
+      <tr><td>1</td><td>적 본체 렌더</td><td><span class="ok">Mint/Pink/Yellow 색 표시 확인</span></td></tr>
+      <tr><td>2</td><td>명중 시 Hit_Water 파티클 (어두운 배경 scale 5)</td><td><span class="ok">물 튀김·스파크 선명 확인</span></td></tr>
+      <tr><td>3</td><td>명중 시 Hit_Water (게임 밝은 배경)</td><td><span class="warn">묻혀 흐릿 — 배경 작업 대기</span></td></tr>
+      <tr><td>4</td><td>흰색 번쩍임 부재</td><td><span class="ok">제거 확인</span></td></tr>
+      <tr><td>5</td><td>사망 시 축소 연출</td><td>코드 반영 (scale lerp) — 실플레이 확인 권장</td></tr>
+    </table>
+  </div>
+
+  <!-- 9 -->
+  <h2>9. 수정 파일 요약</h2>
+  <table>
+    <tr><th>파일</th><th>변경 내용</th></tr>
+    <tr><td><code><strong>Sweeper_{Mint,Pink,Yellow}.mat</strong></code></td><td>셰이더 BA_ToonLit → URP/Lit (적 검정 해결)</td></tr>
+    <tr><td><code><strong>SweeperEnemyVisual.cs</strong></code></td><td>emission/HitFlash/OnHit 제거, 회전+사망축소만 유지</td></tr>
+    <tr><td><code><strong>Projectile_Water.prefab</strong></code></td><td>hitVfxPrefab = Hit_Water 배선</td></tr>
+    <tr><td><code><strong>Hit_Water.prefab</strong></code></td><td>Hovl "Hit 9 water" 복사본(신규)</td></tr>
+    <tr><td><code><strong>BA_ToonLit.shader</strong></code></td><td>(Aris 전용) outline 월드화 · DepthOnly/ShadowCaster · _CLUSTER_LIGHT_LOOP 보강 — 적 검정엔 무기여</td></tr>
+  </table>
+  <div class="note">
+    <strong>잔여 과제</strong>: ① 명중 크기 조정(배경 후) ② 미커밋 변경 정리 ③ FBX import 원복 검토 ④ 시전 차징·타격감(히트스톱/셰이크) 연출 ⑤ (사용자) 배경 이미지 작업.
+  </div>
+
+  <p class="foot">TASK-014 갱신 완료 — 적 렌더·피격 이펙트 정리. 연출 강화·커밋은 다음 세션.</p>
+
+</div>
+</body>
+</html>
