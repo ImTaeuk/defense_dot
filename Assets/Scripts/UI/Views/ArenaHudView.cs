@@ -1,70 +1,50 @@
-// 아레나 HUD 뷰 — 패널의 value TMP·바를 값(숫자) 전용으로 갱신
+// 아레나 HUD 뷰 — 위젯들을 조립하고 Presenter가 위젯 단위로 Bind한다
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
-using DefenseDot.UI.Models;
-using DefenseDot.UI.Presenters;
+using DefenseDot.UI.Base;
+using DefenseDot.UI.Widgets;
+using DefenseDot.Domain.Models;
 
 namespace DefenseDot.UI.Views
 {
     /// <summary>
-    /// 아레나 HUD 뷰입니다. 라벨은 패널이 직접 표시하므로 value(숫자)만 갱신합니다.
+    /// 아레나 HUD 뷰입니다. 표시 포맷은 각 위젯이 소유하며, View는 위젯 조립과 위임만 합니다.
     /// </summary>
-    public class ArenaHudView : HudRoot
+    public sealed class ArenaHudView : UIView
     {
-        [SerializeField] private TextMeshProUGUI roundValue;
-        [SerializeField] private TextMeshProUGUI timeValue;
-        [SerializeField] private TextMeshProUGUI goldValue;
-        [SerializeField] private TextMeshProUGUI scoreValue;
-        [SerializeField] private TextMeshProUGUI enemyValue;
-        [SerializeField] private Image timeBarFill;
-        [SerializeField] private Image enemyBarFill;
+        [SerializeField] private GoldWidget goldWidget;
+        [SerializeField] private ScoreWidget scoreWidget;
+        [SerializeField] private RoundWidget roundWidget;
+        [SerializeField] private TimeWidget timeWidget;
+        [SerializeField] private EnemyWidget enemyWidget;
 
-        /// <summary> 주어진 컨텍스트로 Arena HUD 프레젠터를 생성합니다. </summary>
-        public override IPresenter Bind(in HudContext ctx)
-            => new ArenaHudPresenter(this, new ArenaHudModel(),
-                ctx.Wave, ctx.Economy, ctx.Score, ctx.Timer, ctx.EnemyCapacity);
-
-        /// <summary> 라운드 표시를 갱신합니다. </summary>
-        public void SetRound(int current, int total)
+        /// <summary> 골드 위젯을 갱신합니다. </summary>
+        public void ApplyGold(int gold)
         {
-            if (roundValue != null) roundValue.text = $"{current} / {total}";
+            if (goldWidget != null) goldWidget.SetData(gold);
         }
 
-        /// <summary> 남은 시간 표시를 갱신합니다. </summary>
-        public void SetTime(float remaining)
+        /// <summary> 점수 위젯을 갱신합니다. </summary>
+        public void ApplyScore(int score)
         {
-            if (timeValue != null) timeValue.text = $"{Mathf.CeilToInt(remaining)}s";
+            if (scoreWidget != null) scoreWidget.SetData(score);
         }
 
-        /// <summary> 시간바를 갱신합니다. </summary>
-        public void SetTimeBar(float ratio)
+        /// <summary> 라운드 위젯을 갱신합니다. </summary>
+        public void ApplyRound(WaveProgress progress)
         {
-            if (timeBarFill != null) timeBarFill.fillAmount = Mathf.Clamp01(ratio);
+            if (roundWidget != null) roundWidget.SetData(progress);
         }
 
-        /// <summary> 골드 표시를 갱신합니다. </summary>
-        public void SetGold(int amount)
+        /// <summary> 시간 위젯을 갱신합니다. </summary>
+        public void ApplyTime(TimerState time)
         {
-            if (goldValue != null) goldValue.text = amount.ToString();
+            if (timeWidget != null) timeWidget.SetData(time);
         }
 
-        /// <summary> 점수 표시를 갱신합니다. </summary>
-        public void SetScore(int score)
+        /// <summary> 적 위젯을 갱신합니다. </summary>
+        public void ApplyEnemies(EnemyState enemies)
         {
-            if (scoreValue != null) scoreValue.text = score.ToString("N0");
-        }
-
-        /// <summary> 적 수 표시를 갱신합니다. </summary>
-        public void SetEnemies(int alive, int capacity)
-        {
-            if (enemyValue != null) enemyValue.text = $"{alive} / {capacity}";
-        }
-
-        /// <summary> 적 바를 갱신합니다. </summary>
-        public void SetEnemyBar(float ratio)
-        {
-            if (enemyBarFill != null) enemyBarFill.fillAmount = Mathf.Clamp01(ratio);
+            if (enemyWidget != null) enemyWidget.SetData(enemies);
         }
     }
 }

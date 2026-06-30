@@ -280,7 +280,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b688f0cde3d3ab43bc4d283b48f4e61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.InGame.UIRoot
-  hud: {fileID: 1827861639}
+  arenaHud: {fileID: 1827861639}
   buildModalView: {fileID: 0}
   towerRoster: {fileID: 0}
   gameResultView: {fileID: 1268386522}

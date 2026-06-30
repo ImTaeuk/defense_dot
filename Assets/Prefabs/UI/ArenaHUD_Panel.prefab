@@ -217,13 +217,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5001251279c5b1f4aa875f07dfda013e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Views.ArenaHudView
-  roundValue: {fileID: 6519691681838166119}
-  timeValue: {fileID: 6523918261264282023}
-  goldValue: {fileID: 362734233179043745}
-  scoreValue: {fileID: 5149178179746738050}
-  enemyValue: {fileID: 1795064922564554427}
-  timeBarFill: {fileID: 7269352786231438011}
-  enemyBarFill: {fileID: 6428192061559871350}
+  depth: 0
+  initType: 0
+  goldWidget: {fileID: 259100617263494354}
+  scoreWidget: {fileID: 2851552478246362058}
+  roundWidget: {fileID: 994081719704050641}
+  timeWidget: {fileID: 8963526592009802525}
+  enemyWidget: {fileID: 3136846730526020988}
 --- !u!1 &906518989263959000
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,6 +395,7 @@ GameObject:
   - component: {fileID: 599306968588474872}
   - component: {fileID: 9117911306862436807}
   - component: {fileID: 6523918261264282023}
+  - component: {fileID: 8963526592009802525}
   m_Layer: 0
   m_Name: value
   m_TagString: Untagged
@@ -521,6 +522,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &8963526592009802525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3566326267605095387}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bc1e568ca9cc1c42837efbebd9ff4ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Widgets.TimeWidget
+  depth: 0
+  valueText: {fileID: 6523918261264282023}
+  barFill: {fileID: 7269352786231438011}
 --- !u!1 &3658384459479263150
 GameObject:
   m_ObjectHideFlags: 0
@@ -1412,6 +1428,7 @@ GameObject:
   - component: {fileID: 816467542530033613}
   - component: {fileID: 6767952741209153781}
   - component: {fileID: 6519691681838166119}
+  - component: {fileID: 994081719704050641}
   m_Layer: 0
   m_Name: value
   m_TagString: Untagged
@@ -1538,6 +1555,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &994081719704050641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6480382927491367008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0267a12e380cacc49874f4047a5b5a1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Widgets.RoundWidget
+  depth: 0
+  valueText: {fileID: 6519691681838166119}
 --- !u!1 &6830308684686405640
 GameObject:
   m_ObjectHideFlags: 0
@@ -1803,6 +1834,7 @@ GameObject:
   - component: {fileID: 892127130044998712}
   - component: {fileID: 1321175257186915900}
   - component: {fileID: 362734233179043745}
+  - component: {fileID: 259100617263494354}
   m_Layer: 0
   m_Name: value
   m_TagString: Untagged
@@ -1929,6 +1961,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &259100617263494354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7085030561972206074}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4888acc4785ca524097773c33c2e835a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Widgets.GoldWidget
+  depth: 0
+  valueText: {fileID: 362734233179043745}
 --- !u!1 &7383725590881625846
 GameObject:
   m_ObjectHideFlags: 0
@@ -1940,6 +1986,7 @@ GameObject:
   - component: {fileID: 1637938309542505645}
   - component: {fileID: 4904061289409590755}
   - component: {fileID: 5149178179746738050}
+  - component: {fileID: 2851552478246362058}
   m_Layer: 0
   m_Name: value
   m_TagString: Untagged
@@ -2066,6 +2113,20 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2851552478246362058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7383725590881625846}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2e26226542ff554b861ebf11ba04f54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Widgets.ScoreWidget
+  depth: 0
+  valueText: {fileID: 5149178179746738050}
 --- !u!1 &7576818525798491635
 GameObject:
   m_ObjectHideFlags: 0
@@ -2442,6 +2503,7 @@ GameObject:
   - component: {fileID: 4563208142190722306}
   - component: {fileID: 7321556129697687130}
   - component: {fileID: 1795064922564554427}
+  - component: {fileID: 3136846730526020988}
   m_Layer: 0
   m_Name: value
   m_TagString: Untagged
@@ -2568,6 +2630,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3136846730526020988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9050240185396711172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2be1db5b2b157ef45b5808b8ddf3753f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Widgets.EnemyWidget
+  depth: 0
+  valueText: {fileID: 1795064922564554427}
+  barFill: {fileID: 6428192061559871350}
 --- !u!1 &9142570059238999348
 GameObject:
   m_ObjectHideFlags: 0

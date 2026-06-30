@@ -1,92 +1,46 @@
-// Arena HUD 프레젠터 — Wave/Economy/Score/RoundTimer 구독해 Arena HUD 갱신
-using DefenseDot.UI.Models;
+// Arena HUD 프레젠터 — 도메인 RP를 위젯에 Bind
+using DefenseDot.UI.Base;
 using DefenseDot.UI.Views;
 using DefenseDot.Domain.Models;
 
 namespace DefenseDot.UI.Presenters
 {
     /// <summary>
-    /// 아레나 HUD 프레젠터입니다. Wave/Economy/Score/RoundTimer 모델을 구독해
-    /// 라운드·시간·골드·점수·적을 갱신합니다. (Arena 패널은 체력 행이 없어 CoreModel 미사용)
+    /// 아레나 HUD 프레젠터입니다. Economy/Score/Wave/RoundTimer RP를
+    /// 라운드·시간·골드·점수·적 위젯에 Bind합니다.
     /// </summary>
-    public class ArenaHudPresenter : BasePresenter<ArenaHudView, ArenaHudModel>, IPresenter
+    public sealed class ArenaHudPresenter : UIPresenter<ArenaHudView>
     {
-        private readonly WaveModel wave;
         private readonly EconomyModel economy;
         private readonly ScoreModel score;
+        private readonly WaveModel wave;
         private readonly RoundTimerModel timer;
         private readonly int enemyCapacity;
 
-        /// <summary> ArenaHudPresenter의 생성자입니다. </summary>
-        public ArenaHudPresenter(ArenaHudView view, ArenaHudModel model,
-            WaveModel wave, EconomyModel economy, ScoreModel score, RoundTimerModel timer, int enemyCapacity)
-            : base(view, model)
+        /// <summary> 구독할 도메인 모델과 적 수용 한계를 주입받습니다. </summary>
+        public ArenaHudPresenter(ArenaHudView view, EconomyModel economy, ScoreModel score,
+            WaveModel wave, RoundTimerModel timer, int enemyCapacity) : base(view)
         {
-            this.wave = wave;
             this.economy = economy;
             this.score = score;
+            this.wave = wave;
             this.timer = timer;
             this.enemyCapacity = enemyCapacity;
         }
 
-        /// <summary> 모델 변경 사건을 구독하고 초기값을 즉시 반영합니다. </summary>
-        public override void Initialize()
+        /// <summary> 도메인 RP를 위젯에 바인딩합니다. </summary>
+        protected override void OnInitialize()
         {
-            wave.OnWaveChanged += HandleWaveChanged;
-            wave.OnRemainingChanged += HandleRemainingChanged;
-            economy.OnGoldChanged += HandleGoldChanged;
-            score.OnScoreChanged += HandleScoreChanged;
-            timer.OnTimeChanged += HandleTimeChanged;
-
-            HandleWaveChanged(wave.Current, wave.Total);
-            HandleRemainingChanged(wave.Remaining);
-            HandleGoldChanged(economy.Gold);
-            HandleScoreChanged(score.Score);
-            HandleTimeChanged(timer.Remaining, timer.Duration);
+            Bind(economy.Gold, view.ApplyGold);
+            Bind(score.Score, view.ApplyScore);
+            Bind(wave.Progress, view.ApplyRound);
+            Bind(timer.Time, view.ApplyTime);
+            Bind(wave.RemainingEnemies, HandleRemaining);
         }
 
-        /// <summary> 구독을 해제합니다. (Lapsed Listener 방지) </summary>
-        public override void Dispose()
+        private void HandleRemaining(int alive)
         {
-            wave.OnWaveChanged -= HandleWaveChanged;
-            wave.OnRemainingChanged -= HandleRemainingChanged;
-            economy.OnGoldChanged -= HandleGoldChanged;
-            score.OnScoreChanged -= HandleScoreChanged;
-            timer.OnTimeChanged -= HandleTimeChanged;
-        }
-
-        private void HandleWaveChanged(int current, int total)
-        {
-            model.CurrentWave = current;
-            model.RoundTotal = total;
-            view.SetRound(current, total);
-        }
-
-        private void HandleRemainingChanged(int alive)
-        {
-            model.EnemyAlive = alive;
-            model.EnemyCapacity = enemyCapacity;
-            view.SetEnemies(alive, enemyCapacity);
-            view.SetEnemyBar(enemyCapacity > 0 ? (float)alive / enemyCapacity : 0f);
-        }
-
-        private void HandleGoldChanged(int gold)
-        {
-            model.CurrentGold = gold;
-            view.SetGold(gold);
-        }
-
-        private void HandleScoreChanged(int value)
-        {
-            model.Score = value;
-            view.SetScore(value);
-        }
-
-        private void HandleTimeChanged(float remaining, float duration)
-        {
-            model.TimeRemaining = remaining;
-            view.SetTime(remaining);
-            view.SetTimeBar(duration > 0f ? remaining / duration : 0f);
+            view.ApplyEnemies(new EnemyState(alive, enemyCapacity));
         }
     }
 }

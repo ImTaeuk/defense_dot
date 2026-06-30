@@ -47,7 +47,7 @@ namespace DefenseDot.UI.Presenters
         private void HandleSlotSelected(Vector2Int cell, Vector3 worldPos)
         {
             currentCell = cell;
-            view.Show(roster, economy.Gold);
+            view.Show(roster, economy.Gold.Value);
         }
 
         private void HandleTowerChosen(TowerData data)

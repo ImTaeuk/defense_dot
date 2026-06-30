@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 아키텍처 베이스 계층 재설계 — 설계 문서</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>UI 아키텍처 베이스 계층 재설계</h1>
+  <div class="sub">
+    <span class="tag must">설계 문서</span>
+    <span class="tag opt">승인 · 4-렌즈 검증 반영</span>
+    범위: 베이스 신설 + HUD 전체 이전 · 2026-06-30
+  </div>
+
+  <!-- 1 -->
+  <h2>1. 제보 요지</h2>
+  <div class="panel">
+    <p>"여태 UI 구조에 Base를 안 두고 온 게 너무 후회되네. 지금 코드를 보니까 하수 바이브코더가 짠 느낌이 강해. 전체 구조를 내가 짜서 전달할게. 부족한 점이 있으면 피드백하고 한번 고쳐나가보자."</p>
+    <div class="note">
+      결론: <strong>흩어진 UI 베이스를 <code>UIObject</code> 정점으로 통일하고 Model 통지·바인딩을 표준화한다. 단, 적대 검증 결과 사용자 초안의 두 결정(전역 레지스트리·RP 전면 래핑)은 안티패턴이라 조정했다.</strong>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <h2>2. 현재 동작 (혼재 진단)</h2>
+  <div class="panel">
+    <p>이미 부분 베이스가 있으나 통일이 안 됨 — 같은 역할을 두 방식으로 구현 중이다.</p>
+    <table>
+      <tr><th>영역</th><th>통일된 곳</th><th>벗어난 곳</th></tr>
+      <tr><td>Presenter 베이스</td><td><code><strong>BasePresenter&lt;TView,TModel&gt;</strong></code> (ArenaHud·HUD)</td><td><code>IPresenter</code> 직접 (Card·Result·TowerBuild)</td></tr>
+      <tr><td>View 베이스</td><td><code><strong>HudRoot : MonoBehaviour, IView</strong></code></td><td>맨 <code>MonoBehaviour</code> (Card·Result·Gold·Health·Round)</td></tr>
+      <tr><td>Widget/View 혼동</td><td>—</td><td><code>GoldView</code>·<code>HealthView</code>·<code>EnemyCountView</code>·<code>RoundView</code>는 사실상 위젯인데 View로 명명</td></tr>
+      <tr><td>BaseModel</td><td>—</td><td><code>UI.BaseModel</code>(빈) + <code>Domain.Models.BaseModel</code>(SetField) <span class="warn">2개 공존</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 3 -->
+  <h2>3. 근본 원인</h2>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/Presenters/ArenaHudPresenter.cs · HandleGoldChanged L73-77</div>
+    <pre><code><span class="cmt">private void HandleGoldChanged(int gold)
+{</span>
+<span class="hl-line">    model.CurrentGold = gold;   <span class="hl-inline">// ← 도메인 Economy가 이미 든 값을 또 저장(이중 캐싱)</span></span>
+<span class="cmt">    view.SetGold(gold);
+}</span></code></pre>
+    <p><code><strong>ArenaHudModel</strong></code>/<code><strong>HUDModel</strong></code>은 도메인 Model 값을 또 저장하는 <strong>이중 캐싱 중간 Model</strong>이다. 베이스 부재로 위젯·뷰·프레젠터가 제각각 구현됐고, <code>BaseModel</code>이 둘로 갈려 있다. 이 모든 게 "하수 바이브코더 느낌"의 실체다.</p>
+  </div>
+
+  <!-- 4 -->
+  <h2>4. 기획 요구사항 (사용자 확정)</h2>
+  <div class="panel">
+    <ul>
+      <li><code>UIObject</code> 정점 — 아래 <code>UIWidget</code>/<code>UIWidget&lt;T&gt;</code>·<code>UIView</code>·<code>UIPresenter&lt;T:UIView&gt;</code></li>
+      <li>Presenter는 <strong>UIObject 밖 별도 계층</strong>, <strong>View만 제네릭</strong> (Model은 필드 직접)</li>
+      <li>Model 전역 접근 → <span class="ok">검증 후 기존 constructor-DI 유지로 확정</span></li>
+      <li>Model 필드 = 자체 경량 <code>ReactiveProperty&lt;T&gt;</code>, <strong>단일 스칼라 전용</strong> + 다중 스칼라는 별도 struct 래퍼</li>
+      <li>Presenter가 RP를 위젯에 즉시 반영하는 <strong>바인딩</strong> (AsyncBinding = RP의 오기, 즉시 반영)</li>
+      <li>범위 = <strong>베이스 + HUD 전체 이전</strong></li>
+    </ul>
+  </div>
+
+  <!-- 5 -->
+  <h2>5. 설계 원칙 — 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>전역 레지스트리를 버리고 <strong>이미 코드에 존재하는 두 패턴</strong>을 표준으로 승격한다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr><td><strong>단일 합성루트 DI</strong></td><td><code><strong>GameManager.cs:68-127</strong></code> → <code><strong>UIRoot.cs:32-47</strong></code></td><td><strong>생성자 주입</strong> — 의존성이 시그니처에 명시·컴파일 검증. 전역 레지스트리 불필요</td></tr>
+      <tr><td><strong>Model 필드 보유 Presenter</strong></td><td><code><strong>CardSelectionPresenter.cs:14-21</strong></code></td><td>Presenter가 도메인 Model을 <strong>필드로 직접 보유</strong> — <code>UIPresenter&lt;T&gt;</code>(View만 제네릭)의 선례</td></tr>
+    </table>
+    <div class="note">
+      <strong>결합 결론</strong>: 두 패턴은 이미 검증된 DI 흐름이다. 베이스 계층은 이 위에 <code>UIObject</code> 정점과 <code>Bind()</code> 헬퍼만 얹는다 — 새 와이어링 메커니즘(레지스트리)을 도입하지 않는다.
+    </div>
+  </div>
+
+  <h3>레퍼런스 ① 단일 합성루트 — UIRoot.Inject</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/InGame/UIRoot.cs · Inject() L32-47</div>
+    <pre><code>public void Inject(in HudContext ctx, GameFlowModel flow, ...) {
+<span class="hl-line">    if (hud != null) presenters.Add(hud.Bind(ctx));   <span class="hl-inline">// 생성자 주입 — 명시적 의존</span></span>
+    ...
+    foreach (IPresenter p in presenters) p.Initialize();
+}</code></pre>
+    <p>이미 단일 지점에서 모든 Presenter를 조립·초기화한다. 전역 정적 접근은 이 명시성을 숨은 의존성으로 바꿔 퇴행시킨다.</p>
+  </div>
+
+  <h3>레퍼런스 ② 도메인 Model 필드 보유 — CardSelectionPresenter</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/Presenters/CardSelectionPresenter.cs · L14-21</div>
+    <pre><code>public sealed class CardSelectionPresenter : IPresenter {
+<span class="hl-line">    private readonly LevelModel level;   <span class="hl-inline">// Model을 필드로 직접 — TModel 제네릭 불필요</span></span>
+    private readonly ICardCommandTarget core;
+    ...
+}</code></pre>
+    <p><code>UIPresenter&lt;T:UIView&gt;</code>는 이 패턴을 베이스로 승격한다(View만 제네릭, Model은 필드).</p>
+  </div>
+
+  <!-- 6 -->
+  <h2>6. 해결 방안 — 설계</h2>
+
+  <h3>(1) Model 전역 접근 — 레지스트리 폐기 <span class="tag opt">검증 반려</span></h3>
+  <div class="panel">
+    <div class="lbl before">▼ BEFORE (사용자 초안)</div>
+<pre class="before"><span class="del">public static class Models {              // Service Locator</span>
+<span class="del">    public static EconomyModel Economy { get; private set; }</span>
+<span class="del">}</span>
+<span class="del">// 사용: Bind(Models.Economy.Gold, ...)  // 전역 숨은 의존</span></pre>
+    <div class="lbl after">▼ AFTER (확정)</div>
+<pre class="after"><span class="cmt">// 레지스트리 없음. GameManager가 생성 → UIRoot가 Presenter에 주입.</span>
+<span class="add">public sealed class GoldPresenter : UIPresenter&lt;GoldView&gt; {</span>
+<span class="add">    private readonly EconomyModel economy;          // 생성자 주입</span>
+<span class="add">    public override void Initialize() =&gt; Bind(economy.Gold, view.GoldWidget.Set);</span>
+<span class="add">}</span></pre>
+    <ul>
+      <li>전역 정적 상태·숨은 의존성 제거 — 기존 DI 우수성 보존</li>
+      <li><code>LevelModel(curve)</code>·<code>Economy.Initialize(startGold)</code> 생성 인자, EditMode <code>new</code> 격리 테스트 그대로 유지</li>
+    </ul>
+  </div>
+
+  <h3>(2) ReactiveProperty — 단일 스칼라 + struct 래퍼 <span class="tag must">신규</span></h3>
+  <div class="panel">
+    <div class="file">Domain/Models/ReactiveProperty.cs (신규) · 단일 스칼라 전용</div>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">public sealed class ReactiveProperty&lt;T&gt; : IReadOnlyReactiveProperty&lt;T&gt; {</span>
+<span class="add">    private T value;</span>
+<span class="add">    public event System.Action&lt;T&gt; OnChanged;</span>
+<span class="add">    public T Value { get; internal set; }   // 쓰기 internal — 모델 메서드만</span>
+<span class="add">    public void ForceNotify();              // equality 우회(초기/재시작)</span>
+<span class="add">}</span>
+<span class="cmt">// 단일: Economy.Gold = RP&lt;int&gt;.  다값: RP&lt;WaveProgress{current,total}&gt; (원자 통지)</span></pre>
+    <div class="note">다인자(<code>OnWaveChanged(int,int)</code>)·파생(<code>OnHealthChanged(ratio)</code>)은 <strong>struct로 묶어</strong> 비율 계산 중간상태 깜빡임을 막는다. 신호형(<code>OnLevelUp</code>)은 RP 아님(event 유지).</div>
+  </div>
+
+  <h3>(3) UIPresenter.Bind — 토큰·OnShow 재반영 <span class="tag must">신규</span></h3>
+  <div class="panel">
+    <div class="file">UI/Base/UIPresenter.cs (신규)</div>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">protected void Bind&lt;V&gt;(IReadOnlyReactiveProperty&lt;V&gt; src, System.Action&lt;V&gt; sink) {</span>
+<span class="add">    sink(src.Value);                         // 초기값 1회</span>
+<span class="add">    src.OnChanged += sink;                    // 구독</span>
+<span class="add">    unbinders.Add(() =&gt; src.OnChanged -= sink); // Dispose 시 일괄 해제(토큰)</span>
+<span class="add">}</span>
+<span class="cmt">// OnShow() 시점에 바인딩값 재반영 → InactiveOnStart/풀링 stale 방지</span></pre>
+  </div>
+
+  <!-- 7 -->
+  <h2>7. 영향 범위 및 부수 효과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>분석</th></tr>
+      <tr><td>기존 constructor-DI</td><td><span class="ok">유지</span>. 레지스트리 미도입으로 회귀 없음</td></tr>
+      <tr><td>EditMode 테스트</td><td><span class="ok">영향 최소</span>. <code>new</code> 격리 패턴 보존</td></tr>
+      <tr><td>씬 프리팹 참조</td><td><span class="warn">재배선 필요</span>. Prefab Variant로 원본 보존·점진 전환</td></tr>
+      <tr><td>ArenaHudView 분해</td><td><span class="warn">작업량 큼</span>. 모놀리식 8 TMP → 위젯 트리</td></tr>
+      <tr><td>Card/Result/TowerBuild</td><td><span class="ok">이번 비대상</span>. HUD 범위만</td></tr>
+    </table>
+  </div>
+
+  <!-- 8 -->
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대</th></tr>
+      <tr><td>1</td><td>골드 변경 → HUD 즉시 갱신 (RP Bind)</td><td><span class="ok">즉시 반영</span></td></tr>
+      <tr><td>2</td><td>카드 모달(InactiveOnStart) 활성화 시 첫 표시</td><td><span class="ok">OnShow 재반영, stale 없음</span></td></tr>
+      <tr><td>3</td><td>런 재시작(동일 startGold)</td><td><span class="ok">ForceNotify로 갱신</span></td></tr>
+      <tr><td>4</td><td>Presenter Dispose 후 Model 변경</td><td><span class="ok">구독 해제됨(누수 없음)</span></td></tr>
+      <tr><td>5</td><td>EditMode Model 테스트</td><td><span class="ok">기존 new 격리 통과</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 9 -->
+  <h2>9. 검증 반영 요약 (4-렌즈 적대 검증)</h2>
+  <table>
+    <tr><th>발견 (심각도)</th><th>반영</th></tr>
+    <tr><td>레지스트리는 DI 퇴행 <span class="warn">high×3</span></td><td>레지스트리 폐기, constructor-DI 유지</td></tr>
+    <tr><td>RP 전면 래핑 ↔ 다인자/파생 이벤트 <span class="warn">high×2</span></td><td>단일 스칼라 RP + struct 래퍼</td></tr>
+    <tr><td>Bind 초기값 ↔ inactive/풀링 <span class="warn">high</span></td><td>OnShow 재반영 훅</td></tr>
+    <tr><td>ArenaHudView 분해 작업량 <span class="warn">high</span></td><td>Prefab Variant 점진 이전</td></tr>
+    <tr><td>UIObject abstract 단일상속 잠금 (med)</td><td>인터페이스 분리 + 얇은 UIObject</td></tr>
+    <tr><td>UIWidget&lt;T&gt; 이종 컬렉션 (med)</td><td>concrete 타입 필드 참조</td></tr>
+    <tr><td>HudRoot.Bind 자기설치 (med)</td><td>Presenter 생성 UIRoot로 이전</td></tr>
+    <tr><td>gold=-1 강제통지 (med)</td><td>ForceNotify API</td></tr>
+  </table>
+  <div class="note">전체 스펙: <code><strong>docs/superpowers/specs/2026-06-30-ui-architecture-base-design.md</strong></code></div>
+
+  <p class="foot">설계 산출 완료 — 다음 단계: 사용자 스펙 검토 후 writing-plans로 구현 계획 수립</p>
+
+</div>
+</body>
+</html>

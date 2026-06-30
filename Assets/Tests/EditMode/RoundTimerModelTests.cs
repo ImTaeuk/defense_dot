@@ -43,12 +43,12 @@ namespace DefenseDot.Tests.EditMode
         }
 
         [Test]
-        public void OnTimeChanged_FiresOnTick()
+        public void Time_NotifiesOnTick()
         {
             var t = new RoundTimerModel();
             t.StartWave(10f);
             float gotRemaining = -1f, gotDuration = -1f;
-            t.OnTimeChanged += (r, d) => { gotRemaining = r; gotDuration = d; };
+            t.Time.Subscribe(s => { gotRemaining = s.Remaining; gotDuration = s.Duration; });
             t.Tick(4f);
             Assert.AreEqual(6f, gotRemaining, 0.0001f);
             Assert.AreEqual(10f, gotDuration, 0.0001f);

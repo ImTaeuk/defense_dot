@@ -30,6 +30,7 @@ namespace DefenseDot.Systems.Mode
         private GameFlowModel flow;
         private CoreModel coreHp;
         private Camera viewCamera;
+        private System.IDisposable healthSub;
         private AnimatorOverrideController overrideController;
         private bool locked;        // 파괴/승리 시 회전·시전 잠금
         private bool isCasting;
@@ -65,7 +66,7 @@ namespace DefenseDot.Systems.Mode
             if (core != null) core.SetCastReceiver(this);
             if (coreHp != null)
             {
-                coreHp.OnHealthChanged += HandleHealthChanged;
+                healthSub = coreHp.Health.Subscribe(HandleHealthChanged);
                 coreHp.OnCoreDestroyed += HandleCoreDestroyed;
             }
             if (flow != null) flow.OnPhaseChanged += HandlePhaseChanged;
@@ -124,10 +125,10 @@ namespace DefenseDot.Systems.Mode
             if (core != null) core.NotifyFireFrame();
         }
 
-        private void HandleHealthChanged(float ratio)
+        private void HandleHealthChanged(DefenseDot.Domain.Models.HealthState state)
         {
             if (animator == null) return;
-            animator.SetBool(LowHpHash, ratio <= lowHpRatio);
+            animator.SetBool(LowHpHash, state.Ratio <= lowHpRatio);
         }
 
         private void HandleCoreDestroyed()
@@ -154,7 +155,7 @@ namespace DefenseDot.Systems.Mode
         {
             if (coreHp != null)
             {
-                coreHp.OnHealthChanged -= HandleHealthChanged;
+                healthSub?.Dispose();
                 coreHp.OnCoreDestroyed -= HandleCoreDestroyed;
             }
             if (flow != null) flow.OnPhaseChanged -= HandlePhaseChanged;

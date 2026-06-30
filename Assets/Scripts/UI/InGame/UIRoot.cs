@@ -16,8 +16,7 @@ namespace DefenseDot.UI.InGame
     public class UIRoot : MonoBehaviour
     {
         [Header("Views")]
-        [UnityEngine.Serialization.FormerlySerializedAs("hudView")]
-        [SerializeField] private HudRoot hud;   // Arena 또는 Grid HUD (씬에 1개)
+        [SerializeField] private ArenaHudView arenaHud;
         [SerializeField] private TowerBuildModalView buildModalView;
         [SerializeField] private TowerRoster towerRoster;
         [SerializeField] private GameResultView gameResultView;
@@ -31,7 +30,9 @@ namespace DefenseDot.UI.InGame
         /// </summary>
         public void Inject(in HudContext ctx, GameFlowModel flow, TowerPlacementController placement, in CardContext card)
         {
-            if (hud != null) presenters.Add(hud.Bind(ctx));
+            if (arenaHud != null)
+                presenters.Add(new ArenaHudPresenter(arenaHud, ctx.Economy, ctx.Score,
+                    ctx.Wave, ctx.Timer, ctx.EnemyCapacity));
 
             if (placement != null && buildModalView != null && towerRoster != null)
                 presenters.Add(new TowerBuildPresenter(buildModalView, towerRoster, ctx.Economy, placement));
@@ -40,15 +41,16 @@ namespace DefenseDot.UI.InGame
                 presenters.Add(new GameResultPresenter(gameResultView, flow));
 
             if (cardSelectionView != null && card.Level != null && card.Config != null && card.Core != null)
-                presenters.Add(new CardSelectionPresenter(cardSelectionView, card.Level,
-                    new CardChoiceGenerator(), card.Core, card.Config, card.Pool, card.Flow));
+                presenters.Add(new CardSelectionPresenter(cardSelectionView, card.Level, new CardChoiceGenerator(), card.Core, card.Config, card.Pool, card.Flow));
 
-            foreach (IPresenter presenter in presenters) presenter.Initialize();
+            foreach (IPresenter presenter in presenters)
+                presenter.Initialize();
         }
 
         private void OnDestroy()
         {
-            foreach (IPresenter presenter in presenters) presenter.Dispose();
+            foreach (IPresenter presenter in presenters)
+                presenter.Dispose();
             presenters.Clear();
         }
     }
