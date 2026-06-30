@@ -46,16 +46,16 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 읽기 전용 로드아웃(카드 생성기 질의용). </summary>
         public AbilityLoadout Loadout => loadout;
 
-        /// <summary> 신규 능력 추가. 액티브면 러너에 즉시 장착(라이프사이클 동기화). </summary>
-        public bool AddAbility(AbilityData data)
+        /// <summary> 신규 능력 추가. 액티브면 러너에 즉시 장착(라이프사이클 동기화). 추가된 인스턴스 반환(실패 시 null). </summary>
+        public AbilityInstance AddAbility(AbilityData data)
         {
-            if (loadout == null || !loadout.TryAdd(data)) return false;
-            if (data is ActiveAbilityData)
-            {
-                AbilityInstance inst = loadout.Actives[loadout.Actives.Count - 1];
-                runner?.Equip(inst);
-            }
-            return true;
+            if (loadout == null || !loadout.TryAdd(data)) return null;
+            bool isActive = data is ActiveAbilityData;
+            AbilityInstance inst = isActive
+                ? loadout.Actives[loadout.Actives.Count - 1]
+                : loadout.Passives[loadout.Passives.Count - 1];
+            if (isActive) runner?.Equip(inst);
+            return inst;
         }
 
         /// <summary> 기존 능력 레벨업. </summary>

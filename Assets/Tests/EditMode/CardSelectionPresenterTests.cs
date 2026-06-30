@@ -26,7 +26,13 @@ namespace DefenseDot.Tests.EditMode
         {
             public AbilityLoadout Loadout { get; } = new AbilityLoadout(6, 6);
             public int added; public int leveled;
-            public bool AddAbility(AbilityData d) { added++; return Loadout.TryAdd(d); }
+            public AbilityInstance AddAbility(AbilityData d)
+            {
+                added++;
+                if (!Loadout.TryAdd(d)) return null;
+                var list = d is PassiveAbilityData ? Loadout.Passives : Loadout.Actives;
+                return list.Count > 0 ? list[list.Count - 1] : null;
+            }
             public void LevelUpAbility(AbilityInstance i) { leveled++; Loadout.LevelUp(i); }
         }
 
@@ -90,6 +96,24 @@ namespace DefenseDot.Tests.EditMode
             Assert.AreEqual(1, core.added);
             Assert.AreEqual(1, v.hideCount);
             Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [Test]
+        public void SelectSuperLuckyNewCard_AppliesThreeLevels()
+        {
+            var cfg = Config(pause: true);
+            cfg.enableLucky = true; cfg.superLuckyChance = 1f;   // 항상 슈퍼럭키(+2 보너스)
+            var v = new StubView();
+            var core = new StubCore();
+            var lvl = new LevelModel(cfg.KillsToNextLevel);
+            var flow = new GameFlowModel(); flow.SetPhase(GamePhase.Playing);
+            var gen = new CardChoiceGenerator(() => 0f);
+            var p = new CardSelectionPresenter(v, lvl, gen, core, cfg, Pool(Active()), flow);
+            p.Initialize();
+            for (int i = 0; i < 3; i++) lvl.RegisterKill();   // 레벨업 → 슈퍼럭키 신규 카드
+            v.Click(0);
+            Assert.AreEqual(1, core.Loadout.Actives.Count);
+            Assert.AreEqual(3, core.Loadout.Actives[0].level);   // 시작 1 + 보너스 2
         }
 
         [Test]

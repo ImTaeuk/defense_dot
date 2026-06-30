@@ -23,12 +23,12 @@ namespace DefenseDot.Systems.Cards
             this.tier = tier;
         }
 
-        /// <summary> 신규 능력 카드. </summary>
-        public static CardChoice NewCard(AbilityData data)
-            => new CardChoice(CardAction.New, data, null, 0, 1, CardTier.New);
+        /// <summary> 신규 능력 카드(시작 레벨 = toLevel). </summary>
+        public static CardChoice NewCard(AbilityData data, CardTier tier, int toLevel)
+            => new CardChoice(CardAction.New, data, null, 0, toLevel, tier);
 
-        /// <summary> 기존 능력 레벨업 카드. </summary>
-        public static CardChoice LevelCard(AbilityInstance inst)
-            => new CardChoice(CardAction.Level, inst.data, inst, inst.level, inst.level + 1, CardTier.Upgrade);
+        /// <summary> 기존 능력 레벨업 카드(목표 레벨 = toLevel). </summary>
+        public static CardChoice LevelCard(AbilityInstance inst, CardTier tier, int toLevel)
+            => new CardChoice(CardAction.Level, inst.data, inst, inst.level, toLevel, tier);
     }
 }

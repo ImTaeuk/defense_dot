@@ -42,20 +42,38 @@ namespace DefenseDot.Systems.Cards
                 if (!canNew && !canLv) break;
 
                 bool pickNew = canNew && (!canLv || rng() < newChance);
+                int bonusLevels = RollBonusLevels(config);
+                CardTier tier = bonusLevels >= 2 ? CardTier.SuperLucky
+                    : bonusLevels == 1 ? CardTier.Lucky
+                    : (pickNew ? CardTier.New : CardTier.Upgrade);
                 if (pickNew)
                 {
                     int idx = Index(newPool.Count);
-                    result.Add(CardChoice.NewCard(newPool[idx]));
+                    AbilityData picked = newPool[idx];
+                    int toLevel = UnityEngine.Mathf.Min(picked.maxLevel, 1 + bonusLevels);
+                    result.Add(CardChoice.NewCard(picked, tier, toLevel));
                     newPool.RemoveAt(idx);
                 }
                 else
                 {
                     int idx = Index(levelPool.Count);
-                    result.Add(CardChoice.LevelCard(levelPool[idx]));
+                    AbilityInstance inst = levelPool[idx];
+                    int toLevel = UnityEngine.Mathf.Min(inst.data.maxLevel, inst.level + 1 + bonusLevels);
+                    result.Add(CardChoice.LevelCard(inst, tier, toLevel));
                     levelPool.RemoveAt(idx);
                 }
             }
             return result;
+        }
+
+        /// <summary> 럭키 굴림 — 보너스 레벨 수 반환(0 일반 / 1 럭키 / 2 슈퍼럭키). </summary>
+        private int RollBonusLevels(ArenaCardConfig config)
+        {
+            if (!config.enableLucky) return 0;
+            float roll = rng();
+            if (roll < config.superLuckyChance) return 2;
+            if (roll < config.superLuckyChance + config.luckyChance) return 1;
+            return 0;
         }
 
         private int Index(int count)

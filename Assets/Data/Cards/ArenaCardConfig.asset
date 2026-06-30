@@ -19,7 +19,7 @@ MonoBehaviour:
   newCardChanceEarly: 0.75
   newCardChanceLate: 0.45
   earlyLevelThreshold: 4
-  enableLucky: 0
+  enableLucky: 1
   enableCombo: 0
   enableBonus: 0
   luckyChance: 0.12

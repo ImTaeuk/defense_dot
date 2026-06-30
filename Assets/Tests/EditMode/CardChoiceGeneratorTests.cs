@@ -70,5 +70,28 @@ namespace DefenseDot.Tests.EditMode
             var choices = gen.Generate(lo, Pool(), Config(3), level: 1); // 풀 비움
             Assert.AreEqual(0, choices.Count);
         }
+
+        [Test]
+        public void Generate_SuperLucky_SetsTierAndToLevel()
+        {
+            var lo = new AbilityLoadout(6, 6);
+            var cfg = Config(1);
+            cfg.enableLucky = true; cfg.superLuckyChance = 1f;   // 항상 슈퍼럭키
+            var gen = new CardChoiceGenerator(() => 0f);
+            var choices = gen.Generate(lo, Pool(Active()), cfg, level: 1);
+            Assert.AreEqual(1, choices.Count);
+            Assert.AreEqual(CardTier.SuperLucky, choices[0].tier);
+            Assert.AreEqual(3, choices[0].toLevel);              // 신규 1 + 보너스 2
+        }
+
+        [Test]
+        public void Generate_LuckyDisabled_NormalTierAndLevel()
+        {
+            var lo = new AbilityLoadout(6, 6);
+            var gen = new CardChoiceGenerator(() => 0f);
+            var choices = gen.Generate(lo, Pool(Active()), Config(1), level: 1); // enableLucky 기본 false
+            Assert.AreEqual(CardTier.New, choices[0].tier);
+            Assert.AreEqual(1, choices[0].toLevel);
+        }
     }
 }

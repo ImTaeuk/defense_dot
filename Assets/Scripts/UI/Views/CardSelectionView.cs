@@ -66,10 +66,21 @@ namespace DefenseDot.UI.Views
         private void Bind(in CardItem item, in CardChoice choice)
         {
             CardDisplay disp = CardPresentation.Build(choice);
-            if (item.nameText != null) item.nameText.text = disp.title;
-            if (item.kindText != null) item.kindText.text = disp.kindTag;
-            if (item.descText != null) item.descText.text = disp.desc;
-            if (item.icon != null) { item.icon.sprite = disp.icon; item.icon.enabled = disp.icon != null; }
+
+            if (item.nameText != null)
+                item.nameText.text = disp.title;
+
+            if (item.kindText != null)
+                item.kindText.text = disp.kindTag;
+
+            if (item.descText != null)
+                item.descText.text = disp.desc;
+
+            if (item.icon != null)
+            {
+                item.icon.sprite = disp.icon;
+                item.icon.enabled = disp.icon != null;
+            }
 
             // 등급별 카드 스프라이트 + 홀로그램 포일 적용
             if (config != null && config.tierSet != null && item.background != null)
@@ -94,20 +105,32 @@ namespace DefenseDot.UI.Views
 
         private void Update()
         {
-            if (!animating) return;
+            if (!animating)
+                return;
+
             animTime += Time.unscaledDeltaTime;           // 정지(timeScale=0) 중에도 동작
+
             float t = fadeDuration > 0f ? Mathf.Clamp01(animTime / fadeDuration) : 1f;
             float eased = 1f - (1f - t) * (1f - t);       // ease-out quad
-            if (canvasGroup != null) canvasGroup.alpha = eased;
-            if (cardsContainer != null) cardsContainer.localScale = Vector3.one * Mathf.Lerp(popFromScale, 1f, eased);
-            if (t >= 1f) animating = false;
+
+            if (canvasGroup != null)
+                canvasGroup.alpha = eased;
+
+            if (cardsContainer != null)
+                cardsContainer.localScale = Vector3.one * Mathf.Lerp(popFromScale, 1f, eased);
+
+            if (t >= 1f)
+                animating = false;
         }
 
         public void Hide()
         {
             animating = false;
-            if (cardsContainer != null) cardsContainer.localScale = Vector3.one;
-            if (root != null) root.SetActive(false);
+
+            if (cardsContainer != null)
+                cardsContainer.localScale = Vector3.one;
+            if (root != null)
+                root.SetActive(false);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace DefenseDot.Tests.EditMode
         {
             var a = ScriptableObject.CreateInstance<StubActive>();
             a.displayName = "샷"; a.description = "기본 발사";
-            var disp = CardPresentation.Build(CardChoice.NewCard(a));
+            var disp = CardPresentation.Build(CardChoice.NewCard(a, CardTier.New, 1));
             Assert.AreEqual("샷", disp.title);
             StringAssert.Contains("액티브", disp.kindTag);
             Assert.AreEqual("기본 발사", disp.desc);
@@ -32,10 +32,22 @@ namespace DefenseDot.Tests.EditMode
             var a = ScriptableObject.CreateInstance<StubActive>();
             a.displayName = "샷"; a.maxLevel = 5;
             var inst = new AbilityInstance(a, 2);
-            var disp = CardPresentation.Build(CardChoice.LevelCard(inst));
+            var disp = CardPresentation.Build(CardChoice.LevelCard(inst, CardTier.Upgrade, 3));
             StringAssert.Contains("Lv2", disp.desc);
             StringAssert.Contains("Lv3", disp.desc);
             Assert.AreEqual(CardTier.Upgrade, disp.tier);
+        }
+
+        [Test]
+        public void Build_SuperLuckyCard_ShowsStarMarker()
+        {
+            var a = ScriptableObject.CreateInstance<StubActive>();
+            a.displayName = "샷"; a.maxLevel = 5;
+            var inst = new AbilityInstance(a, 1);
+            var disp = CardPresentation.Build(CardChoice.LevelCard(inst, CardTier.SuperLucky, 4));
+            StringAssert.Contains("★★", disp.desc);
+            StringAssert.Contains("Lv4", disp.desc);
+            Assert.AreEqual(CardTier.SuperLucky, disp.tier);
         }
     }
 }

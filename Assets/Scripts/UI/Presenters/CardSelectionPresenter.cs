@@ -20,8 +20,7 @@ namespace DefenseDot.UI.Presenters
         private readonly GameFlowModel flow;
         private List<CardChoice> current;
 
-        public CardSelectionPresenter(ICardSelectionView view, LevelModel level, CardChoiceGenerator generator,
-            ICardCommandTarget core, ArenaCardConfig config, AbilityPool pool, GameFlowModel flow)
+        public CardSelectionPresenter(ICardSelectionView view, LevelModel level, CardChoiceGenerator generator, ICardCommandTarget core, ArenaCardConfig config, AbilityPool pool, GameFlowModel flow)
         {
             this.view = view;
             this.level = level;
@@ -62,8 +61,16 @@ namespace DefenseDot.UI.Presenters
         {
             if (current == null || idx < 0 || idx >= current.Count) return;
             CardChoice c = current[idx];
-            if (c.action == CardAction.New) core.AddAbility(c.data);
-            else core.LevelUpAbility(c.instance);
+            if (c.action == CardAction.New)
+            {
+                AbilityInstance added = core.AddAbility(c.data);
+                if (added != null)
+                    for (int lv = added.level; lv < c.toLevel; lv++) core.LevelUpAbility(added);
+            }
+            else
+            {
+                for (int lv = c.fromLevel; lv < c.toLevel; lv++) core.LevelUpAbility(c.instance);
+            }
             current = null;
             view.Hide();
             if (flow.Phase == GamePhase.Playing) Time.timeScale = 1f;

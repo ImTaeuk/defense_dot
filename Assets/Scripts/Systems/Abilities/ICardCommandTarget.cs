@@ -4,7 +4,8 @@ namespace DefenseDot.Systems.Abilities
     public interface ICardCommandTarget
     {
         AbilityLoadout Loadout { get; }
-        bool AddAbility(AbilityData data);
+        /// <summary> 능력 추가. 추가된 인스턴스 반환(실패 시 null). </summary>
+        AbilityInstance AddAbility(AbilityData data);
         void LevelUpAbility(AbilityInstance instance);
     }
 }
