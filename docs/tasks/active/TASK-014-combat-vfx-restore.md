@@ -46,6 +46,7 @@
   - B-0. ✅ 머티리얼 `*Speed` 복구 — 카드 홀로그램 셰이더 6종이 `_Time.y`(scaled time) 사용 → `timeScale=0`(카드 모달·결과 화면) 에서 `_Time` 정지가 원인(확정). `UnscaledTimeShaderDriver`(부팅 시 자동 생성, 매 프레임 글로벌 `_UnscaledTime`=`Time.unscaledTime` 주입) + 셰이더 6종 `_Time.y`→`_UnscaledTime` 치환으로 해결. 검증: `timeScale=0` 에서 `_UnscaledTime` 16.9→38.6 증가(기존 scaled `Time.time` 은 8.1 정지). 설계: `docs/superpowers/specs/2026-06-29-unscaled-time-shader-design.md`
   - B-1. 시전 중 푸른 입자 차징 연출
   - B-2. 타격감 강화 (히트스톱·카메라 셰이크)
+  - B-3. 피격 파티클(Hit_Water) 확대 — `SpawnOneShot(..., scale 1)` 이 적 스케일(≈589배) 대비 작아 명중이 잘 안 보임. 파티클 스폰 스케일을 키워 타격감을 확보. (§5 잔여 메모 승격)
 
 ## 4. 검증
 - 컴파일 0 에러.

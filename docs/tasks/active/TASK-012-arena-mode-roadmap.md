@@ -112,6 +112,7 @@ Arena = 원작의 **`standard`(클래식) 모드**. 원형 경기장에서 중�
 - [ ] **B-2.** (v598) 능력 도크(칩 그리드·단일 오픈 아코디언) — A3 카드/슬롯 UI에 반영
 - [ ] **B-3.** (v599~v606) 세로 상단 HUD 바 + 배속(▶▶)/일시정지 컨트롤 + 보조정보 ▾ 트레이
 - [ ] **B-4.** (v608) 진화 힌트에서 미보유 파트너 제외(소소 UX)
+- [ ] **B-5.** 레벨업 진척도 HUD 표시 — 다음 레벨업까지 남은 처치 수·진행 게이지를 HUD 위젯으로 노출(`LevelModel`의 현재 kills·`KillsToNextLevel` 기반). 신규 UI 베이스(`UIWidget<T>`)로 `LevelProgressWidget` 추가, `LevelModel` 진행도를 ReactiveProperty 로 노출해 Presenter 가 Bind.
 
 ---
 
