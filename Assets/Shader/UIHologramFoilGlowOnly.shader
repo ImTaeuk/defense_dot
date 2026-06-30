@@ -98,6 +98,7 @@ Shader "UI/Hologram Foil Glow Only"
             float _PulseSpeed;
             float _PulseAmount;
             float _AlphaCutoff;
+            float _UnscaledTime;   // 글로벌 unscaled 시간
 
             v2f vert(appdata_t v)
             {
@@ -136,7 +137,7 @@ Shader "UI/Hologram Foil Glow Only"
                 float outerHalo = saturate((nearbyAverage - alpha) / max(_GlowSoftness, 0.001)) * saturate(1.0 - alpha);
                 float innerRim = alpha * saturate((alpha - nearbyMin) / max(_GlowSoftness, 0.001));
                 float glowMask = saturate(outerHalo * _OuterGlow + innerRim * _InnerGlow);
-                float pulse = 1.0 + sin(_Time.y * _PulseSpeed * 6.28318) * _PulseAmount;
+                float pulse = 1.0 + sin(_UnscaledTime * _PulseSpeed * 6.28318) * _PulseAmount;
 
                 fixed4 OUT;
                 OUT.rgb = _GlowColor.rgb * _GlowStrength * pulse * glowMask * IN.color.rgb;

@@ -113,6 +113,7 @@ Shader "UI/Hologram Foil Bloom"
             float _EdgeSoftness;
             float _EmissionBoost;
             float _AlphaCutoff;
+            float _UnscaledTime;   // 글로벌 unscaled 시간
 
             v2f vert(appdata_t v)
             {
@@ -153,7 +154,7 @@ Shader "UI/Hologram Foil Bloom"
                 float foilMask = alpha * lerp(1.0, innerEdge, _FoilEdgeOnly);
 
                 float2 dir = float2(cos(_FoilAngle), sin(_FoilAngle));
-                float flow = dot(IN.texcoord, dir) * _FoilScale + _Time.y * _FoilSpeed;
+                float flow = dot(IN.texcoord, dir) * _FoilScale + _UnscaledTime * _FoilSpeed;
                 float3 rainbow = Hue(flow);
                 float shine = smoothstep(1.0 - _ShineWidth, 1.0, sin(flow * 6.28318) * 0.5 + 0.5);
                 float3 foil = lerp(sprite.rgb, rainbow, saturate(_FoilStrength * (0.35 + shine)));

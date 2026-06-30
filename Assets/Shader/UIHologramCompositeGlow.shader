@@ -113,6 +113,7 @@ Shader "UI/Hologram Composite Glow"
             float _FoilAngle;
             float _ShineStrength;
             float _ShineWidth;
+            float _UnscaledTime;   // 글로벌 unscaled 시간
 
             v2f vert(appdata_t v)
             {
@@ -171,7 +172,7 @@ Shader "UI/Hologram Composite Glow"
                 front.a *= InUv(frontUv);
 
                 float2 dir = float2(cos(_FoilAngle), sin(_FoilAngle));
-                float flow = dot(frontUv, dir) * _FoilScale + _Time.y * _FoilSpeed;
+                float flow = dot(frontUv, dir) * _FoilScale + _UnscaledTime * _FoilSpeed;
                 float shine = smoothstep(1.0 - _ShineWidth, 1.0, sin(flow * 6.28318) * 0.5 + 0.5);
                 float3 foil = lerp(front.rgb, Hue(flow), saturate(_FoilStrength * (0.35 + shine)));
                 front.rgb = lerp(front.rgb, foil + shine * _ShineStrength, front.a);

@@ -100,6 +100,7 @@ Shader "UI/Hologram Alpha Glow Only"
             float _PulseSpeed;
             float _PulseAmount;
             float _AlphaCutoff;
+            float _UnscaledTime;   // 글로벌 unscaled 시간
 
             v2f vert(appdata_t v)
             {
@@ -139,7 +140,7 @@ Shader "UI/Hologram Alpha Glow Only"
                 float innerRim = alpha * saturate((alpha - nearbyMin) / max(_GlowSoftness, 0.001));
                 float silhouette = alpha * _SilhouetteFill;
                 float glowMask = saturate(outerHalo * _OuterGlow + innerRim * _InnerGlow + silhouette);
-                float pulse = 1.0 + sin(_Time.y * _PulseSpeed * 6.28318) * _PulseAmount;
+                float pulse = 1.0 + sin(_UnscaledTime * _PulseSpeed * 6.28318) * _PulseAmount;
 
                 fixed4 OUT;
                 OUT.rgb = _GlowColor.rgb * _GlowStrength * pulse * glowMask * IN.color.rgb;

@@ -126,6 +126,7 @@ Shader "UI/Hologram/Foil Tinted"
             float _DepthMetallicStrength;
             float _DepthDarkenStrength;
             float _DepthResponse;
+            float _UnscaledTime;   // 글로벌 unscaled 시간
 
             float EaseInOutSine(float value)
             {
@@ -154,7 +155,7 @@ Shader "UI/Hologram/Foil Tinted"
             {
                 float2 uv = IN.texcoord;
                 fixed4 baseColor = (tex2D(_MainTex, uv) + _TextureSampleAdd) * IN.color;
-                float t = _Time.y;
+                float t = _UnscaledTime;
 
                 float3 normalDir = normalize(IN.worldNormal);
                 float3 viewNormal = normalize(mul((float3x3)UNITY_MATRIX_V, normalDir));
