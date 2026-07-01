@@ -80,4 +80,33 @@ namespace DefenseDot.Domain.Models
             Ratio = capacity > 0 ? alive / (float)capacity : 0f;
         }
     }
+
+    /// <summary> 레벨 진척(레벨/누적 처치/필요/남은/비율) 표시 상태입니다. </summary>
+    public readonly struct LevelProgress
+    {
+        /// <summary> 현재 레벨입니다. </summary>
+        public readonly int Level;
+
+        /// <summary> 현재 레벨의 누적 처치 수입니다. </summary>
+        public readonly int Kills;
+
+        /// <summary> 다음 레벨까지 필요한 처치 수입니다. </summary>
+        public readonly int KillsToNext;
+
+        /// <summary> 다음 레벨까지 남은 처치 수입니다. </summary>
+        public readonly int Remaining;
+
+        /// <summary> 진행 비율(0~1)입니다. </summary>
+        public readonly float Ratio;
+
+        /// <summary> 레벨·누적/필요 처치로 상태를 만들고 남은 수·비율을 계산합니다. </summary>
+        public LevelProgress(int level, int kills, int killsToNext)
+        {
+            Level = level;
+            Kills = kills;
+            KillsToNext = killsToNext;
+            Remaining = killsToNext > 0 ? killsToNext - kills : 0;
+            Ratio = killsToNext > 0 ? kills / (float)killsToNext : 0f;
+        }
+    }
 }

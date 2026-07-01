@@ -6,6 +6,7 @@ using DefenseDot.Systems.Enemy;
 using DefenseDot.Systems.Economy;
 using DefenseDot.Systems.Mode;
 using DefenseDot.Systems.Tower;
+using DefenseDot.Data;
 using DefenseDot.Systems.Core;
 using DefenseDot.UI.InGame;
 
@@ -25,6 +26,7 @@ namespace DefenseDot.Systems.Management
         [SerializeField] private EnemySpawner spawner;
         [SerializeField] private CoreController coreController;
         [SerializeField] private UIRoot uiRoot;
+        [SerializeField] private TowerRoster towerRoster;
 
         /// <summary>골드 재화 모델입니다.</summary>
         public EconomyModel Economy { get; private set; }
@@ -110,15 +112,15 @@ namespace DefenseDot.Systems.Management
             Level = new LevelModel(curve);
             Combat.OnEnemyKilled += HandleEnemyKilledForLevel;
 
-            // UI 연결 (UI 합성 루트에 주입)
+            // UI 연결 (UI 합성 루트에 GameContext 주입)
             if (uiRoot != null)
             {
-                var hudContext = new DefenseDot.UI.HudContext(
-                    Economy, Core, Wave, Score, RoundTimer, modeBootstrap.EnemyDisplayCapacity);
-                DefenseDot.Systems.Abilities.ICardCommandTarget coreTarget =
-                    arenaBoot != null ? arenaBoot.CoreAbility : null;
-                var cardContext = new DefenseDot.UI.CardContext(Level, cardConfig, abilityPool, coreTarget, Flow);
-                uiRoot.Inject(hudContext, Flow, modeBootstrap.PlacementController, cardContext);
+                DefenseDot.Systems.Abilities.ICardCommandTarget coreTarget = arenaBoot != null ? arenaBoot.CoreAbility : null;
+                var ctx = new DefenseDot.Domain.GameContext(
+                    Economy, Core, Wave, Score, RoundTimer, Flow, Level,
+                    modeBootstrap.EnemyDisplayCapacity, towerRoster,
+                    modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget);
+                uiRoot.Inject(ctx);
             }
 
             // 게임 시작

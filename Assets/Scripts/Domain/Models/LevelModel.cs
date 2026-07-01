@@ -4,11 +4,15 @@ namespace DefenseDot.Domain.Models
     public sealed class LevelModel : BaseModel
     {
         private readonly System.Func<int, int> curve;
+        private readonly ReactiveProperty<LevelProgress> progress;
 
         public int Level { get; private set; } = 1;
         public int Kills { get; private set; }
         public int KillsToNextLevel { get; private set; }
         public int PendingLevelUps { get; private set; }
+
+        /// <summary> 레벨 진척(레벨/처치/남은/비율) 상태입니다. (읽기 전용 RP) </summary>
+        public IReadOnlyReactiveProperty<LevelProgress> Progress => progress;
 
         public event System.Action OnLevelUp;
 
@@ -16,6 +20,7 @@ namespace DefenseDot.Domain.Models
         {
             this.curve = curve;
             KillsToNextLevel = curve(Level);
+            progress = new ReactiveProperty<LevelProgress>(Snapshot());
         }
 
         /// <summary> 처치 1회 집계. 곡선 도달 시 레벨업(다중 가능). </summary>
@@ -31,6 +36,7 @@ namespace DefenseDot.Domain.Models
                 PendingLevelUps++;
                 leveled = true;
             }
+            progress.Value = Snapshot();
             if (leveled) OnLevelUp?.Invoke();
         }
 
@@ -41,5 +47,7 @@ namespace DefenseDot.Domain.Models
             PendingLevelUps--;
             return true;
         }
+
+        private LevelProgress Snapshot() => new LevelProgress(Level, Kills, KillsToNextLevel);
     }
 }

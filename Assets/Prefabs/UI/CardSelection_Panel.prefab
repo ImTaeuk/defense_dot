@@ -225,6 +225,7 @@ GameObject:
   - component: {fileID: 6694893809079350895}
   - component: {fileID: 9202167469177203603}
   - component: {fileID: 5753436508981642783}
+  - component: {fileID: 4079431828452300458}
   m_Layer: 0
   m_Name: Card2
   m_TagString: Untagged
@@ -358,6 +359,27 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4079431828452300458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1249270256749367578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a43f7bd369d8e4a48aafff7078ce9bc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Widgets.CardSlotWidget
+  depth: 0
+  button: {fileID: 5753436508981642783}
+  background: {fileID: 9202167469177203603}
+  border: {fileID: 798163316599612650}
+  icon: {fileID: 6328810665675784422}
+  nameText: {fileID: 2546977189025909712}
+  kindText: {fileID: 4596200074755269055}
+  descText: {fileID: 5947057409484761858}
+  glowParticle: {fileID: 0}
 --- !u!1 &1461803089314309962
 GameObject:
   m_ObjectHideFlags: 0
@@ -1209,6 +1231,7 @@ GameObject:
   - component: {fileID: 4883890625007418756}
   - component: {fileID: 450430036957533386}
   - component: {fileID: 1638294277980663289}
+  - component: {fileID: 7665526454621341564}
   m_Layer: 0
   m_Name: Card0
   m_TagString: Untagged
@@ -1342,6 +1365,27 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7665526454621341564
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4943674637300262963}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a43f7bd369d8e4a48aafff7078ce9bc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Widgets.CardSlotWidget
+  depth: 0
+  button: {fileID: 1638294277980663289}
+  background: {fileID: 450430036957533386}
+  border: {fileID: 1743944200537525913}
+  icon: {fileID: 7897267665441823081}
+  nameText: {fileID: 7127243509372561264}
+  kindText: {fileID: 4515872463917044121}
+  descText: {fileID: 2655781441589067856}
+  glowParticle: {fileID: 0}
 --- !u!1 &5236823838202147496
 GameObject:
   m_ObjectHideFlags: 0
@@ -1406,34 +1450,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02b4aa7da4faf0341807edd90a2de80a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Views.CardSelectionView
+  depth: 0
+  initType: 0
   canvasGroup: {fileID: 3327648464848784058}
   root: {fileID: 5236823838202147496}
   titleText: {fileID: 2909431962831187225}
-  items:
-  - button: {fileID: 1638294277980663289}
-    background: {fileID: 450430036957533386}
-    border: {fileID: 1743944200537525913}
-    icon: {fileID: 7897267665441823081}
-    nameText: {fileID: 7127243509372561264}
-    kindText: {fileID: 4515872463917044121}
-    descText: {fileID: 2655781441589067856}
-    glowParticle: {fileID: 0}
-  - button: {fileID: 2205226570750682358}
-    background: {fileID: 8960686239404586632}
-    border: {fileID: 4492447261747007693}
-    icon: {fileID: 3293277777145814247}
-    nameText: {fileID: 2153080043896496191}
-    kindText: {fileID: 7629237560581360567}
-    descText: {fileID: 8658327374412321703}
-    glowParticle: {fileID: 0}
-  - button: {fileID: 5753436508981642783}
-    background: {fileID: 9202167469177203603}
-    border: {fileID: 798163316599612650}
-    icon: {fileID: 6328810665675784422}
-    nameText: {fileID: 2546977189025909712}
-    kindText: {fileID: 4596200074755269055}
-    descText: {fileID: 5947057409484761858}
-    glowParticle: {fileID: 0}
+  slots:
+  - {fileID: 7665526454621341564}
+  - {fileID: 6096275962964525507}
+  - {fileID: 4079431828452300458}
   config: {fileID: 11400000, guid: f8f932ddc92ced148a9b929897a00f18, type: 2}
   cardsContainer: {fileID: 425948308493050043}
   fadeDuration: 0.22
@@ -1451,6 +1476,7 @@ GameObject:
   - component: {fileID: 4247711014199999672}
   - component: {fileID: 8960686239404586632}
   - component: {fileID: 2205226570750682358}
+  - component: {fileID: 6096275962964525507}
   m_Layer: 0
   m_Name: Card1
   m_TagString: Untagged
@@ -1584,6 +1610,27 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6096275962964525507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5587462152139089474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a43f7bd369d8e4a48aafff7078ce9bc9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Widgets.CardSlotWidget
+  depth: 0
+  button: {fileID: 2205226570750682358}
+  background: {fileID: 8960686239404586632}
+  border: {fileID: 4492447261747007693}
+  icon: {fileID: 3293277777145814247}
+  nameText: {fileID: 2153080043896496191}
+  kindText: {fileID: 7629237560581360567}
+  descText: {fileID: 8658327374412321703}
+  glowParticle: {fileID: 0}
 --- !u!1 &5800936266625956412
 GameObject:
   m_ObjectHideFlags: 0

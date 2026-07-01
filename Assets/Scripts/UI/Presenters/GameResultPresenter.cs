@@ -2,27 +2,22 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using DefenseDot.Domain;
 using DefenseDot.Domain.Models;
+using DefenseDot.UI.Base;
 using DefenseDot.UI.Views;
 
 namespace DefenseDot.UI.Presenters
 {
-    /// <summary>
-    /// 게임 단계 변화를 구독해 결과 패널을 띄우고, 정지·재시작을 처리하는 Presenter 입니다.
-    /// </summary>
-    public class GameResultPresenter : IPresenter
+    /// <summary> 게임 단계 변화를 구독해 결과 패널을 띄우고 재시작을 처리합니다. </summary>
+    public sealed class GameResultPresenter : UIPresenter<GameResultView>
     {
-        private readonly GameResultView view;
         private readonly GameFlowModel flow;
 
-        /// <summary> 결과 뷰와 게임 진행 모델을 주입받습니다. </summary>
-        public GameResultPresenter(GameResultView view, GameFlowModel flow)
+        public GameResultPresenter(GameResultView view, GameContext ctx) : base(view)
         {
-            this.view = view;
-            this.flow = flow;
+            flow = ctx.Flow;
         }
 
-        /// <summary> 단계 변화·재시작을 구독하고, 잔여 timeScale 을 복구합니다. </summary>
-        public void Initialize()
+        protected override void OnInitialize()
         {
             Time.timeScale = 1f;
             flow.OnPhaseChanged += HandlePhaseChanged;
@@ -30,8 +25,7 @@ namespace DefenseDot.UI.Presenters
             view.Hide();
         }
 
-        /// <summary> 구독을 해제합니다. </summary>
-        public void Dispose()
+        protected override void OnDispose()
         {
             flow.OnPhaseChanged -= HandlePhaseChanged;
             view.OnRestart -= HandleRestart;
@@ -39,8 +33,8 @@ namespace DefenseDot.UI.Presenters
 
         private void HandlePhaseChanged(GamePhase phase)
         {
-            if (phase == GamePhase.Victory) { Time.timeScale = 0f; view.Show(true); }
-            else if (phase == GamePhase.GameOver) { Time.timeScale = 0f; view.Show(false); }
+            if (phase == GamePhase.Victory) { Time.timeScale = 0f; view.ShowResult(true); }
+            else if (phase == GamePhase.GameOver) { Time.timeScale = 0f; view.ShowResult(false); }
         }
 
         private void HandleRestart()

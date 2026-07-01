@@ -16,6 +16,7 @@ namespace DefenseDot.UI.Views
         [SerializeField] private RoundWidget roundWidget;
         [SerializeField] private TimeWidget timeWidget;
         [SerializeField] private EnemyWidget enemyWidget;
+        [SerializeField] private LevelProgressWidget levelWidget;
 
         /// <summary> 골드 위젯을 갱신합니다. </summary>
         public void ApplyGold(int gold)
@@ -45,6 +46,12 @@ namespace DefenseDot.UI.Views
         public void ApplyEnemies(EnemyState enemies)
         {
             if (enemyWidget != null) enemyWidget.SetData(enemies);
+        }
+
+        /// <summary> 레벨 진척 위젯을 갱신합니다. </summary>
+        public void ApplyLevel(LevelProgress level)
+        {
+            if (levelWidget != null) levelWidget.SetData(level);
         }
     }
 }

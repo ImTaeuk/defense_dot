@@ -1,4 +1,5 @@
 // Arena HUD 프레젠터 — 도메인 RP를 위젯에 Bind
+using DefenseDot.Domain;
 using DefenseDot.UI.Base;
 using DefenseDot.UI.Views;
 using DefenseDot.Domain.Models;
@@ -15,17 +16,18 @@ namespace DefenseDot.UI.Presenters
         private readonly ScoreModel score;
         private readonly WaveModel wave;
         private readonly RoundTimerModel timer;
+        private readonly LevelModel level;
         private readonly int enemyCapacity;
 
-        /// <summary> 구독할 도메인 모델과 적 수용 한계를 주입받습니다. </summary>
-        public ArenaHudPresenter(ArenaHudView view, EconomyModel economy, ScoreModel score,
-            WaveModel wave, RoundTimerModel timer, int enemyCapacity) : base(view)
+        /// <summary> GameContext 에서 필요한 모델을 추출해 주입받습니다. </summary>
+        public ArenaHudPresenter(ArenaHudView view, GameContext ctx) : base(view)
         {
-            this.economy = economy;
-            this.score = score;
-            this.wave = wave;
-            this.timer = timer;
-            this.enemyCapacity = enemyCapacity;
+            economy = ctx.Economy;
+            score = ctx.Score;
+            wave = ctx.Wave;
+            timer = ctx.Timer;
+            level = ctx.Level;
+            enemyCapacity = ctx.EnemyCapacity;
         }
 
         /// <summary> 도메인 RP를 위젯에 바인딩합니다. </summary>
@@ -36,6 +38,7 @@ namespace DefenseDot.UI.Presenters
             Bind(wave.Progress, view.ApplyRound);
             Bind(timer.Time, view.ApplyTime);
             Bind(wave.RemainingEnemies, HandleRemaining);
+            Bind(level.Progress, view.ApplyLevel);
         }
 
         private void HandleRemaining(int alive)
