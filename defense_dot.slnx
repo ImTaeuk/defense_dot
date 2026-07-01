@@ -5,8 +5,10 @@
   <Project Path="Unity.AppUI.csproj" />
   <Project Path="Unity.ShaderGraph.Editor.csproj" />
   <Project Path="DefenseDot.csproj" />
+  <Project Path="Unity.ScriptableBuildPipeline.Editor.csproj" />
   <Project Path="Unity.Mathematics.csproj" />
   <Project Path="Unity.Multiplayer.Center.Editor.csproj" />
+  <Project Path="Unity.Addressables.Editor.csproj" />
   <Project Path="Unity.InferenceEngine.Microsoft.Msagl.csproj" />
   <Project Path="Unity.VisualScripting.Core.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Editor.csproj" />
@@ -26,15 +28,18 @@
   <Project Path="MCPForUnity.Editor.csproj" />
   <Project Path="UniTask.csproj" />
   <Project Path="Unity.Searcher.Editor.csproj" />
+  <Project Path="Unity.ResourceManager.csproj" />
   <Project Path="Unity.InferenceEngine.Tokenization.csproj" />
   <Project Path="Unity.VisualScripting.Core.csproj" />
   <Project Path="Unity.AI.Assistant.Editor.csproj" />
   <Project Path="Unity.InferenceEngine.Editor.csproj" />
   <Project Path="UnityEditor.TestRunner.csproj" />
+  <Project Path="Unity.AutoGroupGenerator.Editor.csproj" />
   <Project Path="Unity.AI.Pbr.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Runtime.csproj" />
   <Project Path="Unity.Burst.CodeGen.csproj" />
   <Project Path="Unity.InputSystem.csproj" />
+  <Project Path="Unity.Addressables.DocExampleCode.Editor.Tests.csproj" />
   <Project Path="Unity.VisualScripting.Flow.csproj" />
   <Project Path="UnityEngine.TestRunner.csproj" />
   <Project Path="Unity.PerformanceTesting.csproj" />
@@ -84,6 +89,7 @@
   <Project Path="Unity.UI.TestFramework.Editor.csproj" />
   <Project Path="UniTask.TextMeshPro.csproj" />
   <Project Path="MCPForUnity.Runtime.csproj" />
+  <Project Path="Unity.Addressables.csproj" />
   <Project Path="Unity.AI.Assistant.Annotations.Editor.csproj" />
   <Project Path="Unity.UI.TestFramework.Runtime.csproj" />
   <Project Path="Unity.AppUI.Editor.csproj" />
@@ -96,6 +102,7 @@
   <Project Path="Unity.AI.Navigation.Editor.ConversionSystem.csproj" />
   <Project Path="Unity.AppUI.Redux.Editor.csproj" />
   <Project Path="Unity.AI.Pbr.Srp.csproj" />
+  <Project Path="Unity.Profiling.Core.csproj" />
   <Project Path="Unity.AppUI.Undo.csproj" />
   <Project Path="UnityEditor.UI.Analytics.csproj" />
   <Project Path="Unity.InferenceEngine.Editor.Visualizer.csproj" />
@@ -131,6 +138,7 @@
   <Project Path="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.csproj" />
   <Project Path="Unity.RenderPipelines.Core.ShaderLibrary.csproj" />
   <Project Path="Unity.AI.Toolkit.Compliance.csproj" />
+  <Project Path="Unity.ScriptableBuildPipeline.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.Shared.csproj" />
   <Project Path="Unity.AI.MCP.Runtime.csproj" />
   <Project Path="Unity.ShaderGraph.Utilities.csproj" />
