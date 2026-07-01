@@ -7,7 +7,7 @@
 > 설계·핸드오프 전문: `docs/superpowers/specs/2026-07-01-pooling-addressables-design.md`
 > **확정 설계(정련본)**: `docs/superpowers/specs/2026-07-01-addressables-asset-loader-design.md`(+HTML) / 계획: `docs/superpowers/plans/2026-07-01-addressables-asset-loader.md`
 
-> **구현 완료 요약(2026-07-01, 커밋)**: `com.unity.addressables` 3.1.0 + `Boot`(앱수명)/`Arena`(런수명) 그룹. `AssetLoader`(`LoadAsync`→`UniTask<GameObject>` / `Release` / `ReleaseAll`, RuntimeKey 기준 핸들 dedup) 구현. `Hit_Water` 를 Addressable(Arena, 라벨 vfx/hit)로 마킹해 PlayMode 왕복 검증(loadOk·dedup=1·release=0), EditMode 127/127. 브레인스토밍 정련: Provisioner 폐기→`PoolManager.PreloadAsync`(TASK-013), `EffectType` enum + `EffectEntry[]`, 그룹=로드스코프·라벨=용도 직교. 남은 것: C-2(Addressables Build 산출)는 배포 시점 처리.
+> **구현 완료 요약(2026-07-01, 커밋)**: `com.unity.addressables` 3.1.0 + `Boot`(앱수명)/`Arena`(런수명) 그룹. `AssetLoader`(제네릭 `LoadAsync<T>`→`UniTask<T>` / `Release` / `ReleaseAll`, RuntimeKey 기준 핸들 dedup) 구현. `Hit_Water` 를 Addressable(Arena, 라벨 vfx/hit)로 마킹해 PlayMode 왕복 검증(loadOk·dedup=1·release=0), EditMode 127/127. 브레인스토밍 정련: Provisioner 폐기→`PoolManager.PreloadAsync`(TASK-013), `EffectType` enum + `EffectEntry[]`, 그룹=로드스코프·라벨=용도 직교. 남은 것: C-2(Addressables Build 산출)는 배포 시점 처리.
 
 ---
 

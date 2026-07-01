@@ -42,37 +42,37 @@
 ## 4. AssetLoader API
 
 ```csharp
+using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace DefenseDot.Systems.Assets
 {
-    /// <summary> Addressables 프리팹을 로드·해제하고 핸들을 추적하는 로더. </summary>
+    /// <summary> Addressables 에셋을 로드·해제하고 핸들을 추적하는 로더. </summary>
     public sealed class AssetLoader
     {
-        // RuntimeKey(에셋 GUID) 기준으로 핸들을 1개만 유지 → 같은 에셋 중복 로드 방지
-        private readonly Dictionary<object, AsyncOperationHandle<GameObject>> handles
-            = new Dictionary<object, AsyncOperationHandle<GameObject>>();
+        // GUID 기준 중복 로드 방지
+        private readonly Dictionary<object, AsyncOperationHandle> handles
+            = new Dictionary<object, AsyncOperationHandle>();
 
-        /// <summary> 참조를 로드해 프리팹을 반환. 이미 로드됐으면 캐시된 결과 반환. </summary>
-        public async UniTask<GameObject> LoadAsync(AssetReferenceGameObject reference)
+        /// <summary> 참조를 로드해 에셋을 반환. 이미 로드됐으면 캐시 반환. </summary>
+        public async UniTask<T> LoadAsync<T>(AssetReference reference) where T : UnityEngine.Object
         {
             object key = reference.RuntimeKey;
-            if (handles.TryGetValue(key, out AsyncOperationHandle<GameObject> cached))
-                return await cached.ToUniTask();
+            if (handles.TryGetValue(key, out AsyncOperationHandle cached))
+                return await cached.Convert<T>().ToUniTask();
 
-            AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>(reference);
+            AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(reference);
             handles[key] = handle;
             return await handle.ToUniTask();
         }
 
         /// <summary> 특정 참조의 핸들을 해제. </summary>
-        public void Release(AssetReferenceGameObject reference)
+        public void Release(AssetReference reference)
         {
             object key = reference.RuntimeKey;
-            if (!handles.TryGetValue(key, out AsyncOperationHandle<GameObject> handle)) return;
+            if (!handles.TryGetValue(key, out AsyncOperationHandle handle)) return;
             Addressables.Release(handle);
             handles.Remove(key);
         }
@@ -80,7 +80,7 @@ namespace DefenseDot.Systems.Assets
         /// <summary> 추적 중인 모든 핸들을 해제. (런/씬 종료) </summary>
         public void ReleaseAll()
         {
-            foreach (AsyncOperationHandle<GameObject> handle in handles.Values)
+            foreach (AsyncOperationHandle handle in handles.Values)
                 Addressables.Release(handle);
             handles.Clear();
         }

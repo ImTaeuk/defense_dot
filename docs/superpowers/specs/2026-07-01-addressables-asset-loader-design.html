@@ -105,22 +105,22 @@
   <div class="panel">
     <div class="file">Assets/Scripts/Systems/Assets/AssetLoader.cs · (신규, TASK-015)</div>
     <div class="lbl after" style="font-size:12px;font-weight:bold;color:var(--green);">▼ 신규</div>
-<pre class="after"><span class="cmt">/// &lt;summary&gt; Addressables 프리팹을 로드·해제하고 핸들을 추적하는 로더. &lt;/summary&gt;</span>
+<pre class="after"><span class="cmt">/// &lt;summary&gt; Addressables 에셋을 로드·해제하고 핸들을 추적하는 로더. &lt;/summary&gt;</span>
 public sealed class AssetLoader
 {
-<span class="cmt">    // RuntimeKey(에셋 GUID) 기준 핸들 1개만 유지 → 중복 로드 방지</span>
-    private readonly Dictionary&lt;object, AsyncOperationHandle&lt;GameObject&gt;&gt; handles = new();
+<span class="cmt">    // GUID 기준 중복 로드 방지</span>
+    private readonly Dictionary&lt;object, AsyncOperationHandle&gt; handles = new();
 
-    public async UniTask&lt;GameObject&gt; LoadAsync(AssetReferenceGameObject reference)
+    public async UniTask&lt;T&gt; LoadAsync&lt;T&gt;(AssetReference reference) where T : UnityEngine.Object
     {
         object key = reference.RuntimeKey;
-        if (handles.TryGetValue(key, out var cached)) return await cached.ToUniTask();
-<span class="hl-line">        var handle = Addressables.LoadAssetAsync&lt;GameObject&gt;(reference);</span>
+        if (handles.TryGetValue(key, out var cached)) return await cached.Convert&lt;T&gt;().ToUniTask();
+<span class="hl-line">        var handle = Addressables.LoadAssetAsync&lt;T&gt;(reference);</span>
         handles[key] = handle;          <span class="hl-inline">// await 전에 등록 → 동시 로드 레이스 방지</span>
         return await handle.ToUniTask();
     }
 
-    public void Release(AssetReferenceGameObject reference)
+    public void Release(AssetReference reference)
     {
         object key = reference.RuntimeKey;
         if (!handles.TryGetValue(key, out var handle)) return;
