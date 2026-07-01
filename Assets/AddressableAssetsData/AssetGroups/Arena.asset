@@ -14,7 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Arena
   m_GUID: b0a6365185e9f7846a365f0e78ec15a4
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 3428211ee08e9f443a44710e9689fe26
+    m_Address: Hit_Water
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - hit
+    - vfx
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 09d6b0e2e36d75d499e92af98245d17e, type: 2}
   m_SchemaSet:
