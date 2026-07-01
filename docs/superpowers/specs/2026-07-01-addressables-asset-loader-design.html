@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>설계: Addressables 에셋 로더 인프라 (TASK-015)</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+    --code-bg: #21222c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 { font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan); }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle; }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0; }
+  .file { font-family: Consolas, monospace; font-size: 13px; color: var(--cyan); margin: 4px 0 12px; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55; }
+  pre.after { border-left: 3px solid var(--green); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note { background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0; }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Addressables 에셋 로더 인프라 — 설계 (TASK-015)</h1>
+  <div class="sub">
+    <span class="tag must">설계 스펙</span>
+    <span class="tag opt">사용자 검토 대기</span>
+    2026-07-01 · 최선행 인프라
+  </div>
+
+  <h2>1. 목적 / 배경</h2>
+  <div class="panel">
+    <p>"피격 이펙트가 안 보인다"에서 출발한 조사가 인프라 결정으로 확장됐다: <code>VfxPlayer.SpawnOneShot</code> 의 <code>Instantiate</code>/<code>Destroy</code>(GC) → 공용 풀링 필요(TASK-013) → 풀이 프리팹을 강한참조로 상주 보유하면 안 됨 → <strong>프리팹 약한참조 = Addressables 필요</strong>. 착수는 역순이라 Addressables 가 최선행.</p>
+    <div class="note">
+      본 문서는 그 최선행 조각인 <strong>에셋 로더 인프라</strong>만 다룬다. 풀링·선언 데이터 모델 상세는 TASK-013 소관, 여기서는 로더가 그것을 떠받치도록 <strong>경계와 방향</strong>만 확정한다.
+    </div>
+  </div>
+
+  <h2>2. 범위</h2>
+  <div class="panel">
+    <h3>포함 <span class="tag must">TASK-015</span></h3>
+    <ul>
+      <li><code>com.unity.addressables</code> 패키지 도입 + 초기 그룹 구성</li>
+      <li><code>AssetLoader</code> — <code>AssetReferenceGameObject</code> → <code>GameObject</code> 비동기 로드, 핸들 추적, 일괄 해제</li>
+      <li>그룹·라벨 정책 확정 (로컬 빌드 기준, 원격 CDN 범위 외)</li>
+      <li>샘플 1종(<code>Hit_Water</code>)을 Addressable 로 마킹해 로드/해제 왕복 검증</li>
+    </ul>
+    <h3>제외 <span class="tag opt">TASK-013 으로</span></h3>
+    <ul>
+      <li><code>PoolManager</code>(선로드·풀 워밍·대여/반환), <code>Pool&lt;T&gt;</code>, <code>IPoolable</code> 계층</li>
+      <li>스포너 데이터 SO 의 <code>AssetReference</code> 선언 필드 추가 + 기존 데이터 마이그레이션</li>
+      <li><code>EffectType</code>/<code>EffectEntry</code> 구현</li>
+    </ul>
+  </div>
+
+  <h2>3. 설계 결정 (확정)</h2>
+  <div class="panel">
+    <table>
+      <tr><th>#</th><th>항목</th><th>결정</th><th>근거</th></tr>
+      <tr><td>D1</td><td>로드 수명</td><td>유닛(레벨) 진입 시 선로드·상주, 퇴장 시 해제</td><td>"1회 로드·다회 인스턴스화" 풀링과 궁합. 런타임 <code>Get</code> 이 <strong>동기</strong>(핫패스 await 없음)</td></tr>
+      <tr><td>D2</td><td>로드 스코프 2층</td><td><strong>Boot</strong>(앱 수명·상주) / <strong>Arena</strong>(런 수명·진입 로드·퇴장 해제)</td><td>레벨 교체 시 공용 재로딩 없이 레벨 에셋만 교체</td></tr>
+      <tr><td>D3</td><td>의존 선언 위치</td><td>스포너 데이터 SO 가 프리팹을 <code>AssetReferenceGameObject</code> 로 직접 선언</td><td>타워가 자기 투사체를 소유(응집), Addressables 자동 의존추적</td></tr>
+      <tr><td>D4</td><td>그룹 축</td><td><strong>그룹=로드스코프</strong>(Boot/Arena), <strong>라벨=용도</strong>(vfx/hit/enemy). 직교 2축</td><td>Unity 권장: 함께 로드되는 것을 함께 번들. 불변식 "그룹 1개=로드/해제 스코프 1개"</td></tr>
+      <tr><td>D5</td><td>로더 이름</td><td><code>AssetLoader</code> (<code>LoadAsync</code>/<code>Release</code>/<code>ReleaseAll</code>)</td><td>Addressables <code>LoadAssetAsync</code> 결, 단순·직관</td></tr>
+      <tr><td>D6</td><td>Provisioner 폐기</td><td>별도 클래스 없이 <code>PoolManager.PreloadAsync(data)</code> 가 겸함</td><td>이름·개념 최소화. 풀 주인이 선로드+워밍 (TASK-013)</td></tr>
+      <tr><td>D7</td><td>오너십</td><td><code>AssetLoader</code>·<code>PoolManager</code> 를 <code>GameContext</code> 가 보유·DI 주입</td><td>기존 UI 자동배선 DI 흐름과 일관, 전역 static 없음</td></tr>
+      <tr><td>D8</td><td><code>EffectType</code> 선언</td><td>plain <code>enum EffectType</code> + <code>EffectEntry[]</code> (용도별 짝)</td><td>용도 vocabulary 는 소수·안정적(YAGNI). 확장 필요 시 SO 승격</td></tr>
+    </table>
+  </div>
+
+  <h2>4. AssetLoader API</h2>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Assets/AssetLoader.cs · (신규, TASK-015)</div>
+    <div class="lbl after" style="font-size:12px;font-weight:bold;color:var(--green);">▼ 신규</div>
+<pre class="after"><span class="cmt">/// &lt;summary&gt; Addressables 프리팹을 로드·해제하고 핸들을 추적하는 로더. &lt;/summary&gt;</span>
+public sealed class AssetLoader
+{
+<span class="cmt">    // RuntimeKey(에셋 GUID) 기준 핸들 1개만 유지 → 중복 로드 방지</span>
+    private readonly Dictionary&lt;object, AsyncOperationHandle&lt;GameObject&gt;&gt; handles = new();
+
+    public async UniTask&lt;GameObject&gt; LoadAsync(AssetReferenceGameObject reference)
+    {
+        object key = reference.RuntimeKey;
+        if (handles.TryGetValue(key, out var cached)) return await cached.ToUniTask();
+<span class="hl-line">        var handle = Addressables.LoadAssetAsync&lt;GameObject&gt;(reference);</span>
+        handles[key] = handle;          <span class="hl-inline">// await 전에 등록 → 동시 로드 레이스 방지</span>
+        return await handle.ToUniTask();
+    }
+
+    public void Release(AssetReferenceGameObject reference)
+    {
+        object key = reference.RuntimeKey;
+        if (!handles.TryGetValue(key, out var handle)) return;
+        Addressables.Release(handle);
+        handles.Remove(key);
+    }
+
+<span class="hl-line">    public void ReleaseAll()  // 런/씬 종료 시 일괄 해제 → 누수 차단</span>
+    {
+        foreach (var handle in handles.Values) Addressables.Release(handle);
+        handles.Clear();
+    }
+}</pre>
+    <ul>
+      <li><strong>중복 로드 방지</strong>: 다른 <code>AssetReference</code> 가 같은 에셋을 가리켜도 <code>RuntimeKey</code>(GUID)로 묶어 핸들 1개.</li>
+      <li><strong>누수 방지</strong>: 모든 핸들을 추적 → <code>ReleaseAll</code> 로 스코프 종료 시 일괄 해제.</li>
+      <li><strong>UniTask</strong>: <code>AsyncOperationHandle.ToUniTask()</code>. Coroutine·<code>System.Threading.Tasks</code> 금지.</li>
+    </ul>
+  </div>
+
+  <h2>5. 그룹·라벨 정책</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>그룹(로드스코프)</strong>: <code>Boot</code>(앱 시작 로드·상주) / <code>Arena</code>(레벨 진입 로드·퇴장 <code>ReleaseAll</code>). 로컬 빌드만, 각 그룹 Pack Together.</li>
+      <li><strong>라벨(용도 교차태그)</strong>: <code>vfx</code>·<code>hit</code>·<code>enemy</code> 등. 한 에셋에 복수 부여. 부분 로드·조회용.</li>
+    </ul>
+    <div class="note">
+      <strong>불변식</strong>: "그룹 1개 = 로드/해제 스코프 1개". 새 콘텐츠는 스코프 맞는 그룹에 합류, 그룹이 커지면 스코프 축으로만 분할 → 눈덩이 방지. 레벨이 여럿이면 각 레벨을 자기 Arena-스코프 그룹으로(실제로 따로 로드될 때만).
+    </div>
+  </div>
+
+  <h2>6. 데이터 선언 방향 <span class="tag opt">상세는 TASK-013</span></h2>
+  <div class="panel">
+    <div class="file">예: Assets/Scripts/.../TowerData.cs</div>
+<pre class="after"><span class="add">public enum EffectType { Hit, Muzzle, Cast, Death }
+
+[System.Serializable]
+public struct EffectEntry
+{
+    public EffectType type;                 // 용도
+    public AssetReferenceGameObject asset;  // 그 용도의 프리팹
+}
+
+// 스포너 데이터 SO
+[SerializeField] private EffectEntry[] effects;</span></pre>
+    <p>에디터에서 "Hit → Hit_Water" 식 용도별 짝 등록 → <code>PoolManager.PreloadAsync(data)</code> 가 <code>effects</code> 를 열거해 <code>AssetLoader.LoadAsync</code> → 풀 워밍. 런타임 조회는 <code>pool.Get(data.GetAsset(EffectType.Hit))</code> (동기).</p>
+  </div>
+
+  <h2>7. 로드 / 해제 흐름</h2>
+  <div class="panel">
+<pre><span class="cmt">앱 시작      → Boot 그룹 로드 (부트스트랩, 상주)
+레벨 시작    → PoolManager.PreloadAsync(레벨 데이터)
+                └ 선언 AssetReference 마다 AssetLoader.LoadAsync → 풀 워밍
+레벨 진행 중 → pool.Get / Release (동기 핫패스, 로드 없음)
+레벨 종료    → PoolManager 풀 정리 + AssetLoader.ReleaseAll (Arena 해제, Boot 유지)</span></pre>
+  </div>
+
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대</th></tr>
+      <tr><td>1</td><td><code>Hit_Water</code> 를 Addressable(Arena, 라벨 vfx/hit)로 마킹</td><td><span class="ok">그룹/라벨 반영</span></td></tr>
+      <tr><td>2</td><td><code>AssetLoader.LoadAsync(hitWaterRef)</code></td><td><span class="ok">non-null GameObject, Instantiate 가능</span></td></tr>
+      <tr><td>3</td><td>같은 참조 2회 로드</td><td><span class="ok">핸들 1개(중복 없음), 동일 프리팹</span></td></tr>
+      <tr><td>4</td><td><code>ReleaseAll</code> 후</td><td><span class="ok">핸들 0, 재로드 정상</span></td></tr>
+      <tr><td>5</td><td>Addressables Build 포함 빌드</td><td><span class="ok">산출물에 그룹 번들 포함</span></td></tr>
+    </table>
+    <div class="note"><span class="warn">주의</span>: Addressables 로드는 런타임 초기화 필요 → 로드/해제 검증은 PlayMode(또는 초기화된 Addressables) 기준.</div>
+  </div>
+
+  <h2>9. 컨벤션 &amp; 10. TASK-013 이관</h2>
+  <div class="panel">
+    <h3>컨벤션 체크</h3>
+    <ul>
+      <li>private 필드 <code>camelCase</code>(접두어 금지), 명시적 접근제한자</li>
+      <li>비동기 <strong>UniTask 만</strong>(<code>ToUniTask()</code>), Coroutine·<code>System.Threading.Tasks</code> 금지</li>
+      <li>임시 컬렉션 <code>CollectionPool</code>, 필드 컬렉션 <code>new</code> 허용 · 커밋 전 <code>lint</code> 게이트</li>
+    </ul>
+    <h3>TASK-013 으로 넘기는 것</h3>
+    <ul>
+      <li><code>PoolManager</code>(PreloadAsync/Get/Release), <code>Pool&lt;T&gt;</code>, <code>IPoolable</code>/<code>IActivatable</code>/<code>IPooledObject</code>, <code>PrefabFactory</code>/<code>PocoFactory</code></li>
+      <li><code>EffectType</code>/<code>EffectEntry</code> 구현 + 스포너 데이터 선언 필드 + 기존 데이터 마이그레이션</li>
+      <li><code>VfxPlayer</code> 풀링 교체 (TASK-014 B-3)</li>
+    </ul>
+  </div>
+
+  <p class="foot">설계 스펙 산출 완료 — 사용자 검토 후 writing-plans 로 구현 계획 수립</p>
+
+</div>
+</body>
+</html>
