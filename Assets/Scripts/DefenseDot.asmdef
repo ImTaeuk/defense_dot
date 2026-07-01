@@ -3,6 +3,9 @@
     "rootNamespace": "",
     "references": [
         "UniTask",
+        "UniTask.Addressables",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
         "Unity.Collections",
         "Unity.Burst",
         "Unity.TextMeshPro",
