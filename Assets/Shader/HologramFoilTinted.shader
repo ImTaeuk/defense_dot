@@ -194,6 +194,9 @@ Shader "UI/Hologram/Foil Tinted"
                 float linearTravel = frac(t * _ShineSpeed);
                 float easedTravel = EaseInOutSine(linearTravel);
                 float shineCenter = lerp(linearTravel, easedTravel, _ShineEaseAmount);
+                // shine 점프를 카드 밖으로 밀어 seam 제거
+                float shineMargin = _ShineWidth + _ShineSoftness;
+                shineCenter = shineCenter * (1.0 + 2.0 * shineMargin) - shineMargin;
                 float shineDistance = abs(diagonal - shineCenter);
 
                 float shineBase =
