@@ -108,11 +108,14 @@ Arena = 원작의 **`standard`(클래식) 모드**. 원형 경기장에서 중�
 - [ ] **A8-2.** 축별 온히트/틱 비주얼 메커닉(★★★★ 비주얼) — A2 능력 실행계 위에 얹힘. *(A7 가챠/진화 선행 필요)*
 
 ### B. UI/HUD 리스킨 (v608 변경 · 횡단 관심사)
+
+> **UI 아키텍처 베이스 완료(2026-06-30~07-01, 미커밋)**: `UIView`/`UIWidget<T>`/`UIPresenter<TView>`/`ReactiveProperty<T>` + `GameContext`(DI) + `UIPresenterFactory`(리플렉션 자동배선, View 추가 시 코드 무증가) + `UIRoot`(Depth 레이어 4종·`PlaceByDepth` 풀링 공용). ArenaHud·CardSelection·GameResult·TowerBuild 를 이 베이스로 전환, `CardSlotWidget`·`TowerButtonWidget` 분리. **B-1~B-5 가 이 토대 위에 올라감.** 설계: `specs/2026-06-30-ui-architecture-base-design.md`·`uiroot-auto-wiring-design.md`. 카드 포일 shine seam 보정은 **TASK-014 B-0 후속** 참조. B-5(레벨업 진척도) 완료. → **다음 작업: 승패 패널 수동 검증 + 커밋**.
+
 - [ ] **B-1.** (v575~v606) 메카닉 HUD(네온 사이언·코너 꺾쇠) — 진행 중 `arena-hud-replacement` 작업과 통합
 - [ ] **B-2.** (v598) 능력 도크(칩 그리드·단일 오픈 아코디언) — A3 카드/슬롯 UI에 반영
 - [ ] **B-3.** (v599~v606) 세로 상단 HUD 바 + 배속(▶▶)/일시정지 컨트롤 + 보조정보 ▾ 트레이
 - [ ] **B-4.** (v608) 진화 힌트에서 미보유 파트너 제외(소소 UX)
-- [ ] **B-5.** 레벨업 진척도 HUD 표시 — 다음 레벨업까지 남은 처치 수·진행 게이지를 HUD 위젯으로 노출(`LevelModel`의 현재 kills·`KillsToNextLevel` 기반). 신규 UI 베이스(`UIWidget<T>`)로 `LevelProgressWidget` 추가, `LevelModel` 진행도를 ReactiveProperty 로 노출해 Presenter 가 Bind.
+- [x] **B-5.** 레벨업 진척도 HUD 표시 — **완료(2026-07-01, 미커밋)**. `LevelProgress` DTO(`ModelStates.cs`) + `LevelModel.Progress`(ReactiveProperty, `RegisterKill` 마다 통지, additive — 기존 API 무변경) + `LevelProgressWidget`(`EnemyWidget` 미러, level/남은/게이지) + `ArenaHudView.ApplyLevel` + `ArenaHudPresenter.Bind(level.Progress, view.ApplyLevel)`. HUD 프리팹(`ArenaHUD_Panel.prefab`)에 `row.레벨`(label=Lv·value=남은·gauge>fill) 배치. **검증**: EditMode 126/126(Progress 시나리오 3종 TDD), Play 런타임 `RegisterKill` 3회 → 위젯 'Lv 1'·'남은 9'·fill 0.25 자동 갱신(모델→프레젠터→뷰→위젯 라이브 확인). 레벨업 펄스(Q3 수행): 레벨 상승 감지 시 게이지 스케일 펀치+fill 색 플래시(`Update`+`unscaledDeltaTime`, timeScale=0 카드 모달에서도 동작). 검증: 12처치→Lv2 전환 시 pulseRemaining=0.35 armed → 감쇠 후 scale/color 클린 리셋. 설계: `specs/2026-07-01-levelup-progress-hud-design.html`. 표시 결정: Q1-a(게이지+남은N+레벨)/Q2-a(프리팹 배치)/Q3-수행(펄스).
 
 ---
 

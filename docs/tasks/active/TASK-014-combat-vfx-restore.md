@@ -44,9 +44,11 @@
   - A-3. ✅ 명중 파티클 = Hit 9 water 유지 — 파티클 정상(`HS_Blend_CG` URP 호환, emit 확인), 어두운 배경에선 선명
 - **B. 연출 강화 (대기)**
   - B-0. ✅ 머티리얼 `*Speed` 복구 — 카드 홀로그램 셰이더 6종이 `_Time.y`(scaled time) 사용 → `timeScale=0`(카드 모달·결과 화면) 에서 `_Time` 정지가 원인(확정). `UnscaledTimeShaderDriver`(부팅 시 자동 생성, 매 프레임 글로벌 `_UnscaledTime`=`Time.unscaledTime` 주입) + 셰이더 6종 `_Time.y`→`_UnscaledTime` 치환으로 해결. 검증: `timeScale=0` 에서 `_UnscaledTime` 16.9→38.6 증가(기존 scaled `Time.time` 은 8.1 정지). 설계: `docs/superpowers/specs/2026-06-29-unscaled-time-shader-design.md`
+    - **B-0 후속(2026-07-01) — 카드 포일 shine seam 해결**: unscaled 전환으로 `timeScale=0`(카드 모달)에서도 포일이 재생되며, `HologramFoilTinted` 의 shine(빛 쓸기)이 `frac(t*_ShineSpeed)` 톱니라 카드 끝→시작 **점프(seam)** 가 드러남(사용자 보고 "loop 아니라 원점 복귀"). `shineCenter` 정의역을 `-margin~1+margin`(margin=`_ShineWidth+_ShineSoftness`)로 리매핑해 점프 지점을 카드 **밖**으로 밀어 해결 — rainbow·foilPattern 은 `sin` 기반이라 seam 없음(shine 만 `frac`이 원인). 파일: `Assets/Shader/HologramFoilTinted.shader`. 검증: Play 카드 모달.
   - B-1. 시전 중 푸른 입자 차징 연출
   - B-2. 타격감 강화 (히트스톱·카메라 셰이크)
   - B-3. 피격 파티클(Hit_Water) 확대 — `SpawnOneShot(..., scale 1)` 이 적 스케일(≈589배) 대비 작아 명중이 잘 안 보임. 파티클 스폰 스케일을 키워 타격감을 확보. (§5 잔여 메모 승격)
+    - **의존 체인(2026-07-01)**: "피격 이펙트 안 보임" 재조사 결과, `VfxPlayer.SpawnOneShot` 이 매번 `Instantiate`/`Destroy`(GC) 임이 확인돼 **공용 풀링(TASK-013) → Addressables(TASK-015)** 선행 인프라로 확장됨. B-3 은 풀링 위에서 Hit_Water 풀링·확대로 처리. 설계: `docs/superpowers/specs/2026-07-01-pooling-addressables-design.md`
 
 ## 4. 검증
 - 컴파일 0 에러.

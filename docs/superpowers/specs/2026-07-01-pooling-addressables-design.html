@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공용 풀링 시스템 &amp; Addressables 인프라 — 설계 · 핸드오프</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>공용 풀링 시스템 &amp; Addressables 인프라 — 설계 · 핸드오프</h1>
+  <div class="sub">
+    <span class="tag must">설계 제안서</span>
+    <span class="tag opt">구현 대기 · 메인 세션 인계</span>
+    분석 완료 · 2026-07-01
+  </div>
+
+  <!-- 1. 제보 요지 -->
+  <h2>1. 제보 요지</h2>
+  <div class="panel">
+    <p>사용자 제보: <strong>"현재 피격 이펙트가 전혀 안 보인다. 피격 이펙트가 작아서 안 보이는 것 같은데?"</strong></p>
+    <p>가설(작아서 안 보임)을 검증하는 과정에서 의존 체인이 드러나, 단순 이펙트 수정이 <strong>공용 풀링 + Addressables 인프라</strong>라는 선행 작업으로 확장됐다. 스케일이 커서 "하나씩" 분해해 메인 세션에서 의존 순서대로 처리한다.</p>
+    <div class="note">
+      핵심: 피격 VFX 는 <strong>존재·동작하나</strong>(크기·배경 때문에 안 보임), 그 재생 경로가 매번 <code>Instantiate</code>/<code>Destroy</code> 라 <strong>풀링이 필요</strong>하고, 풀이 프리팹을 약하게 참조하려면 <strong>Addressables 가 선행</strong>이다.
+    </div>
+  </div>
+
+  <!-- 2. 현재 동작 -->
+  <h2>2. 현재 동작 (재현 경로)</h2>
+  <div class="panel">
+    <ol>
+      <li>타워 능력이 투사체 발사 → 투사체가 적에 명중</li>
+      <li><code><strong>ProjectileEffect.cs:67</strong></code> 가 명중 시 <code>VfxPlayer.SpawnOneShot(hitVfxPrefab, ...)</code> 호출</li>
+      <li><code><strong>VfxPlayer.cs:75</strong></code> 가 <code>Instantiate</code> 후 파티클 수명 뒤 <code>Destroy</code> (일회성, 풀링 없음)</li>
+      <li>Hit_Water 파티클이 적 위치에 재생되나, 적(≈589배) 대비 <code>scale 1</code> 이라 작고 밝은 배경에 묻혀 <span class="warn">시각적으로 안 보임</span> (TASK-014 B-3 기지 이슈)</li>
+    </ol>
+  </div>
+
+  <!-- 3. 근본 원인 -->
+  <h2>3. 근본 원인</h2>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Abilities/Effects/VfxPlayer.cs · SpawnOneShot() L75</div>
+    <pre><code><span class="cmt">// 일회성 연출 스폰 — 재생 후 실제 길이만큼 뒤 파괴</span>
+public static VfxPlayer SpawnOneShot(GameObject prefab, Vector3 pos, Quaternion rot)
+{
+    if (prefab == null) return null;
+<span class="hl-line">    GameObject go = Instantiate(prefab, pos, rot);   <span class="hl-inline">// ★ 매 명중마다 생성/파괴 → GC</span></span>
+    <span class="cmt">// ... 재생 후 Destroy ...</span>
+}</code></pre>
+    <p>피격 이펙트 부재의 원인은 <strong>코드 누락이 아니라 두 가지</strong>다: (1) 가시성 — 파티클이 적 스케일 대비 작고 배경에 묻힘, (2) 구조 — <code>SpawnOneShot</code> 이 풀링 없이 <code>Instantiate</code>/<code>Destroy</code> 를 반복해 빈번한 명중 시 GC 부담. 후자를 제대로 풀려면 공용 풀링이, 풀링이 프리팹을 강참조 집중 보유하지 않으려면 Addressables 약한참조가 전제된다.</p>
+    <div class="note">
+      <strong>초기 진단 보정</strong>: <code>SweeperEnemyVisual</code> 의 emission 흰색 번쩍임 제거(커밋 c7ecf502)는 "미완성 리팩토링"이 아니라 <strong>TASK-014 A-2 사용자 요청으로 의도된 제거</strong>였다. 실제 명중 VFX 는 투사체 측 <code>SpawnOneShot</code> 경로에 살아 있다.
+    </div>
+  </div>
+
+  <!-- 4. 요구사항 -->
+  <h2>4. 기획 요구사항 (사용자 확정)</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>지금 공용 풀링 시스템을 신설</strong>한다 (임시방편 1개 재사용 대신).</li>
+      <li><strong>MonoBehaviour · POCO 둘 다 풀링 가능</strong>한 <code>IPoolable</code> 을 둔다.</li>
+      <li>활성/비활성 개념을 갖는 객체를 위한 <code>IActivatable</code> 을 분리한다.</li>
+      <li>풀링 대상은 반드시 <code>IPoolable</code>. 각 구체 타입 → 프리팹 매칭 <strong>Repository</strong>. <code>Pull()</code> 시 인스턴스화해 반환.</li>
+      <li>풀링 객체에 <strong>전용 인터페이스 + Dispose 강제</strong>. (<code>IPooledObject : IDisposable</code>, Dispose = 풀 반환)</li>
+      <li>생성 분기: <strong>MonoBehaviour = Repository 인스턴스화, POCO = 자체 생성자</strong> (Creator 캡슐화로 표현).</li>
+      <li>기존 <code>IPoolable</code>(14곳) <strong>흡수·전면 교체</strong>.</li>
+      <li>풀 보유 = <strong>GameContext DI 주입</strong>. 프리팹 참조 = <strong>Addressables 약한참조</strong>(Repository 강참조 집중 금지) → Addressables 선행.</li>
+      <li>가독성·공통 로직 묶기·유연성 최우선.</li>
+    </ul>
+  </div>
+
+  <!-- 5. 설계 원칙 -->
+  <h2>5. 설계 원칙 — 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>프로젝트 내 두 풀링 레퍼런스에서 공통 사상을 추출해 통일감을 확보한다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr>
+        <td><strong>EnemySpawner 자체 풀</strong></td>
+        <td><code><strong>EnemySpawner.cs:39, L247-286</strong></code></td>
+        <td><strong>프리팹 키 풀 + 데이터 에셋 분산 참조</strong> — 프리팹은 <code>EnemyData.prefab</code> 이 보유, 풀은 키로만 사용. Repository 집중 강참조를 피하는 근거.</td>
+      </tr>
+      <tr>
+        <td><strong>AbilityEffect 풀링 seam</strong></td>
+        <td><code><strong>AbilityEffect.cs:11-30</strong></code></td>
+        <td><strong>Release 위임 + 교체 가능 심</strong> — <code>Release()</code> 가 직접 Destroy 가 아닌 spawner 위임. 구현 교체에 소비자 코드 불변(개방-폐쇄). Creator/Dispose 위임의 선례.</td>
+      </tr>
+    </table>
+    <div class="note">
+      <strong>결합 결론</strong>: "프리팹 참조는 분산·약하게(EnemySpawner)" + "생성/반환은 위임으로 캡슐화(AbilityEffect)" → Repository 는 타입↔Creator 만 알고, 프리팹 실체는 Addressables 약한참조로 Creator 뒤에 둔다.
+    </div>
+  </div>
+
+  <h3>레퍼런스 ① EnemySpawner — 프리팹 키 풀</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Enemy/EnemySpawner.cs · L247-266</div>
+    <pre><code>private MonsterActor GetFromPool(EnemyData data)
+{
+<span class="hl-line">    if (!pools.TryGetValue(<span class="hl-inline">data.prefab</span>, out var queue))   // ★ 프리팹은 데이터가 보유</span>
+    { queue = new Queue&lt;MonsterActor&gt;(); pools[data.prefab] = queue; }
+    <span class="cmt">// ... Dequeue 또는 Instantiate(data.prefab) ...</span>
+    actor.OnSpawn();
+    return actor;
+}</code></pre>
+    <p>프리팹을 풀 한 곳이 강하게 들지 않고 데이터 에셋이 분산 보유한다 — 이를 Addressables 약한참조로 한 단계 더 약화한다.</p>
+  </div>
+
+  <h3>레퍼런스 ② AbilityEffect — Release 위임 심</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Abilities/Effects/AbilityEffect.cs · L19-23</div>
+    <pre><code>protected void Release()
+{
+<span class="hl-line">    if (spawner != null) <span class="hl-inline">spawner.Release(this)</span>;   // ★ 직접 Destroy 아닌 위임</span>
+    else Destroy(gameObject);
+}</code></pre>
+    <p>반환을 호출자/구현에 위임하는 선례. 본 설계의 <code>IPooledObject.Dispose()</code> = 풀 반환으로 일반화한다.</p>
+  </div>
+
+  <!-- 6. 해결 방안 -->
+  <h2>6. 해결 방안 — 변경 사항 (현재 → 목표)</h2>
+
+  <h3>(1) 인터페이스 계층 — 관심사 3분리 <span class="tag must">신규</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Core/Interfaces/IPoolable.cs (확장)</div>
+
+    <div class="lbl before">▼ BEFORE (현재)</div>
+<pre class="before"><span class="cmt">// 단일 인터페이스, MonoBehaviour 전용 ObjectPool&lt;T&gt; 만 사용</span>
+public interface IPoolable
+{
+<span class="del">    void OnSpawn();</span>
+<span class="del">    void OnDespawn();</span>
+}</pre>
+
+    <div class="lbl after">▼ AFTER (목표)</div>
+<pre class="after"><span class="cmt">public interface IPoolable           // 풀 생명주기 훅 (시그니처 유지 → 14곳 본문 무변경)</span>
+{
+<span class="cmt">    void OnSpawn();
+    void OnDespawn();</span>
+}
+<span class="add">public interface IActivatable        // 활성/비활성 추상 (MB=SetActive, POCO=플래그)</span>
+<span class="add">{ bool IsActive { get; } void SetActive(bool active); }</span>
+<span class="add">public interface IPooledObject : System.IDisposable { }   // Dispose = 풀 반환</span></pre>
+  </div>
+
+  <h3>(2) 생성 — Creator 캡슐화 <span class="tag must">신규</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Core/Pooling/IPoolCreator.cs (신규)</div>
+    <div class="lbl after">▼ AFTER (목표)</div>
+<pre class="after"><span class="add">public interface IPoolCreator&lt;T&gt; where T : IPoolable { T Create(); }</span>
+
+<span class="add">// MonoBehaviour → Addressables 로 로드한 프리팹 Instantiate</span>
+<span class="add">public sealed class PrefabCreator&lt;T&gt; : IPoolCreator&lt;T&gt; where T : MonoBehaviour, IPoolable { ... }</span>
+<span class="add">// POCO → 자체 생성자</span>
+<span class="add">public sealed class PocoCreator&lt;T&gt; : IPoolCreator&lt;T&gt; where T : class, IPoolable, new() { ... }</span></pre>
+    <ul>
+      <li>풀은 <code>creator.Create()</code> 만 호출 — MB/POCO 분기를 모름.</li>
+      <li>사용자가 상상한 "MB면 레포 인스턴스화, 아니면 생성자" 분기가 <strong>풀 안 if 가 아니라 Creator 주입</strong>으로 표현됨(개방-폐쇄).</li>
+    </ul>
+  </div>
+
+  <h3>(3) Repository / Pool / 진입점 <span class="tag must">신규</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Core/Pooling/PoolRepository.cs, Pool.cs (신규)</div>
+    <div class="lbl after">▼ AFTER (목표)</div>
+<pre class="after"><span class="cmt">PoolRepository : 타입 → Creator + 풀 매핑·보유 (프리팹 강참조/SerializeField 금지)</span>
+<span class="cmt">Pool&lt;T&gt;        : Queue&lt;T&gt; + Creator 주입. Get / Return</span>
+<span class="add">using var hit = repo.Pull&lt;HitVfx&gt;();   // Get → OnSpawn → SetActive(true)</span>
+<span class="add">hit.Play(at);                          // 스코프 이탈 → Dispose() → 풀 반환</span></pre>
+    <div class="note">
+      <code>Pull&lt;T&gt;()</code> 이 사용자가 말한 "<code>IPoolable.Pull()</code>" 의 실체 — 인스턴스 메서드가 아닌 <strong>Repository 진입점</strong>. 프리팹 약한참조(Addressables)로 첫 로드 시 <code>UniTask&lt;T&gt;</code> 비동기가 됨.
+    </div>
+  </div>
+
+  <h3>(4) 피격 VFX 적용 — 첫 소비자 <span class="tag must">교체</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Abilities/Effects/VfxPlayer.cs</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">GameObject go = Instantiate(prefab, pos, rot);   // 매번 생성</span>
+<span class="del">// ... 수명 뒤 Destroy ...                          // 매번 파괴 → GC</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">var hit = pools.Pull&lt;HitVfx&gt;();   // 풀 재사용</span>
+<span class="add">hit.Play(pos, rot, scale);        // 적 스케일 대비 확대(가시성)</span>
+<span class="add">// 수명 뒤 hit.Dispose();           // 풀 반환(파괴 아님)</span></pre>
+  </div>
+
+  <!-- 7. 영향 범위 -->
+  <h2>7. 영향 범위 및 부수 효과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>분석</th></tr>
+      <tr><td>기존 IPoolable 14곳</td><td><span class="warn">전면 마이그레이션 필요</span> — 단 시그니처 유지로 콜백 본문 무변경, 풀 호출부만 교체</td></tr>
+      <tr><td>Pull 비동기화</td><td><span class="warn">Addressables lazy 로드로 <code>UniTask&lt;T&gt;</code> 화</span> — 프리워밍 후 동기 핫패스 여부 TASK-013 에서 결정</td></tr>
+      <tr><td>GC / 성능</td><td><span class="ok">개선</span> — 빈번한 VFX·효과 스폰 시 Instantiate/Destroy 제거</td></tr>
+      <tr><td>메모리</td><td><span class="ok">개선</span> — Addressables 약한참조 lazy 로드/언로드</td></tr>
+      <tr><td>EnemySpawner 자체 풀</td><td><span class="warn">공용 풀 일원화 여부 결정 필요</span></td></tr>
+      <tr><td>외부 Hovl 스크립트</td><td><span class="ok">교체 제외 검토</span> — 외부 에셋</td></tr>
+    </table>
+  </div>
+
+  <!-- 8. 검증 -->
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <p>신 <code>Pool&lt;T&gt;</code> 는 EditMode 단위 테스트(TDD 선작성) 가능. Addressables 로드·파티클 렌더는 플레이 검증.</p>
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대 동작</th></tr>
+      <tr><td>1</td><td><strong>회귀</strong> — 기존 EditMode 스위트(Enemy/Tower BehaviorTree)</td><td><span class="ok">그린 유지</span></td></tr>
+      <tr><td>2</td><td>Pool Get/Return 재사용</td><td><span class="ok">인스턴스 재사용, 신규 생성 최소</span></td></tr>
+      <tr><td>3</td><td>Creator 분기(Prefab/POCO)</td><td><span class="ok">각 경로 정상 생성</span></td></tr>
+      <tr><td>4</td><td>Dispose = 반환 / using 스코프</td><td><span class="ok">스코프 이탈 시 자동 반환</span></td></tr>
+      <tr><td>5</td><td>Addressables 로드/언로드 왕복</td><td><span class="ok">lazy 로드·해제</span> <span class="warn">(플레이 검증)</span></td></tr>
+      <tr><td>6</td><td>피격 VFX 가시성</td><td><span class="ok">확대 후 명중 선명</span> <span class="warn">(스크린샷, 배경 작업 후 재확인)</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 9. 파일 요약 -->
+  <h2>9. 신규 · 수정 파일 요약</h2>
+  <table>
+    <tr><th>파일 / 산출물</th><th>변경 내용</th></tr>
+    <tr><td><code><strong>Core/Interfaces/IPoolable.cs</strong></code></td><td>계층 확장 — IActivatable · IPooledObject 신설</td></tr>
+    <tr><td><code><strong>Core/Pooling/*.cs</strong></code> (신규)</td><td>IPoolCreator · PrefabCreator · PocoCreator · Pool&lt;T&gt; · PoolRepository · Pull</td></tr>
+    <tr><td><code><strong>Core/ObjectPool.cs</strong></code></td><td>제거 → 신 Pool&lt;T&gt; 로 대체</td></tr>
+    <tr><td>기존 IPoolable 14곳</td><td>신 계약 마이그레이션 (본문 무변경, 호출부 교체)</td></tr>
+    <tr><td><code><strong>VfxPlayer.cs</strong></code></td><td>Instantiate/Destroy → Pull/Dispose (TASK-014 B-3)</td></tr>
+    <tr><td><code><strong>Packages/manifest.json</strong></code></td><td>com.unity.addressables 추가 (TASK-015)</td></tr>
+  </table>
+  <div class="note">
+    <strong>TASK 매핑</strong>: TASK-015(Addressables, 우선도 상·최선행) → TASK-013(공용 풀링) → TASK-014 B-3(피격 VFX). 설계 전문: <code><strong>docs/superpowers/specs/2026-07-01-pooling-addressables-design.md</strong></code>
+  </div>
+
+  <p class="foot">설계 · 핸드오프 산출 완료 — 다음 단계: 메인 세션에서 TASK-015 부터 의존 순서대로 구현</p>
+
+</div>
+</body>
+</html>
