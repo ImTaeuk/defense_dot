@@ -70,6 +70,8 @@ A2(코어 자동전투)에서 능력 효과 엔티티(`ProjectileEffect`·`Orbit
   - D-1. 14곳 신 계약 전환 + 기존 `ObjectPool<T>` 제거.
   - D-2. `EnemySpawner` 풀 일원화 여부 결정·적용.
   - D-3. 회귀: `EnemyBehaviorTreeTests`·`TowerBehaviorTreeTests` 그린 유지.
+  - **⚠️ D-4 (BLOCKING GATE — 최초 프리팹 소비자 투입 전 필수)**: 코어 최종 리뷰(2026-07-02, opus)에서 확인된 프리팹 경로 누수. 현 `Pool<T>.Clear()`(`Assets/Scripts/Core/Pooling/Pool.cs`)는 `idle` 큐만 비워 C# 참조만 버린다 → POCO 는 GC 되지만 **`PrefabFactory` 로 `Instantiate` 된 GameObject 클론은 씬에 잔존**하고, 뒤이은 `PoolManager.Dispose()`의 `assetLoader.ReleaseAll()`이 공유 에셋을 조기 해제한다(현재는 프리팹 소비자가 없어 트리거 불가·씬 언로드로 마스킹됨). **대칭 해법**: `IPoolFactory<T>`에 `Destroy(T)` 추가 → `PocoFactory.Destroy` no-op / `PrefabFactory.Destroy` = `Object.Destroy(item.gameObject)`, `Pool<T>.Clear()`가 idle 를 드레인하며 `factory.Destroy` 호출. 실제 프리팹 풀을 Dispose 하면 클론이 파괴되는지 PlayMode/실소비자로 검증. **VfxPlayer(TASK-014 B-3) 등 첫 프리팹 소비자와 함께 반드시 구현·검증할 것.**
+  - **D-5 (권장, 프리팹 경로와 함께)**: `PoolManager.Get<T>(AssetReference)`가 미예열 키에 `pools[key]`로 `KeyNotFoundException`을 던짐 → `TryGetValue` 실패 시 `InvalidOperationException($"PoolAsync 예열 안 됨: {RuntimeKey}")` 같은 명시 메시지로 방어(최초 소비자 디버깅 편의).
 
 ## 5. 검증
 
