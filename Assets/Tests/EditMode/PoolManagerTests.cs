@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using NUnit.Framework;
 using DefenseDot.Core.Pooling;
 using DefenseDot.Systems.Assets;
@@ -7,7 +6,7 @@ namespace DefenseDot.Tests.EditMode
 {
     /// <summary>
     /// PoolManager 단위 테스트(POCO 경로).
-    /// 재사용·자기 Dispose 반환·소유 연쇄·뿌리 절단(누수 0)·이중반환 가드를 방어한다.
+    /// 재사용·자기 Dispose 반환·소유 연쇄·뿌리 절단(누수 0)·이중반환 가드·독립반환 후 오회수 방지를 방어한다.
     /// </summary>
     public class PoolManagerTests
     {
@@ -84,6 +83,24 @@ namespace DefenseDot.Tests.EditMode
             m.Return(a);               // 이중 반환
 
             Assert.AreEqual(1, a.DespawnCount, "이중 반환은 무시");
+        }
+
+        [Test]
+        public void Return_ChildIndependently_ThenReuse_ParentReturn_DoesNotReclaimReused()
+        {
+            PoolManager m = NewManager();
+
+            Node parent = m.Get<Node>();
+            Node child = m.Get<Node>(owner: parent);
+
+            m.Return(child);                 // 자식을 독립적으로 먼저 반환
+            Node reused = m.Get<Node>();     // 같은 인스턴스 재사용
+            Assert.AreSame(child, reused, "동일 인스턴스 재사용 전제");
+
+            int despawnsBefore = reused.DespawnCount;
+            m.Return(parent);                // 부모 반환(오회수 방지)
+
+            Assert.AreEqual(despawnsBefore, reused.DespawnCount, "재사용 객체는 부모 반환에 영향 없음");
         }
     }
 }

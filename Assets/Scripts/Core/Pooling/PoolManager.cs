@@ -19,6 +19,9 @@ namespace DefenseDot.Core.Pooling
         // 소유 부모 → 자식들
         private readonly Dictionary<IPooledObject, List<IPooledObject>> owned
             = new Dictionary<IPooledObject, List<IPooledObject>>();
+        // 자식 → 현재 부모(독립 반환 정리)
+        private readonly Dictionary<IPooledObject, IPooledObject> parentOf
+            = new Dictionary<IPooledObject, IPooledObject>();
 
         public PoolManager(AssetLoader assetLoader)
         {
@@ -52,6 +55,7 @@ namespace DefenseDot.Core.Pooling
                 bindable.BindReturn(() => Return(item));
             if (owner is IPooledObject parent)
             {
+                parentOf[item] = parent;
                 if (!owned.TryGetValue(parent, out List<IPooledObject> list))
                 {
                     list = new List<IPooledObject>();
@@ -67,13 +71,23 @@ namespace DefenseDot.Core.Pooling
             if (obj is not IPooledObject pooled) return;
             if (!live.Contains(pooled)) return;   // 이미 반환됨 — 이중 반환 가드
 
-            if (owned.TryGetValue(pooled, out List<IPooledObject> children))
+            live.Remove(pooled);
+
+            // 내가 자식이면 부모 목록에서 제거
+            if (parentOf.TryGetValue(pooled, out IPooledObject parent))
             {
-                for (int i = children.Count - 1; i >= 0; i--) Return(children[i]);
-                owned.Remove(pooled);
+                parentOf.Remove(pooled);
+                if (owned.TryGetValue(parent, out List<IPooledObject> siblings))
+                    siblings.Remove(pooled);
             }
 
-            live.Remove(pooled);
+            // 자식부터 연쇄 회수(목록 분리)
+            if (owned.TryGetValue(pooled, out List<IPooledObject> children))
+            {
+                owned.Remove(pooled);
+                for (int i = children.Count - 1; i >= 0; i--) Return(children[i]);
+            }
+
             if (origin.TryGetValue(pooled, out IPool pool))
                 pool.ReturnObject(pooled);
         }
@@ -81,15 +95,19 @@ namespace DefenseDot.Core.Pooling
         /// <summary> 남은 OUT 을 전량 연쇄 회수하고 풀·에셋을 정리합니다(뿌리 절단). </summary>
         public void Dispose()
         {
-            var snapshot = new List<IPooledObject>(live);
-            foreach (IPooledObject o in snapshot)
-                if (live.Contains(o)) Return(o);
+            using (UnityEngine.Pool.CollectionPool<List<IPooledObject>, IPooledObject>.Get(out List<IPooledObject> snapshot))
+            {
+                snapshot.AddRange(live);
+                foreach (IPooledObject o in snapshot)
+                    if (live.Contains(o)) Return(o);
+            }
 
             foreach (IPool p in pools.Values) p.Clear();
             pools.Clear();
             origin.Clear();
             live.Clear();
             owned.Clear();
+            parentOf.Clear();
             assetLoader?.ReleaseAll();
         }
     }
