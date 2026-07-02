@@ -1,72 +1,100 @@
+using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEngine;
 using DefenseDot.Core.Pooling;
 using DefenseDot.Systems.Assets;
 
 namespace DefenseDot.Tests.EditMode
 {
     /// <summary>
-    /// PoolManager 단위 테스트(POCO 경로).
-    /// 재사용·자기 Dispose 반환·소유 연쇄·뿌리 절단(누수 0)·이중반환 가드·독립반환 후 오회수 방지를 방어한다.
+    /// PoolManager 테스트 — 자가/외부 반납·소유 연쇄·뿌리 절단·이중반납 가드·재부모를 방어한다.
+    /// Addressables 없이 런타임 프리팹 Pool + 내부 Retain seam 으로 검증한다.
     /// </summary>
     public class PoolManagerTests
     {
-        private sealed class Node : PooledObject
+        private sealed class TestPooled : PooledBehaviour
         {
             public int DespawnCount;
             public override void OnDespawn() => DespawnCount++;
         }
 
+        private readonly List<GameObject> spawned = new List<GameObject>();
+
+        [TearDown]
+        public void Cleanup()
+        {
+            foreach (GameObject go in spawned) if (go != null) Object.DestroyImmediate(go);
+            spawned.Clear();
+        }
+
         private static PoolManager NewManager() => new PoolManager(new AssetLoader());
 
+        private Pool NewPool()
+        {
+            var prefab = new GameObject("prefab");
+            prefab.AddComponent<TestPooled>();
+            spawned.Add(prefab);
+            return new Pool(prefab);
+        }
+
+        // 풀에서 하나 꺼내 매니저 장부에 등록한다
+        private TestPooled Lend(PoolManager m, Pool pool, object owner = null)
+        {
+            GameObject go = pool.Get();
+            spawned.Add(go);
+            TestPooled fx = go.GetComponent<TestPooled>();
+            m.Retain(fx, pool, owner);
+            return fx;
+        }
+
         [Test]
-        public void Get_ThenReturn_ThenGet_ReusesInstance()
+        public void Dispose_OnObject_ReturnsToPool()
         {
             PoolManager m = NewManager();
+            Pool pool = NewPool();
+            TestPooled a = Lend(m, pool);
 
-            Node a = m.Get<Node>();
+            a.Dispose();                       // 자가 반납
+
+            Assert.AreEqual(1, a.DespawnCount, "Dispose = 반납 → OnDespawn 1회");
+        }
+
+        [Test]
+        public void Return_Twice_DoesNotDoubleDespawn()
+        {
+            PoolManager m = NewManager();
+            Pool pool = NewPool();
+            TestPooled a = Lend(m, pool);
+
             m.Return(a);
-            Node b = m.Get<Node>();
+            m.Return(a);
 
-            Assert.AreSame(a, b, "반환 후 재요청은 같은 인스턴스");
+            Assert.AreEqual(1, a.DespawnCount, "이중 반납은 무시");
         }
 
         [Test]
-        public void Dispose_OnPooledObject_ReturnsItToPool()
+        public void Return_Parent_CascadesToChildren()
         {
             PoolManager m = NewManager();
-
-            Node a = m.Get<Node>();
-            a.Dispose();               // 자기 반환 API
-            Node b = m.Get<Node>();
-
-            Assert.AreSame(a, b, "Dispose 가 곧 풀 반환");
-            Assert.AreEqual(1, a.DespawnCount, "반환 시 OnDespawn 1회");
-        }
-
-        [Test]
-        public void Return_Parent_CascadesToChildrenFirst()
-        {
-            PoolManager m = NewManager();
-
-            Node parent = m.Get<Node>();
-            Node child = m.Get<Node>(owner: parent);
+            Pool pool = NewPool();
+            TestPooled parent = Lend(m, pool);
+            TestPooled child = Lend(m, pool, owner: parent);
 
             m.Return(parent);
 
-            Assert.AreEqual(1, child.DespawnCount, "부모 반환 시 자식이 먼저 회수");
-            Assert.AreSame(child, m.Get<Node>(), "회수된 자식이 재사용됨");
+            Assert.AreEqual(1, child.DespawnCount, "부모 반납 시 자식도 회수");
         }
 
         [Test]
-        public void Dispose_Manager_ReclaimsAllLiveObjects()
+        public void Dispose_Manager_ReclaimsAll()
         {
             PoolManager m = NewManager();
+            Pool pool = NewPool();
+            TestPooled a = Lend(m, pool);
+            TestPooled b = Lend(m, pool);
+            TestPooled c = Lend(m, pool, owner: a);
 
-            Node a = m.Get<Node>();
-            Node b = m.Get<Node>();
-            Node c = m.Get<Node>(owner: a);
-
-            m.Dispose();               // 뿌리 절단
+            m.Dispose();                       // 뿌리 절단
 
             Assert.AreEqual(1, a.DespawnCount, "a 회수");
             Assert.AreEqual(1, b.DespawnCount, "b 회수");
@@ -74,54 +102,23 @@ namespace DefenseDot.Tests.EditMode
         }
 
         [Test]
-        public void Return_Twice_DoesNotDoubleDespawn()
+        public void Reparent_OldParentReturn_Ignores_NewParentReturn_Reclaims()
         {
             PoolManager m = NewManager();
+            Pool pool = NewPool();
+            TestPooled parent1 = Lend(m, pool);
+            TestPooled parent2 = Lend(m, pool);
+            TestPooled child = Lend(m, pool, owner: parent1);
 
-            Node a = m.Get<Node>();
-            m.Return(a);
-            m.Return(a);               // 이중 반환
-
-            Assert.AreEqual(1, a.DespawnCount, "이중 반환은 무시");
-        }
-
-        [Test]
-        public void Return_ChildIndependently_ThenReuse_ParentReturn_DoesNotReclaimReused()
-        {
-            PoolManager m = NewManager();
-
-            Node parent = m.Get<Node>();
-            Node child = m.Get<Node>(owner: parent);
-
-            m.Return(child);                 // 자식을 독립적으로 먼저 반환
-            Node reused = m.Get<Node>();     // 같은 인스턴스 재사용
-            Assert.AreSame(child, reused, "동일 인스턴스 재사용 전제");
-
-            int despawnsBefore = reused.DespawnCount;
-            m.Return(parent);                // 부모 반환(오회수 방지)
-
-            Assert.AreEqual(despawnsBefore, reused.DespawnCount, "재사용 객체는 부모 반환에 영향 없음");
-        }
-
-        [Test]
-        public void Reparent_OnReuse_OldParentReturn_Ignores_NewParentReturn_Reclaims()
-        {
-            PoolManager m = NewManager();
-
-            Node parent1 = m.Get<Node>();
-            Node parent2 = m.Get<Node>();
-            Node child = m.Get<Node>(owner: parent1);
-
-            m.Return(child);                          // 자식 독립 반환
-            Node reused = m.Get<Node>(owner: parent2);   // 같은 인스턴스를 새 부모로 재취득
-            Assert.AreSame(child, reused, "동일 인스턴스 재사용 전제");
+            m.Return(child);                      // 자식 독립 반납
+            TestPooled reused = Lend(m, pool, owner: parent2);  // 같은 인스턴스를 새 부모로 재취득
 
             int before = reused.DespawnCount;
-            m.Return(parent1);                        // 옛 부모 반환 — 재사용 객체 미영향
-            Assert.AreEqual(before, reused.DespawnCount, "옛 부모 반환은 재사용 객체 미회수");
+            m.Return(parent1);                    // 옛 부모 — 재사용 객체 미영향
+            Assert.AreEqual(before, reused.DespawnCount, "옛 부모 반납은 재사용 객체 미회수");
 
-            m.Return(parent2);                        // 새 부모 반환 — 재사용 객체 회수
-            Assert.AreEqual(before + 1, reused.DespawnCount, "새 부모 반환이 재사용 객체 회수");
+            m.Return(parent2);                    // 새 부모 — 회수
+            Assert.AreEqual(before + 1, reused.DespawnCount, "새 부모 반납이 재사용 객체 회수");
         }
     }
 }

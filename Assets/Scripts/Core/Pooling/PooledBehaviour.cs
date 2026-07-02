@@ -2,8 +2,12 @@ using UnityEngine;
 
 namespace DefenseDot.Core.Pooling
 {
-    /// <summary> MonoBehaviour 풀 대상 베이스입니다. 상속만으로 활성·반환 계약을 획득합니다. </summary>
-    public abstract class PooledBehaviour : MonoBehaviour, IPoolable, IActivatable, IPooledObject, IReturnBindable
+    /// <summary>
+    /// 풀링되는 MonoBehaviour 를 위한 선택적 편의 베이스입니다.
+    /// 상속만으로 활성·반납 계약을 얻고, 하위는 필요한 리셋(OnSpawn/OnDespawn)만 오버라이드합니다.
+    /// 강제는 아닙니다 — 자기 베이스가 있는 타입은 계약(IPoolableObject/IActivatable)을 직접 구현해도 됩니다.
+    /// </summary>
+    public abstract class PooledBehaviour : MonoBehaviour, IPoolableObject, IActivatable, IReturnBindable
     {
         private System.Action returnToPool;
 

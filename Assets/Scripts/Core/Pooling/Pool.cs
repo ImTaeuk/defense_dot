@@ -1,44 +1,50 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace DefenseDot.Core.Pooling
 {
     /// <summary>
-    /// 큐 기반 재사용 풀입니다. 놀고 있으면 꺼내고, 없으면 팩토리로 새로 만듭니다.
-    /// 활성/리셋은 IActivatable/IPoolable 로 위임하므로 MB·POCO 를 모릅니다.
+    /// 프리팹 하나를 재사용하는 풀입니다. 놀고 있으면 큐에서 꺼내고, 없으면 Instantiate 합니다.
+    /// 폐기(Clear) 시 큐에 남은 인스턴스를 파괴합니다.
     /// </summary>
-    public sealed class Pool<T> : IPool where T : class, IPoolable, IActivatable
+    public sealed class Pool
     {
-        private readonly Queue<T> idle = new Queue<T>();
-        private readonly IPoolFactory<T> factory;
+        private readonly GameObject prefab;
+        private readonly Queue<GameObject> idle = new Queue<GameObject>();
 
-        public Pool(IPoolFactory<T> factory)
+        public Pool(GameObject prefab)
         {
-            this.factory = factory;
+            this.prefab = prefab;
         }
 
-        public T Get()
+        /// <summary> 재사용 인스턴스를 켜서 내줍니다. 없으면 새로 Instantiate 합니다. </summary>
+        public GameObject Get()
         {
-            T item = idle.Count > 0 ? idle.Dequeue() : factory.Create();
-            item.OnSpawn();
-            item.Activate();
-            return item;
+            GameObject instance = idle.Count > 0 ? idle.Dequeue() : Object.Instantiate(prefab);
+            IPoolableObject poolable = instance.GetComponent<IPoolableObject>();
+            poolable.OnSpawn();                       // 상태 리셋
+            ((IActivatable)poolable).Activate();      // 켜기 + 알림
+            return instance;
         }
 
-        public void Return(T item)
+        /// <summary> 인스턴스를 끄고 큐로 되돌립니다. </summary>
+        public void Return(GameObject instance)
         {
-            item.Deactivate();
-            item.OnDespawn();
-            idle.Enqueue(item);
+            IPoolableObject poolable = instance.GetComponent<IPoolableObject>();
+            ((IActivatable)poolable).Deactivate();    // 끄기 + 알림
+            poolable.OnDespawn();                     // 정리
+            idle.Enqueue(instance);
         }
 
-        void IPool.ReturnObject(object item) => Return((T)item);
-        void IPool.Clear() => idle.Clear();
-    }
-
-    /// <summary> 서로 다른 T 의 Pool 을 한 레지스트리에 담기 위한 비제네릭 창구입니다. </summary>
-    internal interface IPool
-    {
-        void ReturnObject(object item);
-        void Clear();
+        /// <summary> 큐에 남은 인스턴스를 파괴합니다(풀 폐기 시 GameObject 누수 방지). </summary>
+        public void Clear()
+        {
+            while (idle.Count > 0)
+            {
+                GameObject instance = idle.Dequeue();
+                if (Application.isPlaying) Object.Destroy(instance);
+                else Object.DestroyImmediate(instance);   // 에디트 모드(테스트)
+            }
+        }
     }
 }

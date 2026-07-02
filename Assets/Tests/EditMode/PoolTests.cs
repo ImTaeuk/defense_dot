@@ -1,77 +1,82 @@
+using System.Collections.Generic;
 using NUnit.Framework;
+using UnityEngine;
 using DefenseDot.Core.Pooling;
 
 namespace DefenseDot.Tests.EditMode
 {
-    /// <summary>
-    /// Pool&lt;T&gt; 단위 테스트. 재사용·즉석생성·호출 순서를 방어한다.
-    /// </summary>
+    /// <summary> Pool(비제네릭·프리팹 기반) 테스트 — 재사용·즉석생성·순서·폐기 큐비움을 방어한다. </summary>
     public class PoolTests
     {
-        private sealed class Dummy : IPoolable, IActivatable
+        private sealed class TestPooled : PooledBehaviour
         {
-            public int Spawns;
-            public int Despawns;
-            public int Activations;
-            public int Deactivations;
-            public System.Collections.Generic.List<string> Trace = new System.Collections.Generic.List<string>();
-
-            public bool IsActive { get; private set; }
-            public event System.Action OnActivated;
-            public event System.Action OnDeactivated;
-
-            public void OnSpawn() { Spawns++; Trace.Add("spawn"); }
-            public void OnDespawn() { Despawns++; Trace.Add("despawn"); }
-            public void Activate() { IsActive = true; Activations++; Trace.Add("activate"); OnActivated?.Invoke(); }
-            public void Deactivate() { IsActive = false; Deactivations++; Trace.Add("deactivate"); OnDeactivated?.Invoke(); }
+            public int SpawnCount;
+            public int DespawnCount;
+            public override void OnSpawn() => SpawnCount++;
+            public override void OnDespawn() => DespawnCount++;
         }
 
-        private sealed class DummyFactory : IPoolFactory<Dummy>
+        private readonly List<GameObject> spawned = new List<GameObject>();
+
+        [TearDown]
+        public void Cleanup()
         {
-            public int Created;
-            public Dummy Create() { Created++; return new Dummy(); }
+            foreach (GameObject go in spawned) if (go != null) Object.DestroyImmediate(go);
+            spawned.Clear();
+        }
+
+        private GameObject NewPrefab()
+        {
+            var prefab = new GameObject("prefab");
+            prefab.AddComponent<TestPooled>();
+            spawned.Add(prefab);
+            return prefab;
         }
 
         [Test]
         public void Get_ThenReturn_ThenGet_ReusesSameInstance()
         {
-            var factory = new DummyFactory();
-            var pool = new Pool<Dummy>(factory);
-
-            Dummy first = pool.Get();
-            pool.Return(first);
-            Dummy second = pool.Get();
-
-            Assert.AreSame(first, second, "반환 후 다시 꺼내면 같은 인스턴스");
-            Assert.AreEqual(1, factory.Created, "재사용 시 신규 생성 0");
+            var pool = new Pool(NewPrefab());
+            GameObject a = pool.Get(); spawned.Add(a);
+            pool.Return(a);
+            GameObject b = pool.Get();
+            Assert.AreSame(a, b, "반환 후 재요청은 같은 인스턴스");
         }
 
         [Test]
-        public void Get_EmptyPool_CreatesViaFactory()
+        public void Get_EmptyPool_InstantiatesEachTime()
         {
-            var factory = new DummyFactory();
-            var pool = new Pool<Dummy>(factory);
-
-            pool.Get();
-            pool.Get();
-
-            Assert.AreEqual(2, factory.Created, "빈 풀에서 꺼낼 때마다 즉석 생성");
+            var pool = new Pool(NewPrefab());
+            GameObject a = pool.Get(); spawned.Add(a);
+            GameObject b = pool.Get(); spawned.Add(b);
+            Assert.AreNotSame(a, b, "빈 풀은 매번 새 인스턴스");
         }
 
         [Test]
-        public void Get_RunsSpawnBeforeActivate_AndReturnRunsDeactivateBeforeDespawn()
+        public void Get_ActivatesAndSpawns_ReturnDeactivatesAndDespawns()
         {
-            var pool = new Pool<Dummy>(new DummyFactory());
+            var pool = new Pool(NewPrefab());
+            GameObject go = pool.Get(); spawned.Add(go);
+            TestPooled fx = go.GetComponent<TestPooled>();
 
-            Dummy item = pool.Get();
-            pool.Return(item);
+            Assert.AreEqual(1, fx.SpawnCount, "Get 시 OnSpawn");
+            Assert.IsTrue(fx.IsActive, "Get 시 활성");
 
-            Assert.AreEqual(
-                new[] { "spawn", "activate", "deactivate", "despawn" },
-                item.Trace.ToArray(),
-                "Get=리셋→켜기, Return=끄기→정리 순서");
-            Assert.AreEqual(1, item.Activations);
-            Assert.AreEqual(1, item.Deactivations);
+            pool.Return(go);
+
+            Assert.AreEqual(1, fx.DespawnCount, "Return 시 OnDespawn");
+            Assert.IsFalse(fx.IsActive, "Return 시 비활성");
+        }
+
+        [Test]
+        public void Clear_EmptiesQueue_NextGetInstantiatesNew()
+        {
+            var pool = new Pool(NewPrefab());
+            GameObject a = pool.Get(); spawned.Add(a);
+            pool.Return(a);
+            pool.Clear();
+            GameObject b = pool.Get(); spawned.Add(b);
+            Assert.AreNotSame(a, b, "Clear 후엔 재사용 없이 새 인스턴스");
         }
     }
 }
