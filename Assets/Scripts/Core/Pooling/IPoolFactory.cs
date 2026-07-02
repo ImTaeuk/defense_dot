@@ -11,4 +11,21 @@ namespace DefenseDot.Core.Pooling
     {
         public T Create() => new T();
     }
+
+    /// <summary> 로드된 프리팹을 Instantiate 해 PooledBehaviour 컴포넌트를 반환하는 팩토리입니다. </summary>
+    public sealed class PrefabFactory : IPoolFactory<PooledBehaviour>
+    {
+        private readonly UnityEngine.GameObject prefab;
+
+        public PrefabFactory(UnityEngine.GameObject prefab)
+        {
+            this.prefab = prefab;
+        }
+
+        public PooledBehaviour Create()
+        {
+            UnityEngine.GameObject go = UnityEngine.Object.Instantiate(prefab);
+            return go.GetComponent<PooledBehaviour>();
+        }
+    }
 }

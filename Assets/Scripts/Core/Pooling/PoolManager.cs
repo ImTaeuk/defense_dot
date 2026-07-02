@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using DefenseDot.Systems.Assets;
+using UnityEngine.AddressableAssets;
 
 namespace DefenseDot.Core.Pooling
 {
@@ -35,6 +37,28 @@ namespace DefenseDot.Core.Pooling
             T item = pool.Get();
             Track(item, pool, owner);
             return item;
+        }
+
+        /// <summary> 스포너 데이터의 이펙트 목록을 에셋별로 로드·예열합니다(레벨 진입 시 1회). </summary>
+        public async UniTask PoolAsync(IEnumerable<EffectEntry> entries)
+        {
+            foreach (EffectEntry entry in entries)
+            {
+                object key = entry.asset.RuntimeKey;
+                if (pools.ContainsKey(key)) continue;
+                UnityEngine.GameObject prefab = await assetLoader.LoadAsync<UnityEngine.GameObject>(entry.asset);
+                pools[key] = new Pool<PooledBehaviour>(new PrefabFactory(prefab));
+            }
+        }
+
+        /// <summary> 예열된 프리팹 풀에서 꺼냅니다. 동기(이미 로드됨). </summary>
+        public T Get<T>(AssetReference reference, object owner = null) where T : PooledBehaviour
+        {
+            object key = reference.RuntimeKey;
+            var pool = (Pool<PooledBehaviour>)pools[key];
+            PooledBehaviour item = pool.Get();
+            Track(item, pool, owner);
+            return (T)item;
         }
 
         private Pool<T> ResolvePocoPool<T>() where T : class, IPoolable, IActivatable, new()
