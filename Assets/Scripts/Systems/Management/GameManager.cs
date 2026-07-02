@@ -61,6 +61,7 @@ namespace DefenseDot.Systems.Management
         private EnemyRegistry registry;
         private TargetFinder targetFinder;
         private EconomyController economyController;
+        private DefenseDot.Core.Pooling.PoolManager poolManager;
 
         // DEBUG: 치트 도구 접근용 — 실제 타워 등장 시스템 구현 시 삭제
         /// <summary>적 타겟 탐색기입니다. Start 이후 non-null. (DEBUG)</summary>
@@ -112,6 +113,10 @@ namespace DefenseDot.Systems.Management
             Level = new LevelModel(curve);
             Combat.OnEnemyKilled += HandleEnemyKilledForLevel;
 
+            // 공용 풀링 인프라 생성
+            var assetLoader = new DefenseDot.Systems.Assets.AssetLoader();
+            poolManager = new DefenseDot.Core.Pooling.PoolManager(assetLoader);
+
             // UI 연결 (UI 합성 루트에 GameContext 주입)
             if (uiRoot != null)
             {
@@ -119,7 +124,7 @@ namespace DefenseDot.Systems.Management
                 var ctx = new DefenseDot.Domain.GameContext(
                     Economy, Core, Wave, Score, RoundTimer, Flow, Level,
                     modeBootstrap.EnemyDisplayCapacity, towerRoster,
-                    modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget);
+                    modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget, poolManager);
                 uiRoot.Inject(ctx);
             }
 
@@ -177,6 +182,7 @@ namespace DefenseDot.Systems.Management
         private void OnDestroy()
         {
             economyController?.Dispose();
+            poolManager?.Dispose();
             if (Core != null) Core.OnCoreDestroyed -= HandleCoreDestroyed;
             if (Wave != null) Wave.OnWaveCleared -= HandleVictory;
             if (Combat != null) Combat.OnEnemyKilled -= HandleEnemyKilledForLevel;

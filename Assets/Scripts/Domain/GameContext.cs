@@ -4,6 +4,7 @@ using DefenseDot.Data;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Cards;
 using DefenseDot.Systems.Abilities;
+using DefenseDot.Core.Pooling;
 
 namespace DefenseDot.Domain
 {
@@ -36,17 +37,19 @@ namespace DefenseDot.Domain
         public AbilityPool AbilityPool { get; }
         /// <summary> 코어 능력 명령 대상입니다. </summary>
         public ICardCommandTarget CoreTarget { get; }
+        /// <summary> 공용 풀링 매니저입니다. </summary>
+        public PoolManager Pooling { get; }
 
         /// <summary> 모든 의존성을 주입받습니다. </summary>
         public GameContext(EconomyModel economy, CoreModel core, WaveModel wave, ScoreModel score,
             RoundTimerModel timer, GameFlowModel flow, LevelModel level, int enemyCapacity,
             TowerRoster roster, TowerPlacementController placement, ArenaCardConfig cardConfig,
-            AbilityPool abilityPool, ICardCommandTarget coreTarget)
+            AbilityPool abilityPool, ICardCommandTarget coreTarget, PoolManager pooling)
         {
             Economy = economy; Core = core; Wave = wave; Score = score; Timer = timer;
             Flow = flow; Level = level; EnemyCapacity = enemyCapacity; Roster = roster;
             Placement = placement; CardConfig = cardConfig; AbilityPool = abilityPool;
-            CoreTarget = coreTarget;
+            CoreTarget = coreTarget; Pooling = pooling;
         }
     }
 }
