@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using DefenseDot.Core.Pooling;
@@ -10,6 +11,16 @@ namespace DefenseDot.Tests.EditMode
     /// </summary>
     public class PooledBaseTests
     {
+        private readonly List<GameObject> spawned = new List<GameObject>();
+
+        [TearDown]
+        public void Cleanup()
+        {
+            foreach (GameObject go in spawned)
+                if (go != null) Object.DestroyImmediate(go);
+            spawned.Clear();
+        }
+
         private sealed class Node : PooledObject { }
 
         private sealed class Behaviour : PooledBehaviour { }
@@ -55,20 +66,20 @@ namespace DefenseDot.Tests.EditMode
         public void PooledBehaviour_ActivateDeactivate_TogglesGameObject()
         {
             var go = new GameObject("pooled");
+            spawned.Add(go);
             var behaviour = go.AddComponent<Behaviour>();
 
             behaviour.Deactivate();
             Assert.IsFalse(behaviour.IsActive, "Deactivate 는 gameObject 비활성");
             behaviour.Activate();
             Assert.IsTrue(behaviour.IsActive, "Activate 는 gameObject 활성");
-
-            Object.DestroyImmediate(go);
         }
 
         [Test]
         public void PooledBehaviour_Dispose_InvokesBoundReturn()
         {
             var go = new GameObject("pooled");
+            spawned.Add(go);
             var behaviour = go.AddComponent<Behaviour>();
             int returned = 0;
             ((IReturnBindable)behaviour).BindReturn(() => returned++);
@@ -76,7 +87,6 @@ namespace DefenseDot.Tests.EditMode
             behaviour.Dispose();
 
             Assert.AreEqual(1, returned);
-            Object.DestroyImmediate(go);
         }
     }
 }

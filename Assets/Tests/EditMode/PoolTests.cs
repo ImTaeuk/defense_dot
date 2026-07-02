@@ -4,7 +4,7 @@ using DefenseDot.Core.Pooling;
 namespace DefenseDot.Tests.EditMode
 {
     /// <summary>
-    /// Pool&lt;T&gt; 단위 테스트. 재사용·즉석생성·호출순서·이벤트를 방어한다.
+    /// Pool&lt;T&gt; 단위 테스트. 재사용·즉석생성·호출 순서를 방어한다.
     /// </summary>
     public class PoolTests
     {

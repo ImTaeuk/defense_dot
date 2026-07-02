@@ -102,5 +102,26 @@ namespace DefenseDot.Tests.EditMode
 
             Assert.AreEqual(despawnsBefore, reused.DespawnCount, "재사용 객체는 부모 반환에 영향 없음");
         }
+
+        [Test]
+        public void Reparent_OnReuse_OldParentReturn_Ignores_NewParentReturn_Reclaims()
+        {
+            PoolManager m = NewManager();
+
+            Node parent1 = m.Get<Node>();
+            Node parent2 = m.Get<Node>();
+            Node child = m.Get<Node>(owner: parent1);
+
+            m.Return(child);                          // 자식 독립 반환
+            Node reused = m.Get<Node>(owner: parent2);   // 같은 인스턴스를 새 부모로 재취득
+            Assert.AreSame(child, reused, "동일 인스턴스 재사용 전제");
+
+            int before = reused.DespawnCount;
+            m.Return(parent1);                        // 옛 부모 반환 — 재사용 객체 미영향
+            Assert.AreEqual(before, reused.DespawnCount, "옛 부모 반환은 재사용 객체 미회수");
+
+            m.Return(parent2);                        // 새 부모 반환 — 재사용 객체 회수
+            Assert.AreEqual(before + 1, reused.DespawnCount, "새 부모 반환이 재사용 객체 회수");
+        }
     }
 }
