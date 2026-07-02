@@ -103,7 +103,7 @@
   <div class="panel">
     <p><strong>용도.</strong> 풀이 재사용하는 객체의 계약입니다. 재사용 시 자기 상태를 초기화하고, <code>Dispose()</code> 는 파괴가 아니라 "풀 반납"을 뜻합니다(실제 반납 동작은 <code>PoolManager</code> 가 주입).</p>
     <div class="file">Assets/Scripts/Core/Pooling/IPoolableObject.cs</div>
-    <pre><code>public interface IPoolableObject : System.IDisposable
+    <pre><code>public interface IPoolableObject : IActivatable, System.IDisposable
 {
     void OnSpawn();
     void OnDespawn();
@@ -114,6 +114,7 @@
       <tr><td><code>void OnDespawn()</code></td><td>풀로 <strong>반납되기 직전</strong> — 참조·상태 정리.</td></tr>
       <tr><td><code>void Dispose()</code> <span class="tag">IDisposable</span></td><td>"반납" 트리거. 자가(내부) · 외부(소유자) 둘 다 호출. 실제 동작은 매니저가 주입, <code>using</code> 도 가능.</td></tr>
     </table>
+    <div class="note">풀은 대상을 항상 켜고/끄므로 <code>IActivatable</code> 을 포함한다(<code>: IActivatable</code>). 풀 대상은 두 계약을 모두 구현해야 하며 <strong>컴파일이 강제</strong>한다. (적대적 리뷰 반영 — 분리 시 hard-cast InvalidCastException 위험 제거)</div>
   </div>
 
   <h3>IActivatable <span class="tag">인터페이스</span></h3>

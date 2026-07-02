@@ -44,7 +44,7 @@ namespace DefenseDot.Core.Pooling
             }
         }
 
-        // 미리 count 개 채워둔다
+        /// <summary> 미리 count 개 만들어 큐를 채웁니다. </summary>
         private void Prewarm(Pool pool, int count)
         {
             using (UnityEngine.Pool.ListPool<GameObject>.Get(out List<GameObject> temp))

@@ -22,8 +22,8 @@ namespace DefenseDot.Core.Pooling
         {
             GameObject instance = idle.Count > 0 ? idle.Dequeue() : Object.Instantiate(prefab);
             IPoolableObject poolable = instance.GetComponent<IPoolableObject>();
-            poolable.OnSpawn();                       // 상태 리셋
-            ((IActivatable)poolable).Activate();      // 켜기 + 알림
+            poolable.OnSpawn();     // 상태 리셋
+            poolable.Activate();    // 켜기 + 알림
             return instance;
         }
 
@@ -31,8 +31,8 @@ namespace DefenseDot.Core.Pooling
         public void Return(GameObject instance)
         {
             IPoolableObject poolable = instance.GetComponent<IPoolableObject>();
-            ((IActivatable)poolable).Deactivate();    // 끄기 + 알림
-            poolable.OnDespawn();                     // 정리
+            poolable.Deactivate();  // 끄기 + 알림
+            poolable.OnDespawn();   // 정리
             idle.Enqueue(instance);
         }
 

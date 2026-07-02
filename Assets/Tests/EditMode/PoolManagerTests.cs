@@ -37,7 +37,7 @@ namespace DefenseDot.Tests.EditMode
             return new Pool(prefab);
         }
 
-        // 풀에서 하나 꺼내 매니저 장부에 등록한다
+        // 꺼내 장부에 등록
         private TestPooled Lend(PoolManager m, Pool pool, object owner = null)
         {
             GameObject go = pool.Get();

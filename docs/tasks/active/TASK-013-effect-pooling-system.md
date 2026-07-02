@@ -70,8 +70,11 @@ A2(코어 자동전투)에서 능력 효과 엔티티(`ProjectileEffect`·`Orbit
   - D-1. 14곳 신 계약 전환 + 기존 `ObjectPool<T>` 제거.
   - D-2. `EnemySpawner` 풀 일원화 여부 결정·적용.
   - D-3. 회귀: `EnemyBehaviorTreeTests`·`TowerBehaviorTreeTests` 그린 유지.
-  - **⚠️ D-4 (BLOCKING GATE — 최초 프리팹 소비자 투입 전 필수)**: 코어 최종 리뷰(2026-07-02, opus)에서 확인된 프리팹 경로 누수. 현 `Pool<T>.Clear()`(`Assets/Scripts/Core/Pooling/Pool.cs`)는 `idle` 큐만 비워 C# 참조만 버린다 → POCO 는 GC 되지만 **`PrefabFactory` 로 `Instantiate` 된 GameObject 클론은 씬에 잔존**하고, 뒤이은 `PoolManager.Dispose()`의 `assetLoader.ReleaseAll()`이 공유 에셋을 조기 해제한다(현재는 프리팹 소비자가 없어 트리거 불가·씬 언로드로 마스킹됨). **대칭 해법**: `IPoolFactory<T>`에 `Destroy(T)` 추가 → `PocoFactory.Destroy` no-op / `PrefabFactory.Destroy` = `Object.Destroy(item.gameObject)`, `Pool<T>.Clear()`가 idle 를 드레인하며 `factory.Destroy` 호출. 실제 프리팹 풀을 Dispose 하면 클론이 파괴되는지 PlayMode/실소비자로 검증. **VfxPlayer(TASK-014 B-3) 등 첫 프리팹 소비자와 함께 반드시 구현·검증할 것.**
-  - **D-5 (권장, 프리팹 경로와 함께)**: `PoolManager.Get<T>(AssetReference)`가 미예열 키에 `pools[key]`로 `KeyNotFoundException`을 던짐 → `TryGetValue` 실패 시 `InvalidOperationException($"PoolAsync 예열 안 됨: {RuntimeKey}")` 같은 명시 메시지로 방어(최초 소비자 디버깅 편의).
+  - **✅ D-4 (해결됨 — 2026-07-03 코어 재작성)**: 프리팹 Clear 시 GameObject 누수는 재작성으로 해소. 비제네릭 `Pool.Clear()` 가 idle 큐를 드레인하며 인스턴스를 파괴(런타임 `Object.Destroy` / 에디트 `DestroyImmediate`). 팩토리 계층 없이 풀이 직접 파괴하므로 Dispose 뿌리 절단이 GameObject 를 남기지 않음. EditMode 136/136.
+  - **⚠️ D-5 (BLOCKING GATE — 최초 프리팹 소비자 전 필수)**: `PoolManager.Get<T>(AssetReference)` 가 미예열 키에 `pools[key]` 인덱서로 `KeyNotFoundException` 을 던짐 → `TryGetValue` 실패 시 `InvalidOperationException($"WarmupAsync 예열 안 됨: {reference.RuntimeKey}")` 로 방어.
+  - **⚠️ D-6 (BLOCKING GATE — 프리팹 미구성 방어, 적대적 리뷰 2026-07-03)**: (1) `Pool.Get` 의 `GetComponent<IPoolableObject>()` 가 프리팹 루트에 컴포넌트 없으면 raw NRE → 프리팹명 담은 명시 진단. (2) `PoolManager.Get<T>` 의 `GetComponent<T>()` 가 null 이면 `Retain(null,…)` 이 `origin[null]` 에서 ArgumentNullException + **이미 스폰된 인스턴스 누수** → `item==null` 가드(인스턴스 풀 반납 후 명시 예외). (3) 프리팹 루트에 `IPoolableObject` 컴포넌트는 1개만(Get 활성 대상과 Get<T> 반환 대상 일치). 실제 프리팹으로 검증.
+  - **D-7 (계약 문서화)**: 재사용 풀 공통 위험 — 반납/`Dispose` 후 그 참조를 계속 쓰면 재사용된 다른 리스를 조기 반납(use-after-return). 소비자 계약으로 "반납·Dispose 후 참조 사용 금지" 명시. 게임플레이서 실제 발생 시 generation 토큰 검토.
+  - **참고(2026-07-03)**: 위 A/B/C 항목의 클래스명(Creator/PoolRepository/Pull/Pool<T>/IPoolFactory)은 구 초안 기준으로 낡음. 확정 설계·API 는 `docs/superpowers/specs/2026-07-02-pooling-api-reference.html` 참조(비제네릭 Pool + PoolManager 2클래스, IPoolableObject:IActivatable 결합).
 
 ## 5. 검증
 
