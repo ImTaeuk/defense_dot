@@ -1,0 +1,96 @@
+using System.Collections.Generic;
+using DefenseDot.Systems.Assets;
+
+namespace DefenseDot.Core.Pooling
+{
+    /// <summary>
+    /// 풀들을 감싸 반환 동작 주입·OUT 장부·소유 연쇄·뿌리 절단을 담당합니다.
+    /// 타이밍은 도메인이(구체 타입 이벤트→Dispose), 메커니즘·안전망은 이 매니저가 맡습니다.
+    /// </summary>
+    public sealed class PoolManager : System.IDisposable
+    {
+        private readonly AssetLoader assetLoader;
+        // 풀 키(타입/RuntimeKey)
+        private readonly Dictionary<object, IPool> pools = new Dictionary<object, IPool>();
+        // 빌려나간 객체(OUT) → 소속 풀
+        private readonly Dictionary<IPooledObject, IPool> origin = new Dictionary<IPooledObject, IPool>();
+        // OUT 집합(이중 반환 가드)
+        private readonly HashSet<IPooledObject> live = new HashSet<IPooledObject>();
+        // 소유 부모 → 자식들
+        private readonly Dictionary<IPooledObject, List<IPooledObject>> owned
+            = new Dictionary<IPooledObject, List<IPooledObject>>();
+
+        public PoolManager(AssetLoader assetLoader)
+        {
+            this.assetLoader = assetLoader;
+        }
+
+        /// <summary> POCO 풀에서 꺼냅니다. 타입을 키로 쓰고 없으면 즉석 생성합니다. </summary>
+        public T Get<T>(object owner = null) where T : class, IPoolable, IActivatable, IPooledObject, new()
+        {
+            Pool<T> pool = ResolvePocoPool<T>();
+            T item = pool.Get();
+            Track(item, pool, owner);
+            return item;
+        }
+
+        private Pool<T> ResolvePocoPool<T>() where T : class, IPoolable, IActivatable, new()
+        {
+            object key = typeof(T);
+            if (pools.TryGetValue(key, out IPool existing)) return (Pool<T>)existing;
+            var pool = new Pool<T>(new PocoFactory<T>());
+            pools[key] = pool;
+            return pool;
+        }
+
+        // 반환 주입·장부·소유 등록
+        internal void Track(IPooledObject item, IPool pool, object owner)
+        {
+            live.Add(item);
+            origin[item] = pool;
+            if (item is IReturnBindable bindable)
+                bindable.BindReturn(() => Return(item));
+            if (owner is IPooledObject parent)
+            {
+                if (!owned.TryGetValue(parent, out List<IPooledObject> list))
+                {
+                    list = new List<IPooledObject>();
+                    owned[parent] = list;
+                }
+                list.Add(item);
+            }
+        }
+
+        /// <summary> 객체를 풀로 되돌립니다. 소유 자식이 있으면 먼저 연쇄 회수합니다. </summary>
+        public void Return(object obj)
+        {
+            if (obj is not IPooledObject pooled) return;
+            if (!live.Contains(pooled)) return;   // 이미 반환됨 — 이중 반환 가드
+
+            if (owned.TryGetValue(pooled, out List<IPooledObject> children))
+            {
+                for (int i = children.Count - 1; i >= 0; i--) Return(children[i]);
+                owned.Remove(pooled);
+            }
+
+            live.Remove(pooled);
+            if (origin.TryGetValue(pooled, out IPool pool))
+                pool.ReturnObject(pooled);
+        }
+
+        /// <summary> 남은 OUT 을 전량 연쇄 회수하고 풀·에셋을 정리합니다(뿌리 절단). </summary>
+        public void Dispose()
+        {
+            var snapshot = new List<IPooledObject>(live);
+            foreach (IPooledObject o in snapshot)
+                if (live.Contains(o)) Return(o);
+
+            foreach (IPool p in pools.Values) p.Clear();
+            pools.Clear();
+            origin.Clear();
+            live.Clear();
+            owned.Clear();
+            assetLoader?.ReleaseAll();
+        }
+    }
+}
