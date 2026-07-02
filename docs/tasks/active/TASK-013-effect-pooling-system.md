@@ -1,12 +1,15 @@
 # TASK-013: 공용 풀링 시스템 (효과 엔티티 풀링 → 범용 확장)
 
-**작성일**: 2026-06-16 (갱신: 2026-07-02 — 코어 설계 확정, TASK-015 선행 완료)
-**상태**: 코어 설계 확정 (구현 대기) — **TASK-015(Addressables) 완료됨 → 구현 착수 가능**
+**작성일**: 2026-06-16 (갱신: 2026-07-02 — 코어 구현 계획 수립, 스펙 승인)
+**상태**: 코어 구현 계획 수립 완료 (실행 대기) — **스펙 사용자 승인 완료**
 **우선순위**: 높음 (상)
 
 > 설계·핸드오프 전문: `docs/superpowers/specs/2026-07-01-pooling-addressables-design.md`
 > **코어 확정 설계(정련본)**: `docs/superpowers/specs/2026-07-02-pooling-core-design.md`(+HTML)
+> **구현 계획(승인·5태스크)**: `docs/superpowers/plans/2026-07-02-pooling-core-infra.md`
 > 선행: **TASK-015 (Addressables 인프라) — 완료** / 후속 소비자: **TASK-014 B-3 (피격 VFX)**
+
+> **구현 계획 확정(2026-07-02)**: 5개 태스크 — ①인터페이스+Pool<T>+PocoFactory ②편의 베이스(PooledObject/PooledBehaviour) ③PoolManager(장부·연쇄·뿌리절단, POCO 경로) ④프리팹 경로(EffectType·PrefabFactory·PoolAsync·Get(AssetReference)) ⑤GameContext DI 배선. EditMode 13케이스 TDD. **마이그레이션(ObjectPool 제거·14곳 전환·EnemySpawner·VfxPlayer)은 별도 후속 계획으로 이월**.
 
 > **코어 설계 확정(2026-07-02, 브레인스토밍)**: 인터페이스 3분리(`IPoolable` 리셋 / `IActivatable` Activate·Deactivate+OnActivated·OnDeactivated / `IPooledObject:IDisposable` 반환). `Pool<T> where T:class,IPoolable,IActivatable`(as 없이 위임, 값 타입 차단). `IPoolFactory<T>`+`PrefabFactory`(AssetLoader)/`PocoFactory`(Creator→Factory 개명). `PoolManager`(GameContext DI, IDisposable): `PoolAsync(data)` 예열 / `Get<T>(ref, owner)` 동기 / `Return`(자식 연쇄) / `Dispose`(뿌리 절단=OUT 장부 전량 회수 누수 안전망). 반환 타이밍은 도메인이(구체 타입 OnDied/OnFinished → Dispose 연결), 메커니즘은 PoolManager 가. 편의 베이스 `PooledBehaviour`/`PooledObject` 로 14곳 마이그레이션 경감. **범위=코어만**(마이그레이션은 후속 계획).
 
