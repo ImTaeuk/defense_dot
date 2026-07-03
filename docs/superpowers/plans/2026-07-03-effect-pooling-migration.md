@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: `superpowers:executing-plans`(인라인, Unity MCP 필요)로 태스크별 구현. 체크박스(`- [ ]`)로 추적.
 
+> **진행 상태(2026-07-03)**: **Task 1 완료·커밋 `24d67711`**(EditMode 136/136). **Task 2 스킵**(Addressables 의존·얇은 어댑터 → PlayMode로 통합). **Task 3~5 남음.** 재개 컨텍스트·조사결과·함정은 `2026-07-03-effect-pooling-migration-HANDOFF.md` 참조.
+
 **Goal:** 이펙트(AbilityEffect 엔티티 + 일회성 VFX)를 풀링 코어에 연결해 Instantiate/Destroy를 제거하고, 명중 VFX를 PlayMode로 실검증한다.
 
 **Architecture:** `IEffectSpawner`를 `PoolManager` 어댑터(`PooledEffectSpawner`)로 교체하고, `AbilityEffect`·`VfxPlayer`가 `PooledBehaviour`를 상속해 자가반납(`Dispose`)한다. 능력 정의는 이펙트 프리팹을 `AssetReferenceGameObject`로 들고, 획득/스타터 시 `WarmupAsync`로 예열한다.
