@@ -1,6 +1,7 @@
 // 모드 생성에 필요한 공통 입력 묶음
 using UnityEngine;
 using DefenseDot.Core;
+using DefenseDot.Core.Pooling;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Tower;
 
@@ -25,8 +26,10 @@ namespace DefenseDot.Systems.Mode
         public readonly GameFlowModel Flow;
         /// <summary> 실시간 전투 상태 (조건부 데미지: 라운드·생존 적 수) </summary>
         public readonly ICombatState CombatState;
+        /// <summary> 공용 오브젝트 풀 (이펙트 스폰용) </summary>
+        public readonly PoolManager Pooling;
 
-        public ModeContext(CoreModel core, EconomyModel economy, TargetFinder targetFinder, Vector3 spawnOrigin, Vector3 coreCenter, GameFlowModel flow, ICombatState combatState)
+        public ModeContext(CoreModel core, EconomyModel economy, TargetFinder targetFinder, Vector3 spawnOrigin, Vector3 coreCenter, GameFlowModel flow, ICombatState combatState, PoolManager pooling)
         {
             Core = core;
             Economy = economy;
@@ -35,6 +38,7 @@ namespace DefenseDot.Systems.Mode
             CoreCenter = coreCenter;
             Flow = flow;
             CombatState = combatState;
+            Pooling = pooling;
         }
     }
 }

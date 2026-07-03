@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DefenseDot.Core;
+using DefenseDot.Core.Pooling;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Abilities.Effects;
@@ -16,6 +17,7 @@ namespace DefenseDot.Systems.Abilities
         private GameFlowModel flow;
         private AbilityContext ctx;          // 공용 컨텍스트(모든 능력 공유)
         private ICastReceiver castReceiver;
+        private PoolManager pool;            // 스타터 예열용
 
         // 대기 발사 (시전 시작 ~ 발사 프레임)
         private ActiveAbilityData pendingSkill;
@@ -27,16 +29,17 @@ namespace DefenseDot.Systems.Abilities
 
         /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. </summary>
         public void Setup(TargetFinder finder, Vector3 origin, GameFlowModel gameFlow,
-            ICombatState combatState, IReadOnlyList<AbilityData> starters)
+            ICombatState combatState, IReadOnlyList<AbilityData> starters, PoolManager poolManager)
         {
             flow = gameFlow;
+            pool = poolManager;
             loadout = new AbilityLoadout();
             loadout.Modifiers.combatState = combatState;
             if (starters != null)
                 for (int i = 0; i < starters.Count; i++)
                     if (starters[i] != null) loadout.TryAdd(starters[i]);
 
-            IEffectSpawner effects = new SimpleEffectSpawner();
+            IEffectSpawner effects = new PooledEffectSpawner(poolManager);
             ctx = new AbilityContext(this, origin, finder, loadout.Modifiers, effects, this);
             runner = new AbilityRunner(loadout, ctx);
             runner.EquipAll();

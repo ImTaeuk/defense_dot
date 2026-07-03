@@ -94,6 +94,10 @@ namespace DefenseDot.Systems.Management
             economyController = new EconomyController(Economy, Combat);
             economyController.Initialize();
 
+            // 능력 배선 전 풀 생성
+            var assetLoader = new DefenseDot.Systems.Assets.AssetLoader();
+            poolManager = new DefenseDot.Core.Pooling.PoolManager(assetLoader);
+
             mode = CreateMode();
 
             // 의존성 주입
@@ -112,10 +116,6 @@ namespace DefenseDot.Systems.Management
             else curve = lv => Mathf.Max(3, 8 + lv * 4);
             Level = new LevelModel(curve);
             Combat.OnEnemyKilled += HandleEnemyKilledForLevel;
-
-            // 공용 풀링 인프라 생성
-            var assetLoader = new DefenseDot.Systems.Assets.AssetLoader();
-            poolManager = new DefenseDot.Core.Pooling.PoolManager(assetLoader);
 
             // UI 연결 (UI 합성 루트에 GameContext 주입)
             if (uiRoot != null)
@@ -142,7 +142,7 @@ namespace DefenseDot.Systems.Management
             }
             Vector3 origin = spawner != null ? spawner.transform.position : transform.position;
             Vector3 center = coreController != null ? coreController.CorePosition : transform.position;
-            var ctx = new ModeContext(Core, Economy, targetFinder, origin, center, Flow, this);
+            var ctx = new ModeContext(Core, Economy, targetFinder, origin, center, Flow, this, poolManager);
             return modeBootstrap.CreateMode(ctx);
         }
 

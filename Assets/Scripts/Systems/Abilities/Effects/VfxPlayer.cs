@@ -1,6 +1,8 @@
 // 연출 통합 래퍼 — 파티클/애니메이터/VFX Graph 를 단일 Play·Stop·길이산출로 통일
 using UnityEngine;
 using UnityEngine.VFX;
+using Cysharp.Threading.Tasks;
+using DefenseDot.Core.Pooling;
 
 namespace DefenseDot.Systems.Abilities.Effects
 {
@@ -8,7 +10,7 @@ namespace DefenseDot.Systems.Abilities.Effects
     /// 파티클/Animator/VFX Graph 연출을 하나의 인터페이스로 재생·정지하고,
     /// 실제 길이를 산출해 일회성 자동 종료를 통일하는 래퍼입니다.
     /// </summary>
-    public sealed class VfxPlayer : MonoBehaviour
+    public sealed class VfxPlayer : PooledBehaviour
     {
         [SerializeField] private bool loop;                  // 지속형(외부 정지) vs 일회성(자동 종료)
         [SerializeField] private float fallbackDuration = 2f;
@@ -17,6 +19,7 @@ namespace DefenseDot.Systems.Abilities.Effects
         private Animator[] animators;
         private VisualEffect[] vfxGraphs;
         private bool cached;
+        private System.Threading.CancellationTokenSource lifeCts;
 
         /// <summary> 지속형 여부입니다. </summary>
         public bool Loop => loop;
@@ -71,17 +74,24 @@ namespace DefenseDot.Systems.Abilities.Effects
         /// <summary> 지속형 플래그를 설정합니다. </summary>
         public void SetLoop(bool value) { loop = value; }
 
-        /// <summary> 일회성 연출 스폰 — 래퍼 보장·재생 후 실제 길이만큼 뒤 파괴합니다. </summary>
-        public static VfxPlayer SpawnOneShot(GameObject prefab, Vector3 pos, Quaternion rot)
+        /// <summary> 재생 후 실제 수명만큼 뒤 풀로 반납합니다. </summary>
+        public void PlayThenReturn()
         {
-            if (prefab == null) return null;
-            GameObject go = Instantiate(prefab, pos, rot);
-            VfxPlayer vp = go.GetComponent<VfxPlayer>();
-            if (vp == null) vp = go.AddComponent<VfxPlayer>();
-            vp.Play();
-            Destroy(go, vp.ResolveDuration());
-            return vp;
+            Play();
+            lifeCts?.Cancel();
+            lifeCts = new System.Threading.CancellationTokenSource();
+            ReturnAfterAsync(ResolveDuration(), lifeCts.Token).Forget();
         }
+
+        private async UniTask ReturnAfterAsync(float seconds, System.Threading.CancellationToken token)
+        {
+            bool canceled = await UniTask.Delay(System.TimeSpan.FromSeconds(seconds),
+                cancellationToken: token).SuppressCancellationThrow();
+            if (!canceled) Dispose();
+        }
+
+        /// <summary> 반납 시 진행 중 수명 타이머를 취소합니다(재사용 오반납 방지). </summary>
+        public override void OnDespawn() { lifeCts?.Cancel(); }
 
         /// <summary> 지속 연출 인스턴스에 래퍼를 보장하고 재생합니다. (수명은 호출자가 관리) </summary>
         public static VfxPlayer EnsurePlay(GameObject instance, bool loop)

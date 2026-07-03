@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace DefenseDot.Systems.Abilities
 {
@@ -17,5 +19,9 @@ namespace DefenseDot.Systems.Abilities
         public int maxLevel = 5;
         /// <summary> 카드 표시용 설명(선택). </summary>
         [TextArea] public string description;
+
+        /// <summary> 이 능력이 사용하는 모든 풀링 프리팹(예열 대상). </summary>
+        public virtual IEnumerable<AssetReferenceGameObject> EffectAssets
+            => System.Array.Empty<AssetReferenceGameObject>();
     }
 }

@@ -1,5 +1,7 @@
 // AOE 능력(이산) — 쿨다운마다 최근접 적 위치에 잔류형 범위 존 생성
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using DefenseDot.Core;
 using DefenseDot.Systems.Abilities.Effects;
 
@@ -9,7 +11,7 @@ namespace DefenseDot.Systems.Abilities.Definitions
     [CreateAssetMenu(fileName = "AreaWaveAbility", menuName = "DefenseDot/Abilities/AreaWave")]
     public sealed class AreaWaveAbilityData : ActiveAbilityData
     {
-        [SerializeField] private AreaZoneEffect zonePrefab;
+        [SerializeField] private AssetReferenceGameObject zoneAsset;
         [SerializeField] private float baseDamage = 3f;
         [SerializeField] private float damagePerLevel = 2f;
         [SerializeField] private float radius = 5f;
@@ -20,14 +22,20 @@ namespace DefenseDot.Systems.Abilities.Definitions
 
         protected override float Range => range;
 
+        /// <summary> 존 프리팹(예열 대상). </summary>
+        public override IEnumerable<AssetReferenceGameObject> EffectAssets
+        {
+            get { if (zoneAsset != null && zoneAsset.RuntimeKeyIsValid()) yield return zoneAsset; }
+        }
+
         protected override void Fire(in AbilityContext ctx, AbilityInstance self, ITargetable target)
         {
-            if (ctx.Effects == null || zonePrefab == null) return;
+            if (ctx.Effects == null || zoneAsset == null || !zoneAsset.RuntimeKeyIsValid()) return;
             if (target == null || !target.IsActive)
                 target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, range) : null;
             if (target == null) return;
 
-            AreaZoneEffect fx = ctx.Effects.Spawn(zonePrefab);
+            AreaZoneEffect fx = ctx.Effects.Spawn<AreaZoneEffect>(zoneAsset);
             DamageSource src = new DamageSource(this, self, ctx.Modifiers);
             fx.Activate(target.Position, radius, src, duration, ctx.Finder);
         }

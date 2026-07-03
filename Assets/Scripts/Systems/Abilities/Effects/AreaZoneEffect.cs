@@ -47,7 +47,7 @@ namespace DefenseDot.Systems.Abilities.Effects
             life -= dt;
             DecayRehit(dt);
             DamageInRadius();
-            if (life <= 0f) Release();
+            if (life <= 0f) ReturnToPool();
         }
 
         private void DamageInRadius()

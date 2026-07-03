@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.AddressableAssets;
 using DefenseDot.Core;
 using DefenseDot.Systems.Tower;
 
@@ -10,7 +11,7 @@ namespace DefenseDot.Systems.Abilities.Effects
     /// <summary> 능력이 발사하는 유도 투사체 효과입니다. </summary>
     public sealed class ProjectileEffect : AbilityEffect
     {
-        [SerializeField] private GameObject hitVfxPrefab;   // 명중 VFX(Hovl Hit)
+        private AssetReferenceGameObject hitVfxAsset;   // 명중 VFX(런타임 주입)
 
         private TargetFinder finder;
         private ITargetable target;
@@ -22,9 +23,10 @@ namespace DefenseDot.Systems.Abilities.Effects
         private readonly HashSet<ITargetable> hit = new HashSet<ITargetable>();
 
         /// <summary> 투사체를 활성화합니다. </summary>
-        public void Activate(Vector3 origin, ITargetable target, DamageSource source, float speed, int pierce, float range, TargetFinder finder)
+        public void Activate(Vector3 origin, ITargetable target, DamageSource source, float speed, int pierce, float range, TargetFinder finder, AssetReferenceGameObject hitVfx)
         {
             transform.position = origin;
+            this.hitVfxAsset = hitVfx;
             this.target = target;
             this.source = source;
             this.speed = speed;
@@ -50,7 +52,7 @@ namespace DefenseDot.Systems.Abilities.Effects
         private void Update()
         {
             life -= Time.deltaTime;
-            if (life <= 0f) { Release(); return; }
+            if (life <= 0f) { ReturnToPool(); return; }
 
             if (target == null || !target.IsActive)
             {
@@ -63,12 +65,12 @@ namespace DefenseDot.Systems.Abilities.Effects
             transform.position = Vector3.MoveTowards(transform.position, target.Position, speed * Time.deltaTime);
             if ((transform.position - target.Position).sqrMagnitude >= 0.09f) return;
 
-            if (hitVfxPrefab != null)
-                VfxPlayer.SpawnOneShot(hitVfxPrefab, transform.position, Quaternion.identity);
+            if (hitVfxAsset != null && Spawner != null && hitVfxAsset.RuntimeKeyIsValid())
+                Spawner.PlayOneShot(hitVfxAsset, transform.position, Quaternion.identity);
             if (target is IDamageable damageable) damageable.TakeDamage(source.Resolve(target));
             hit.Add(target);
             pierceRemaining--;
-            if (pierceRemaining <= 0) { Release(); return; }
+            if (pierceRemaining <= 0) { ReturnToPool(); return; }
             target = NextNearestUnhit();
         }
 

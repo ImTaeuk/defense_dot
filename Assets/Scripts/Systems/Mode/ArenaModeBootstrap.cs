@@ -87,7 +87,7 @@ namespace DefenseDot.Systems.Mode
             TowerBehaviorTree debugBt = go.GetComponent<TowerBehaviorTree>();
             if (debugBt != null) Destroy(debugBt);
             coreAbility = go.AddComponent<CoreAbilitySystem>();
-            coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, ctx.CombatState, starterAbilities);
+            coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, ctx.CombatState, starterAbilities, ctx.Pooling);
 
             SetupArisVisual(go, coreAbility, ctx);
         }
