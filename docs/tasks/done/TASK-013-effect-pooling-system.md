@@ -1,8 +1,17 @@
 # TASK-013: 공용 풀링 시스템 (효과 엔티티 풀링 → 범용 확장)
 
-**작성일**: 2026-06-16 (갱신: 2026-07-02 — 코어 구현 완료, 마이그레이션 대기)
-**상태**: 코어 구현 완료 (5태스크·EditMode 144/144·최종 리뷰 반영) — **마이그레이션(D)·프리팹 정리 게이트(D-4/D-5) 대기**
+**작성일**: 2026-06-16 (갱신: 2026-07-06 — 마이그레이션·검증 완료)
+**상태**: ✅ **완료 (2026-07-06)** — 마이그레이션(D)·게이트(D-5/6/7) 해결, 발사점 이동·크기 튜닝 포함. 컴파일 0·EditMode 136/136·PlayMode 검증. 커밋 `2dd020ca`, push 완료
 **우선순위**: 높음 (상)
+
+> ## ✅ 완료 요약 (2026-07-06)
+> - **마이그레이션(D)**: 효과 엔티티·피격 VFX 스폰을 `Instantiate/Destroy` → 공용 풀 재사용으로 전환. 능력 SO 3종(Shot/Orbital/AreaWave)을 `AssetReferenceGameObject` 약참조로 바꾸고 Addressables 등록. 스타터·카드 획득 시점 예열 배선(`WarmupStartersAsync`/`CardChoiceApplier.ApplyAsync`).
+> - **견고성(07-05 개선)**: `Get<T>`→`TryGet<T>`(예열 실패·프리팹 미구성을 값으로 스킵, 예외 없음) / 병렬 예열(`UniTask.WhenAll`+중복 키 가드) / `WarmupAndEquip` 복합함수를 `WarmupStartersAsync`·`EquipAll` 로 분리(SRP).
+> - **게이트 해결**: D-5(미예열 키)·D-6(프리팹 미구성 누수)·D-7(반납 후 사용) 모두 `TryGet`/`Pool.Get` 가드로 처리.
+> - **발사점 이동(세션 추가)**: 발사체·머즐 스폰을 코어 중심 → Aris 타워 총구(`bone_Railgun_Muzzle_03`)로. `AbilityContext.FireOrigin`+`FirePosition` 도입, 오비탈 궤도 중심(`Origin`)은 불변 유지.
+> - **크기 튜닝(세션 추가)**: 피격(Hit_Water)·머즐 이펙트 3배 확대 → [[TASK-014]] B-3 클로징.
+> - **검증**: 컴파일 0 에러 / EditMode 136/136 / PlayMode 재사용 확정(인스턴스 총량 고정)·오비탈·명중 VFX 가시·종료 Dispose 정리 에러 0.
+> - **후속**: 액터(Monster/Tower·EnemySpawner·`ObjectPool<T>` 제거) 마이그레이션은 별도 태스크로 이월. 코어 전용 프리팹 정리는 [[TASK-016]].
 
 > 설계·핸드오프 전문: `docs/superpowers/specs/2026-07-01-pooling-addressables-design.md`
 > **코어 확정 설계(정련본)**: `docs/superpowers/specs/2026-07-02-pooling-core-design.md`(+HTML)
