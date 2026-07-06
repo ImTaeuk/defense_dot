@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CardChoiceApplier 구조 결정 — 구 동기 Apply 유지 vs 제거</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>CardChoiceApplier 구조 결정 — 구 동기 <code>Apply</code> 를 남길까 없앨까</h1>
+  <div class="sub">
+    <span class="tag must">결정 제안서</span>
+    <span class="tag opt">선택 대기</span>
+    이펙트 풀링 마이그레이션 Task 4-C · 2026-07-04
+  </div>
+
+  <!-- 1. 결정 요지 -->
+  <h2>1. 결정 요지 — 무엇을 고르는가</h2>
+  <div class="panel">
+    <p>Task 4-C 는 카드 획득 시 이펙트를 <strong>미리 예열(warmup)</strong> 하도록 배선하는 작업입니다.
+    예열은 <code>await pool.WarmupAsync(...)</code> 라는 <strong>비동기 호출</strong>이고, <code>await</code> 는
+    반드시 <code>async</code> 메서드 안에서만 쓸 수 있습니다. 따라서 <strong>비동기 진입점
+    <code>ApplyAsync</code> 가 새로 생기는 것은 이미 확정</strong>입니다.</p>
+    <p>이 보고서가 묻는 것은 딱 하나입니다 — <strong>기존의 동기 <code>Apply</code> 를 그대로 남길 것인가,
+    아니면 지우고 <code>ApplyAsync</code> 하나로 통일할 것인가.</p>
+    <div class="note">
+      핵심 한 줄: 걸림돌은 <strong>EditMode 테스트 4개가 동기 <code>Apply</code> 를 직접 호출</strong>한다는 점 —
+      지우면 이 테스트 4개를 <code>UniTask</code> 대기 형태로 뜯어고쳐야 한다.
+    </div>
+  </div>
+
+  <!-- 2. 현재 동작 -->
+  <h2>2. 현재 동작 (지금의 호출 구조)</h2>
+  <div class="panel">
+    <ol>
+      <li>레벨업 → <code><strong>CardSelectionPresenter.cs:60 HandleSelected(idx)</strong></code> 가 카드 확정을 수신 (반환형 <code>void</code>, 이벤트 핸들러)</li>
+      <li><code><strong>CardSelectionPresenter.cs:63</strong></code> 에서 <code>CardChoiceApplier.Apply(core, current[idx])</code> 동기 호출</li>
+      <li><code><strong>CardChoiceApplier.cs:9 Apply()</strong></code> 가 신규 추가 또는 목표 레벨까지 레벨업 (풀·예열 개념 없음)</li>
+      <li>같은 로직을 <code><strong>CardChoiceApplierTests.cs:54, 66, 79, 91</strong></code> 4개 테스트가 <code>Apply(core, choice)</code> 로 직접 검증 (풀 없이 추가·레벨업 계산만)</li>
+    </ol>
+    <div class="note">
+      즉 <code>Apply</code> 는 <strong>런타임 호출부 1곳 + 테스트 4곳</strong>, 총 5곳에서 쓰입니다. 런타임 1곳은 어차피 <code>ApplyAsync</code> 로 바뀌지만, <strong>테스트 4곳이 이 결정의 실질 비용</strong>입니다.
+    </div>
+  </div>
+
+  <!-- 3. 근본 원인 -->
+  <h2>3. 제약의 근본 원인 — 왜 테스트가 걸림돌인가</h2>
+  <div class="panel">
+    <div class="file">Assets/Tests/EditMode/CardChoiceApplierTests.cs · L51-92 (발췌)</div>
+    <pre><code><span class="cmt">[Test]   // ← NUnit 동기 테스트. async 아님</span>
+public void NewCard_AddsAndLevelsUp()
+{
+    var core = new StubCore();
+    CardChoice choice = CardChoice.NewCard(Active(), CardTier.New, toLevel: 3);
+
+<span class="hl-line">    CardChoiceApplier.Apply(core, choice);   <span class="hl-inline">// 동기 호출 — 4개 테스트 공통</span></span>
+
+    Assert.AreEqual(1, core.added, "신규 추가 1회");
+    Assert.AreEqual(2, core.leveled, "레벨 1 → 3 이면 레벨업 2회");
+}</code></pre>
+    <p>이 테스트들은 <code>StubCore</code> 로 <strong>순수 계산 로직(추가/레벨업 횟수)</strong> 만 검증합니다. 풀이나
+    예열과는 무관합니다. 그런데 동기 <code>Apply</code> 를 없애면 이 4개가 <code>UniTask</code> 를 반환하는
+    <code>ApplyAsync</code> 를 호출해야 하고, NUnit <code>[Test]</code> 는 동기라
+    <code>.GetAwaiter().GetResult()</code> 같은 군더더기를 매번 붙여야 합니다. 검증 대상(계산 로직)은
+    그대로인데 <strong>테스트 표현만 지저분해지는 것</strong>이 문제의 본질입니다.</p>
+  </div>
+
+  <!-- 4. 사용자 확정 -->
+  <h2>4. 이미 확정된 사항</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>예열 타이밍</strong> — "예열 완료 후 능력추가·창닫기" 선택 확정. <code>pauseOnCardSelect</code> 로 <code>timeScale=0</code> 정지 상태이므로 예열 몇 프레임 대기가 게임 흐름을 끊지 않음. 순서는 <code>예열 → AddAbility → Hide → ShowNext</code>.</li>
+      <li><strong>예열은 New 카드에서만</strong> — 레벨업 카드는 이미 보유한 능력이므로 예열 불필요(코어가 <code>ContainsKey</code> 로 no-op 스킵).</li>
+      <li><strong>비동기 진입점 <code>ApplyAsync</code> 신설은 확정</strong> — 이 보고서 밖의 사안.</li>
+    </ul>
+  </div>
+
+  <!-- 5. 설계 원칙 -->
+  <h2>5. 설계 원칙 — 프로젝트 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>"동기 로직은 그대로 두고 비동기가 그것을 얇게 감싼다"는 구조가 이 코드베이스에 이미
+    두 군데 자리잡고 있습니다. 선택지 A(유지+래핑)는 이 기존 사상과 정확히 같은 결을 따릅니다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr>
+        <td><strong>PoolManager</strong></td>
+        <td><code><strong>PoolManager.cs:34 WarmupAsync</strong></code> / <code><strong>L58 Get&lt;T&gt;</strong></code></td>
+        <td><strong>준비는 비동기, 사용은 동기</strong> — 목적별로 진입점을 나란히 공개. 없애서 하나로 합치지 않음</td>
+      </tr>
+      <tr>
+        <td><strong>CoreAbilitySystem (이번 Task 4-B 형제 작업)</strong></td>
+        <td><code><strong>CoreAbilitySystem.cs:31 Setup</strong></code> + 신설 <code>WarmupAndEquipAsync</code></td>
+        <td><strong>동기 구성 로직을 async 가 감쌈</strong> — <code>Setup</code>(동기) 유지, 예열+장착만 async 진입점으로 추가</td>
+      </tr>
+    </table>
+    <div class="note">
+      <strong>결합 결론</strong>: 이 프로젝트는 "비동기 껍질이 검증된 동기 알맹이를 감싼다"를 이미 표준으로 쓴다.
+      <code>ApplyAsync</code> 가 <code>Apply</code> 를 감싸는 선택지 A 는 새 패턴이 아니라 <strong>기존 패턴의 반복</strong>이다.
+    </div>
+  </div>
+
+  <!-- 5b. 레퍼런스 상세 -->
+  <h3>레퍼런스 ① PoolManager — 준비(async)와 사용(sync)의 분리</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Core/Pooling/PoolManager.cs · L34, L58</div>
+    <pre><code><span class="cmt">// 준비: 비동기 (로드·프리웜)</span>
+<span class="hl-line">public async UniTask WarmupAsync(IEnumerable&lt;EffectEntry&gt; entries, int count = 3)</span>
+
+<span class="cmt">// 사용: 동기 (예열된 풀에서 즉시 꺼냄)</span>
+<span class="hl-line">public T Get&lt;T&gt;(AssetReference reference, object owner = null)</span></code></pre>
+    <p>두 진입점을 합치지 않고 목적별로 공개한다. 호출자는 준비가 끝난 뒤 동기 <code>Get</code> 을 부른다 —
+    <code>ApplyAsync</code>(준비) + <code>Apply</code>(사용/계산)의 관계와 동형이다.</p>
+  </div>
+
+  <h3>레퍼런스 ② CoreAbilitySystem — 동기 Setup 을 async 가 감싸는 이번 마이그레이션의 형제 패턴</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Abilities/CoreAbilitySystem.cs · L31-46 (+ Task 4-B 신설분)</div>
+    <pre><code><span class="cmt">public void Setup(...) {        // 동기 구성은 그대로 유지</span>
+    loadout = new AbilityLoadout();
+    ...
+<span class="cmt">}</span>
+
+<span class="cmt">// Task 4-B 에서 신설 — 동기 로직 앞에 예열만 얹는 async 껍질</span>
+<span class="hl-line">public async UniTask WarmupAndEquipAsync() {</span>
+    if (set.Count &gt; 0) await pool.WarmupAsync(set);   <span class="hl-inline">// 준비</span>
+    runner?.EquipAll();                                <span class="hl-inline">// 검증된 동기 로직</span>
+}</code></pre>
+    <p>같은 마이그레이션 안에서 <code>CoreAbilitySystem</code> 은 동기 <code>Setup</code> 을 지우지 않고 async
+    껍질을 <strong>추가</strong>한다. <code>CardChoiceApplier</code> 도 같은 손놀림이면 두 파일의 구조가 통일된다.</p>
+  </div>
+
+  <!-- 6. 두 선택지 Diff -->
+  <h2>6. 두 선택지 — Before / After</h2>
+
+  <h3>선택지 A — 구 <code>Apply</code> 유지 + <code>ApplyAsync</code> 래핑 <span class="tag must">권장</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Cards/CardChoiceApplier.cs</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">public static class CardChoiceApplier
+{</span>
+<span class="cmt">    public static void Apply(ICardCommandTarget core, CardChoice choice)
+    {
+        if (choice.action == CardAction.New) { ... 추가/레벨업 ... }
+        else { ... 레벨업 ... }
+    }</span>
+<span class="cmt">}</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">public static class CardChoiceApplier
+{</span>
+<span class="cmt">    // 기존 동기 로직 — 손대지 않음 (테스트가 이걸 검증)
+    public static void Apply(ICardCommandTarget core, CardChoice choice)
+    {
+        if (choice.action == CardAction.New) { ... 추가/레벨업 ... }
+        else { ... 레벨업 ... }
+    }</span>
+
+<span class="add">    // 신설: 예열만 앞에 붙이고 검증된 Apply 를 재사용
+    public static async UniTask ApplyAsync(
+        ICardCommandTarget core, CardChoice choice, PoolManager pool)
+    {
+        if (choice.action == CardAction.New
+            &amp;&amp; pool != null &amp;&amp; choice.data != null)
+            await pool.WarmupAsync(choice.data.EffectAssets);</span>
+<span class="add">        Apply(core, choice);   // 로직 중복 아님 — 로직 공유</span>
+<span class="cmt">    }
+}</span></pre>
+
+    <p><strong>테스트 파일: 변경 없음.</strong> 4개 테스트는 <code>Apply(core, choice)</code> 를 그대로 호출해 통과한다.</p>
+  </div>
+
+  <h3>선택지 B — 구 <code>Apply</code> 제거 + 테스트 async 전환 <span class="tag opt">계획서 원안</span></h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Cards/CardChoiceApplier.cs</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">    public static void Apply(ICardCommandTarget core, CardChoice choice)</span>
+<span class="cmt">    {
+        if (choice.action == CardAction.New) { ... 추가/레벨업 ... }
+        else { ... 레벨업 ... }
+    }</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">    public static async UniTask ApplyAsync(
+        ICardCommandTarget core, CardChoice choice, PoolManager pool)</span>
+<span class="cmt">    {</span>
+<span class="add">        if (choice.action == CardAction.New)
+        {
+            if (pool != null &amp;&amp; choice.data != null)
+                await pool.WarmupAsync(choice.data.EffectAssets);</span>
+<span class="cmt">            var added = core.AddAbility(choice.data);
+            ... 레벨업 ...</span>
+<span class="add">        }</span>
+<span class="cmt">        else { ... 레벨업 ... }
+    }</span></pre>
+
+    <div class="file">Assets/Tests/EditMode/CardChoiceApplierTests.cs · 4곳 모두 수정</div>
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">    CardChoiceApplier.Apply(core, choice);</span></pre>
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">    CardChoiceApplier.ApplyAsync(core, choice, null)
+        .GetAwaiter().GetResult();   // 동기 테스트에서 UniTask 대기</span></pre>
+
+    <div class="note">
+      <span class="warn">주의</span>: <code>pool=null</code> 이면 예열이 스킵되어 사실상 동기로 끝나므로 동작은 같다.
+      그러나 테스트 4곳에 <code>.GetAwaiter().GetResult()</code> 가 붙어 <strong>의도(계산 검증)와 무관한
+      비동기 처리 표현이 테스트마다 노출</strong>된다.
+    </div>
+  </div>
+
+  <!-- 7. 영향 범위 비교 -->
+  <h2>7. 영향 범위 및 부수 효과 비교</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>선택지 A (유지+래핑)</th><th>선택지 B (제거+전환)</th></tr>
+      <tr>
+        <td>테스트 4개</td>
+        <td><span class="ok">수정 0 · 그대로 통과</span></td>
+        <td><span class="warn">4곳 async 대기 형태로 수정</span></td>
+      </tr>
+      <tr>
+        <td>public 표면</td>
+        <td><span class="warn">메서드 2개</span> (단, 로직은 단일 공유)</td>
+        <td><span class="ok">메서드 1개로 단일화</span></td>
+      </tr>
+      <tr>
+        <td>로직 중복 위험</td>
+        <td><span class="ok">없음</span> — <code>ApplyAsync</code> 가 <code>Apply</code> 재사용</td>
+        <td><span class="ok">없음</span> — 애초에 하나</td>
+      </tr>
+      <tr>
+        <td>프로젝트 컨벤션 정렬</td>
+        <td><span class="ok">PoolManager·CoreAbilitySystem 과 동형</span></td>
+        <td><span class="warn">"준비/사용 분리" 관례와 어긋남</span></td>
+      </tr>
+      <tr>
+        <td>계획서 원안과의 관계</td>
+        <td><span class="warn">"구 Apply 제거" 문구와 상충 (의도적 이탈)</span></td>
+        <td><span class="ok">원안 그대로</span></td>
+      </tr>
+      <tr>
+        <td>변경 규모</td>
+        <td><span class="ok">CardChoiceApplier + Presenter 만</span></td>
+        <td><span class="warn">+ 테스트 4곳</span></td>
+      </tr>
+    </table>
+    <div class="note">
+      공통 사항(선택지 무관): <code><strong>CardSelectionPresenter.HandleSelected</strong></code> 는 두 안 모두
+      <code>HandleSelectedAsync(idx).Forget()</code> 패턴으로 전환하고 <code>ctx.Pooling</code> 을 주입한다.
+      이는 이 결정에 영향받지 않는다.
+    </div>
+  </div>
+
+  <!-- 8. 검증 시나리오 -->
+  <h2>8. 검증 시나리오 (선택 무관 공통)</h2>
+  <div class="panel">
+    <p>어느 안을 골라도 아래 검증은 동일하게 통과해야 한다. EditMode 는 자동, 예열 실동작은 Task 5 PlayMode 에서 확인.</p>
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대 동작</th></tr>
+      <tr>
+        <td>1</td>
+        <td><strong>회귀 핵심</strong> — CardChoiceApplierTests 4개 (추가/레벨업 계산)</td>
+        <td><span class="ok">그린 유지</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>New 카드 선택 시 <code>WarmupAsync</code> 가 <code>AddAbility</code> 보다 먼저 실행</td>
+        <td><span class="ok">예열 완료 후 능력 추가</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>레벨업 카드 선택 (기존 능력)</td>
+        <td><span class="ok">예열 스킵, 레벨만 상승</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>PlayMode: New 카드 획득 직후 그 능력 발동</td>
+        <td><span class="ok">미예열 예외 없이 스폰</span> <span class="warn">(Task 5 확인)</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- 9. 요약 + 선택 요구 -->
+  <h2>9. 요약 및 선택 요청</h2>
+  <table>
+    <tr><th></th><th>선택지 A — 유지+래핑 <span class="tag must">권장</span></th><th>선택지 B — 제거+전환</th></tr>
+    <tr>
+      <td>한 줄</td>
+      <td>검증된 동기 <code>Apply</code> 를 예열 껍질로 감쌈</td>
+      <td><code>ApplyAsync</code> 하나로 통일, 테스트도 async 화</td>
+    </tr>
+    <tr>
+      <td>최대 강점</td>
+      <td>테스트 무수정 · 기존 컨벤션 정렬</td>
+      <td>public 표면 단일 · 계획서 원안 충실</td>
+    </tr>
+    <tr>
+      <td>최대 약점</td>
+      <td>public 메서드 2개 (로직은 공유)</td>
+      <td>테스트 4곳에 비동기 군더더기 노출</td>
+    </tr>
+  </table>
+  <div class="note">
+    <strong>권장</strong>: 선택지 A. 근거 — ① 테스트 4개 무수정으로 회귀 리스크 최소, ②
+    <code>PoolManager</code>·<code>CoreAbilitySystem</code> 이 이미 쓰는 "동기 알맹이 + async 껍질" 컨벤션과 동형,
+    ③ 로직 중복이 아니라 공유이므로 메서드 2개의 비용이 실질적으로 없음.
+    <br><br>
+    다만 "public 표면을 하나로 줄이는 것"과 "계획서 원안 충실"을 더 중히 보시면 선택지 B 도 타당합니다.
+    <strong>어느 쪽으로 진행할지 선택해 주세요.</strong>
+  </div>
+
+  <p class="foot">결정 제안서 산출 완료 — 선택 확정 후 Task 3(에디터 Addressable화)부터 코드 수정 착수</p>
+
+</div>
+</body>
+</html>
