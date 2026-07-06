@@ -22,6 +22,8 @@ namespace DefenseDot.Core.Pooling
         {
             GameObject instance = idle.Count > 0 ? idle.Dequeue() : Object.Instantiate(prefab);
             IPoolableObject poolable = instance.GetComponent<IPoolableObject>();
+            if (poolable == null)
+                throw new System.InvalidOperationException($"프리팹 루트에 IPoolableObject가 없습니다: {prefab.name}");
             poolable.OnSpawn();     // 상태 리셋
             poolable.Activate();    // 켜기 + 알림
             return instance;

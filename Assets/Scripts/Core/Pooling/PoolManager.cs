@@ -28,20 +28,39 @@ namespace DefenseDot.Core.Pooling
         }
 
         /// <summary>
-        /// 이펙트 프리팹들을 로드하고 각 풀에 count 개를 미리 채웁니다(레벨 시작 시 1회).
+        /// AssetReference 목록을 로드해 각 풀에 count 개를 미리 채웁니다(레벨 시작 시 1회).
         /// 예열 개수는 데이터가 아니라 호출자가 결정합니다(기본 3).
         /// </summary>
-        public async UniTask WarmupAsync(IEnumerable<EffectEntry> entries, int count = 3)
+        public async UniTask WarmupAsync(IEnumerable<AssetReferenceGameObject> assets, int count = 3)
         {
-            foreach (EffectEntry entry in entries)
+            using (UnityEngine.Pool.HashSetPool<object>.Get(out HashSet<object> seen))
+            using (UnityEngine.Pool.ListPool<UniTask>.Get(out List<UniTask> tasks))
             {
-                object key = entry.asset.RuntimeKey;
-                if (pools.ContainsKey(key)) continue;
-                GameObject prefab = await assetLoader.LoadAsync<GameObject>(entry.asset);
-                var pool = new Pool(prefab);
-                pools[key] = pool;
-                Prewarm(pool, count);
+                foreach (AssetReferenceGameObject asset in assets)
+                {
+                    object key = asset.RuntimeKey;
+                    if (pools.ContainsKey(key) || !seen.Add(key)) continue;   // 예열됨 or 배치 내 중복
+                    tasks.Add(WarmupOneAsync(asset, count));
+                }
+                await UniTask.WhenAll(tasks);   // 병렬 대기
             }
+        }
+
+        /// <summary> 참조 1개를 로드해 풀을 만들고 예열합니다. 로드 실패·프리팹 미구성이면 값으로 스킵. </summary>
+        private async UniTask WarmupOneAsync(AssetReferenceGameObject asset, int count)
+        {
+            object key = asset.RuntimeKey;
+            if (pools.ContainsKey(key)) return;
+            GameObject prefab = await assetLoader.LoadAsync<GameObject>(asset);
+            if (prefab == null) return;                            // 로드 실패(경계에서 번역됨)
+            if (prefab.GetComponent<IPoolableObject>() == null)    // 프리팹 루트 미구성 → 스킵
+            {
+                UnityEngine.Debug.LogWarning($"프리팹 루트에 IPoolableObject 없음: {prefab.name}");
+                return;
+            }
+            var pool = new Pool(prefab);
+            pools[key] = pool;
+            Prewarm(pool, count);
         }
 
         /// <summary> 미리 count 개 만들어 큐를 채웁니다. </summary>
@@ -54,14 +73,25 @@ namespace DefenseDot.Core.Pooling
             }
         }
 
-        /// <summary> 예열된 풀에서 동기로 꺼냅니다. owner 를 주면 소유 자식으로 등록합니다(부모 반납 시 함께 회수). </summary>
-        public T Get<T>(AssetReference reference, object owner = null) where T : Component, IPoolableObject
+        /// <summary> 예열된 풀에서 동기로 꺼냅니다. 실패 시 false + 로그(예외 없음). owner 주면 소유 자식 등록. </summary>
+        public bool TryGet<T>(AssetReference reference, out T item, object owner = null) where T : Component, IPoolableObject
         {
-            Pool pool = pools[reference.RuntimeKey];
+            item = null;
+            if (!pools.TryGetValue(reference.RuntimeKey, out Pool pool))
+            {
+                UnityEngine.Debug.LogWarning($"예열되지 않은 풀: {reference.RuntimeKey}");
+                return false;
+            }
             GameObject instance = pool.Get();
-            T item = instance.GetComponent<T>();
+            item = instance.GetComponent<T>();
+            if (item == null)
+            {
+                pool.Return(instance);   // 누수 방지: 방금 꺼낸 인스턴스 되돌림
+                UnityEngine.Debug.LogWarning($"프리팹에 {typeof(T).Name} 컴포넌트가 없습니다.");
+                return false;
+            }
             Retain(item, pool, owner);
-            return item;
+            return true;
         }
 
         /// <summary> 방금 꺼낸 객체를 대여 장부에 등록합니다(반납 배선 주입 + 소유 등록). 테스트 seam 겸용. </summary>
@@ -106,11 +136,12 @@ namespace DefenseDot.Core.Pooling
                 for (int i = children.Count - 1; i >= 0; i--) Return(children[i]);
             }
 
-            // 실제 풀로 되돌림
+            // 실제 풀로 되돌림 (에디터 종료 시 이미 파괴된 오브젝트는 스킵)
             if (origin.TryGetValue(pooled, out Pool pool))
             {
                 origin.Remove(pooled);
-                pool.Return(((Component)pooled).gameObject);
+                if (pooled is Component comp && comp != null)
+                    pool.Return(comp.gameObject);
             }
         }
 

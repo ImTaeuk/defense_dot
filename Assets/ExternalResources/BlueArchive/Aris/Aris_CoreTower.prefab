@@ -103,6 +103,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.ArisTowerVisual
   animator: {fileID: 9009551621174923428}
+  firePoint: {fileID: 3195298304445603462}
   rotateSpeed: 8
   targetRange: 30
   lowHpRatio: 0.3
+--- !u!4 &3195298304445603462 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 919091174657755738, guid: dabd8bf0da79cab4db2fe47c37878e1d, type: 3}
+  m_PrefabInstance: {fileID: 2348273631723738332}
+  m_PrefabAsset: {fileID: 0}

@@ -36,6 +36,7 @@ namespace DefenseDot.Systems.Abilities.Definitions
             if (target == null) return;
 
             AreaZoneEffect fx = ctx.Effects.Spawn<AreaZoneEffect>(zoneAsset);
+            if (fx == null) return;   // 스폰 실패 시 이 발동만 무산
             DamageSource src = new DamageSource(this, self, ctx.Modifiers);
             fx.Activate(target.Position, radius, src, duration, ctx.Finder);
         }

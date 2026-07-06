@@ -51,7 +51,7 @@ namespace DefenseDot.Tests.EditMode
             var core = new StubCore();
             CardChoice choice = CardChoice.NewCard(Active(), CardTier.New, toLevel: 3);
 
-            CardChoiceApplier.Apply(core, choice);
+            CardChoiceApplier.ApplyAsync(core, choice, null).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, core.added, "신규 추가 1회");
             Assert.AreEqual(2, core.leveled, "레벨 1 → 3 이면 레벨업 2회");
@@ -63,7 +63,7 @@ namespace DefenseDot.Tests.EditMode
             var core = new StubCore();
             CardChoice choice = CardChoice.NewCard(Active(), CardTier.New, toLevel: 1);
 
-            CardChoiceApplier.Apply(core, choice);
+            CardChoiceApplier.ApplyAsync(core, choice, null).GetAwaiter().GetResult();
 
             Assert.AreEqual(1, core.added);
             Assert.AreEqual(0, core.leveled, "목표가 시작 레벨과 같으면 레벨업 없음");
@@ -76,7 +76,7 @@ namespace DefenseDot.Tests.EditMode
             var inst = new AbilityInstance(Active(), level: 2);
             CardChoice choice = CardChoice.LevelCard(inst, CardTier.New, toLevel: 5);
 
-            CardChoiceApplier.Apply(core, choice);
+            CardChoiceApplier.ApplyAsync(core, choice, null).GetAwaiter().GetResult();
 
             Assert.AreEqual(0, core.added, "레벨 카드는 신규 추가 없음");
             Assert.AreEqual(3, core.leveled, "레벨 2 → 5 이면 레벨업 3회");
@@ -88,7 +88,7 @@ namespace DefenseDot.Tests.EditMode
             var core = new StubCore(actives: 0, passives: 0);
             CardChoice choice = CardChoice.NewCard(Active(), CardTier.New, toLevel: 3);
 
-            Assert.DoesNotThrow(() => CardChoiceApplier.Apply(core, choice));
+            Assert.DoesNotThrow(() => CardChoiceApplier.ApplyAsync(core, choice, null).GetAwaiter().GetResult());
             Assert.AreEqual(0, core.leveled, "추가 실패(null) 시 레벨업하지 않음");
         }
     }

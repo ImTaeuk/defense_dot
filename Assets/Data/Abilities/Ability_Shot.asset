@@ -20,10 +20,26 @@ MonoBehaviour:
   description: "\uC804\uBC29 \uB2E8\uC77C \uD22C\uC0AC\uCCB4"
   baseCooldown: 0.4
   castAnimation: {fileID: 7400000, guid: b67b5b6acf7081e42b9a4e70ad535d22, type: 2}
-  projectilePrefab: {fileID: 6069573825396825265, guid: 6a69eecf8d11bfc43a543e8ac90745bc, type: 3}
+  projectileAsset:
+    m_AssetGUID: 6a69eecf8d11bfc43a543e8ac90745bc
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   baseDamage: 1
   damagePerLevel: 1
   speed: 35
   pierce: 1
   range: 30
-  muzzlePrefab: {fileID: 6120445964550834281, guid: aa7f91c6190ce6540a0b18ab3483498d, type: 3}
+  muzzleAsset:
+    m_AssetGUID: aa7f91c6190ce6540a0b18ab3483498d
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  hitVfxAsset:
+    m_AssetGUID: 3428211ee08e9f443a44710e9689fe26
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0

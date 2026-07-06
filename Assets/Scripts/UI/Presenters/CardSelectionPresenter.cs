@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using DefenseDot.Core.Pooling;
 using DefenseDot.Domain;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Abilities;
@@ -17,6 +19,7 @@ namespace DefenseDot.UI.Presenters
         private readonly ArenaCardConfig config;
         private readonly AbilityPool pool;
         private readonly GameFlowModel flow;
+        private readonly PoolManager pooling;
         private readonly CardChoiceGenerator generator = new CardChoiceGenerator();
         private List<CardChoice> current;
 
@@ -27,6 +30,7 @@ namespace DefenseDot.UI.Presenters
             config = ctx.CardConfig;
             pool = ctx.AbilityPool;
             flow = ctx.Flow;
+            pooling = ctx.Pooling;
         }
 
         protected override void OnInitialize()
@@ -45,26 +49,41 @@ namespace DefenseDot.UI.Presenters
 
         private void HandleLevelUp()
         {
-            if (current == null) ShowNext();
+            if (current == null) TryShowNextLevelUpCard();
         }
 
-        private void ShowNext()
+        /// <summary> 대기 중인 레벨업이 남아 있으면 다음 카드 선택지를 띄웁니다(연속 레벨업 순차 처리). 없으면 종료. </summary>
+        private void TryShowNextLevelUpCard()
         {
-            if (!level.TryConsumePending()) return;
+            if (!level.TryConsumePending()) return;   // 대기 레벨업 없으면 종료
             current = generator.Generate(core.Loadout, pool, config, level.Level);
-            if (current == null || current.Count == 0) { current = null; ShowNext(); return; }
+            if (current == null || current.Count == 0) { current = null; TryShowNextLevelUpCard(); return; }   // 후보 0개면 다음 대기 소비
             view.ShowChoices(current);
-            if (config.pauseOnCardSelect) Time.timeScale = 0f;
+            if (config.pauseOnCardSelect) Time.timeScale = 0f;   // 카드 선택 중 정지
         }
 
         private void HandleSelected(int idx)
         {
             if (current == null || idx < 0 || idx >= current.Count) return;
-            CardChoiceApplier.Apply(core, current[idx]);
-            current = null;
-            view.Hide();
-            if (flow.Phase == GamePhase.Playing) Time.timeScale = 1f;
-            ShowNext();
+            CardChoice choice = current[idx];
+            current = null;   // 예열 대기 중 재선택 가드
+            ApplySelectedAsync(choice).Forget();
+        }
+
+        /// <summary> 선택 카드의 이펙트를 예열한 뒤 적용하고 카드 UI를 닫습니다. </summary>
+        private async UniTaskVoid ApplySelectedAsync(CardChoice choice)
+        {
+            try
+            {
+                await CardChoiceApplier.ApplyAsync(core, choice, pooling);
+            }
+            finally
+            {
+                // 예열 성공/실패 무관하게 UI·시간 복원(soft-lock 방지). 실패 이펙트는 스폰 시점에 개별 처리.
+                view.Hide();                                             // 방금 카드 화면 닫기
+                if (flow.Phase == GamePhase.Playing) Time.timeScale = 1f;
+                TryShowNextLevelUpCard();                                              // 대기 레벨업 더 있으면 다음 카드
+            }
         }
     }
 }

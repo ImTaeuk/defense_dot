@@ -1,6 +1,8 @@
 // 코어 능력 구동 — 로드아웃·러너 보유 + 시전 호스트(ICastHost): 발사 프레임에 대기 발사 실행
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using DefenseDot.Core;
 using DefenseDot.Core.Pooling;
 using DefenseDot.Domain.Models;
@@ -12,11 +14,11 @@ namespace DefenseDot.Systems.Abilities
     /// <summary> Arena 코어의 능력 로드아웃을 구동하고, 시전 애니 발사를 중계하는 컴포넌트입니다. </summary>
     public sealed class CoreAbilitySystem : MonoBehaviour, ICastHost, ICardCommandTarget
     {
-        private AbilityLoadout loadout;
-        private AbilityRunner runner;
-        private GameFlowModel flow;
+        private AbilityLoadout loadout;      // 장착 능력 슬롯(액티브/패시브)
+        private AbilityRunner runner;        // 능력 프레임 구동·장착 훅
+        private GameFlowModel flow;          // 진행 단계(발동 게이트)
         private AbilityContext ctx;          // 공용 컨텍스트(모든 능력 공유)
-        private ICastReceiver castReceiver;
+        private ICastReceiver castReceiver;  // 시전 비주얼 수신자
         private PoolManager pool;            // 스타터 예열용
 
         // 대기 발사 (시전 시작 ~ 발사 프레임)
@@ -27,9 +29,10 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 시전 비주얼을 연결합니다. </summary>
         public void SetCastReceiver(ICastReceiver receiver) => castReceiver = receiver;
 
-        /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. </summary>
+        /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. fireOrigin은 발사체·머즐 스폰용 총구(없으면 origin 폴백). </summary>
         public void Setup(TargetFinder finder, Vector3 origin, GameFlowModel gameFlow,
-            ICombatState combatState, IReadOnlyList<AbilityData> starters, PoolManager poolManager)
+            ICombatState combatState, IReadOnlyList<AbilityData> starters, PoolManager poolManager,
+            Transform fireOrigin = null)
         {
             flow = gameFlow;
             pool = poolManager;
@@ -40,9 +43,36 @@ namespace DefenseDot.Systems.Abilities
                     if (starters[i] != null) loadout.TryAdd(starters[i]);
 
             IEffectSpawner effects = new PooledEffectSpawner(poolManager);
-            ctx = new AbilityContext(this, origin, finder, loadout.Modifiers, effects, this);
+            ctx = new AbilityContext(this, origin, finder, loadout.Modifiers, effects, this, fireOrigin);
             runner = new AbilityRunner(loadout, ctx);
-            runner.EquipAll();
+            // 장착은 예열 후로 미룸(예열 전 Spawn 방지) → WarmupAndEquipAsync
+        }
+
+        /// <summary> 스타터 이펙트를 예열합니다(장착 전. 로드 실패는 값으로 스킵되어 예외 없음). </summary>
+        public async UniTask WarmupStartersAsync()
+        {
+            if (pool == null || loadout == null) return;
+            using (UnityEngine.Pool.HashSetPool<AssetReferenceGameObject>.Get(out HashSet<AssetReferenceGameObject> set))
+            {
+                CollectAssets(loadout.Actives, set);
+                CollectAssets(loadout.Passives, set);
+                if (set.Count > 0) await pool.WarmupAsync(set);
+            }
+        }
+
+        /// <summary> 장착된 액티브 능력을 러너에 장착합니다. </summary>
+        public void EquipAll() => runner?.EquipAll();
+
+        /// <summary> 능력 목록의 예열 대상 에셋을 집합에 모읍니다. </summary>
+        private static void CollectAssets(IReadOnlyList<AbilityInstance> list, HashSet<AssetReferenceGameObject> set)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                AbilityData d = list[i].data;
+                if (d == null) continue;
+                foreach (AssetReferenceGameObject a in d.EffectAssets)
+                    if (a != null) set.Add(a);
+            }
         }
 
         #region ICardCommandTarget

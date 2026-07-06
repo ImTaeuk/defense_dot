@@ -15,9 +15,13 @@ namespace DefenseDot.Systems.Mode
     public sealed class ArisTowerVisual : MonoBehaviour, ICastReceiver
     {
         [SerializeField] private Animator animator;
+        [SerializeField] private Transform firePoint;   // 발사체·머즐 스폰 위치(레일건 총구 본)
         [SerializeField] private float rotateSpeed = 8f;
         [SerializeField] private float targetRange = 30f;
         [SerializeField] private float lowHpRatio = 0.3f;
+
+        /// <summary> 발사체·머즐 VFX가 나올 총구 Transform(합성 루트가 능력 시스템에 배선). </summary>
+        public Transform FirePoint => firePoint;
 
         private const string AttackClipKey = "Aris_Original_Normal_Attack_Ing";
         private static readonly int AttackHash = Animator.StringToHash("Attack");

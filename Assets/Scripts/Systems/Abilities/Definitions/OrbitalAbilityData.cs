@@ -27,6 +27,7 @@ namespace DefenseDot.Systems.Abilities.Definitions
         {
             if (ctx.Effects == null || orbiterAsset == null || !orbiterAsset.RuntimeKeyIsValid()) return;
             OrbiterSetEffect fx = ctx.Effects.Spawn<OrbiterSetEffect>(orbiterAsset);
+            if (fx == null) return;   // 스폰 실패 시 장착 무산
             DamageSource src = new DamageSource(this, self, ctx.Modifiers);
             fx.Activate(ctx.Origin, 1 + self.level, src, rotSpeed, ctx.Finder);
             self.runtimeState = fx;

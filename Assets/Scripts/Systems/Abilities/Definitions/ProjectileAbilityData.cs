@@ -42,14 +42,16 @@ namespace DefenseDot.Systems.Abilities.Definitions
                 target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, range) : null;
             if (target == null) return;
 
+            Vector3 firePos = ctx.FirePosition;   // 타워 총구(없으면 코어 중심)
             ProjectileEffect fx = ctx.Effects.Spawn<ProjectileEffect>(projectileAsset);
+            if (fx == null) return;   // 스폰 실패 시 이 발동만 무산
             DamageSource src = new DamageSource(this, self, ctx.Modifiers);
-            fx.Activate(ctx.Origin, target, src, speed, pierce, range, ctx.Finder, hitVfxAsset);
+            fx.Activate(firePos, target, src, speed, pierce, range, ctx.Finder, hitVfxAsset);
             if (muzzleAsset != null && muzzleAsset.RuntimeKeyIsValid())
             {
-                Vector3 dir = target.Position - ctx.Origin;
+                Vector3 dir = target.Position - firePos;
                 Quaternion rot = dir.sqrMagnitude > 0.0001f ? Quaternion.LookRotation(dir) : Quaternion.identity;
-                ctx.Effects.PlayOneShot(muzzleAsset, ctx.Origin, rot);
+                ctx.Effects.PlayOneShot(muzzleAsset, firePos, rot);
             }
         }
     }

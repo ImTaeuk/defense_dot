@@ -20,7 +20,12 @@ MonoBehaviour:
   description: "\uC8FC\uBCC0 \uBC94\uC704 \uD30C\uB3D9"
   baseCooldown: 3
   castAnimation: {fileID: 0}
-  zonePrefab: {fileID: 6054741931827209002, guid: 6c364e6e955529f42bf87330ff72afd5, type: 3}
+  zoneAsset:
+    m_AssetGUID: 6c364e6e955529f42bf87330ff72afd5
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   baseDamage: 3
   damagePerLevel: 2
   radius: 5

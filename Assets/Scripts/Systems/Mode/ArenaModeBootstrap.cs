@@ -1,5 +1,6 @@
 // 아레나 모드 부트스트랩 — ArenaView config로 모델 생성·바인딩 후 ArenaMode 생성
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using DefenseDot.Data;
 using DefenseDot.Domain.Models;
@@ -87,23 +88,36 @@ namespace DefenseDot.Systems.Mode
             TowerBehaviorTree debugBt = go.GetComponent<TowerBehaviorTree>();
             if (debugBt != null) Destroy(debugBt);
             coreAbility = go.AddComponent<CoreAbilitySystem>();
-            coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, ctx.CombatState, starterAbilities, ctx.Pooling);
 
-            SetupArisVisual(go, coreAbility, ctx);
+            // Aris 비주얼을 먼저 생성해 발사점(총구)을 확보 → 능력 시스템에 주입
+            ArisTowerVisual arisVisual = ReplaceWithArisVisual(go, ctx);
+            Transform fireOrigin = arisVisual != null ? arisVisual.FirePoint : null;
+
+            coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, ctx.CombatState, starterAbilities, ctx.Pooling, fireOrigin);
+            StartCoreAbilities(coreAbility).Forget();   // 예열 → 장착 순서 조율
+
+            // 총구 확보 후 비주얼에 능력 시스템 연동
+            if (arisVisual != null) arisVisual.Setup(coreAbility, ctx.TargetFinder, ctx.Flow, ctx.Core);
         }
 
-        /// <summary> 코어의 2D 스프라이트를 숨기고 Aris 3D 연출 타워를 코어 위치에 배치·연동합니다. </summary>
-        private void SetupArisVisual(GameObject coreTower, CoreAbilitySystem coreAbility, ModeContext ctx)
+        /// <summary> 코어의 2D 스프라이트를 숨기고 Aris 3D 연출 타워를 코어 위치에 배치해 비주얼을 반환합니다. </summary>
+        private ArisTowerVisual ReplaceWithArisVisual(GameObject coreTower, ModeContext ctx)
         {
-            if (arisTowerPrefab == null) return;
+            if (arisTowerPrefab == null) return null;
 
             SpriteRenderer[] sprites = coreTower.GetComponentsInChildren<SpriteRenderer>(true);
             for (int i = 0; i < sprites.Length; i++) sprites[i].enabled = false;
 
             GameObject aris = Instantiate(arisTowerPrefab, ctx.CoreCenter, Quaternion.identity);
             aris.name = "Aris_CoreTower";
-            ArisTowerVisual visual = aris.GetComponent<ArisTowerVisual>();
-            if (visual != null) visual.Setup(coreAbility, ctx.TargetFinder, ctx.Flow, ctx.Core);
+            return aris.GetComponent<ArisTowerVisual>();
+        }
+
+        /// <summary> 코어 능력을 예열한 뒤 장착합니다(예열→장착 순서 조율). </summary>
+        private static async UniTaskVoid StartCoreAbilities(CoreAbilitySystem core)
+        {
+            await core.WarmupStartersAsync();   // 예열(실패는 값으로 스킵, 예외 없음)
+            core.EquipAll();                    // 장착(예열 성패 무관하게 실행)
         }
     }
 }

@@ -20,7 +20,12 @@ MonoBehaviour:
   description: "\uCF54\uC5B4 \uC8FC\uC704 \uADA4\uB3C4 \uACF5\uACA9"
   baseCooldown: 1
   castAnimation: {fileID: 0}
-  orbiterPrefab: {fileID: 9063350632866896396, guid: c41eb85840eeb8a45aeda2d220e6c31b, type: 3}
+  orbiterAsset:
+    m_AssetGUID: c41eb85840eeb8a45aeda2d220e6c31b
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
   baseDamage: 3
   damagePerLevel: 2
   rotSpeed: 2

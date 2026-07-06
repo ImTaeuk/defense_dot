@@ -11,18 +11,18 @@ namespace DefenseDot.Systems.Abilities.Effects
 
         public PooledEffectSpawner(PoolManager poolManager) { pool = poolManager; }
 
-        /// <summary> 효과 엔티티를 꺼내 스포너를 배선합니다. </summary>
+        /// <summary> 효과 엔티티를 꺼내 스포너를 배선합니다. 실패 시 null. </summary>
         public T Spawn<T>(AssetReferenceGameObject asset) where T : AbilityEffect
         {
-            T fx = pool.Get<T>(asset);
+            if (!pool.TryGet<T>(asset, out T fx)) return null;
             fx.Bind(this);
             return fx;
         }
 
-        /// <summary> 일회성 VFX를 꺼내 위치잡고 재생 후 자동 반납합니다. </summary>
+        /// <summary> 일회성 VFX를 꺼내 위치잡고 재생 후 자동 반납합니다. 실패 시 스킵. </summary>
         public void PlayOneShot(AssetReferenceGameObject asset, Vector3 pos, Quaternion rot)
         {
-            VfxPlayer vp = pool.Get<VfxPlayer>(asset);
+            if (!pool.TryGet<VfxPlayer>(asset, out VfxPlayer vp)) return;
             vp.transform.SetPositionAndRotation(pos, rot);
             vp.PlayThenReturn();
         }
