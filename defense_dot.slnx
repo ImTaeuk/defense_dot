@@ -18,6 +18,7 @@
   <Project Path="Unity.AI.MCP.Editor.csproj" />
   <Project Path="Unity.AI.Assistant.UI.Editor.csproj" />
   <Project Path="Unity.Burst.csproj" />
+  <Project Path="GiantGrey.TileWorldCreator.csproj" />
   <Project Path="Unity.VisualScripting.Flow.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Editor.csproj" />
   <Project Path="Unity.VisualStudio.Editor.csproj" />
