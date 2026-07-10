@@ -4,6 +4,13 @@
 
 You are working on a **Unity project** used to build games or interactive experiences. Unity is a cross-platform game engine that uses C# for scripting and organizes content into scenes, prefabs, and assets.
 
+## TASK 관리 (마스터 인덱스 — 모든 세션 필수)
+
+- **남은 작업·우선순위·"다음에 뭐 하지"를 묻는 질문에는 반드시 [`docs/tasks/TASKS-master-index.md`](docs/tasks/TASKS-master-index.md) 를 먼저 읽고 그 문서를 근거로 답한다.** 이 문서가 남은 작업의 단일 진실 공급원(SSOT)이며, 원작 갭 분석 + 우선도×개발비용 매트릭스 + 활성 TASK 인덱스를 담는다. (개별 `docs/tasks/active/TASK-*.md` 는 상세, 마스터는 전체 그림)
+- **TASK 를 완료하거나 상태가 바뀌면 마스터 인덱스를 갱신한다** — §2 갭 표 상태(`❌→🔶→✅`)·§6 인덱스·§7 갱신 이력을 그때그때 수정한다. 개별 TASK 문서만 고치고 마스터를 방치하지 않는다.
+- **상태 판단은 문서 기술이 아니라 코드·git 실제 상태로 확인한다** (문서의 "미커밋" 등 옛 기술을 그대로 믿어 오판한 이력 있음).
+- 마스터의 짝 HTML(`TASKS-master-index.html`)은 브라우저 열람용 — 내용 갱신 시 MD·HTML 둘 다 반영.
+
 ## UI / 폰트 컨벤션
 
 - **폰트**: 모든 UI 텍스트(TextMeshPro)는 **neodgm** (`Assets/Font/neodgm SDF.asset`) 을 사용한다. 새 `TextMeshProUGUI`/`TextMeshPro` 컴포넌트·프리팹은 neodgm SDF 폰트 에셋으로 설정하고, TMP 기본 폰트(TMP Settings)도 neodgm 으로 둔다. 다른 폰트(LiberationSans 등) 사용 금지.
