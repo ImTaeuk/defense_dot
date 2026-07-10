@@ -17,6 +17,8 @@ namespace DefenseDot.Systems.Abilities
         public IReadOnlyList<AbilityInstance> Passives => passives;
         /// <summary> 패시브 합산 보정(캐시). </summary>
         public AbilityModifiers Modifiers => modifiers;
+        /// <summary> 로드아웃 구조 변경(추가/레벨업/제거) 후 발화합니다. </summary>
+        public event System.Action OnChanged;
 
         public AbilityLoadout(int activeCapacity = 6, int passiveCapacity = 6)
         {
@@ -40,11 +42,14 @@ namespace DefenseDot.Systems.Abilities
             return actives.Count < activeCapacity;   // 그 외(ActiveAbilityData)
         }
 
-        /// <summary> 새 능력을 해당 슬롯에 추가합니다. 불가 시 false. </summary>
+        /// <summary> 새 능력을 해당 슬롯에 추가합니다. 획득 라운드를 박제하고 통지합니다. 불가 시 false. </summary>
         public bool TryAdd(AbilityData data)
         {
             if (!CanAdd(data)) return false;
+
             var inst = new AbilityInstance(data, 1);
+            inst.acquiredRound = System.Math.Max(1, modifiers.combatState != null ? modifiers.combatState.Round : 1);
+
             if (data is PassiveAbilityData)
             {
                 passives.Add(inst);
@@ -54,23 +59,37 @@ namespace DefenseDot.Systems.Abilities
             {
                 actives.Add(inst);
             }
+
+            OnChanged?.Invoke();
             return true;
         }
 
-        /// <summary> 레벨업(maxLevel 클램프). 패시브면 보정 재계산. </summary>
+        /// <summary> 레벨업(maxLevel 클램프). 패시브면 보정 재계산 후 통지. </summary>
         public void LevelUp(AbilityInstance inst)
         {
             if (inst == null || inst.level >= inst.data.maxLevel) return;
             inst.level++;
             if (inst.data is PassiveAbilityData) RecalculateModifiers();
+            OnChanged?.Invoke();
         }
 
-        /// <summary> 제거. 패시브면 보정 재계산. </summary>
+        /// <summary> 제거. 패시브면 보정 재계산. 실제 제거 시 통지. </summary>
         public void Remove(AbilityInstance inst)
         {
             if (inst == null) return;
-            if (passives.Remove(inst)) RecalculateModifiers();
-            else actives.Remove(inst);
+
+            bool removed;
+            if (passives.Remove(inst))
+            {
+                RecalculateModifiers();
+                removed = true;
+            }
+            else
+            {
+                removed = actives.Remove(inst);
+            }
+
+            if (removed) OnChanged?.Invoke();
         }
 
         private void RecalculateModifiers()

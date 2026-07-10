@@ -10,11 +10,11 @@ namespace DefenseDot.UI
         public readonly LevelModel Level;
         public readonly ArenaCardConfig Config;
         public readonly AbilityPool Pool;
-        public readonly ICardCommandTarget Core;
+        public readonly IAbilityCommandTarget Core;
         public readonly GameFlowModel Flow;
 
         public CardContext(LevelModel level, ArenaCardConfig config, AbilityPool pool,
-            ICardCommandTarget core, GameFlowModel flow)
+            IAbilityCommandTarget core, GameFlowModel flow)
         {
             Level = level;
             Config = config;

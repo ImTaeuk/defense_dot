@@ -21,6 +21,7 @@ namespace DefenseDot.Systems.Management
         [Header("Startup")]
         [SerializeField] private ModeBootstrap modeBootstrap;
         [SerializeField] private int startGold = 300;
+        [SerializeField] private AbilityUpgradeConfig abilityUpgradeConfig;
 
         [Header("Scene References")]
         [SerializeField] private EnemySpawner spawner;
@@ -120,11 +121,13 @@ namespace DefenseDot.Systems.Management
             // UI 연결 (UI 합성 루트에 GameContext 주입)
             if (uiRoot != null)
             {
-                DefenseDot.Systems.Abilities.ICardCommandTarget coreTarget = arenaBoot != null ? arenaBoot.CoreAbility : null;
+                DefenseDot.Systems.Abilities.IAbilityCommandTarget coreTarget = arenaBoot != null ? arenaBoot.CoreAbility : null;
+                var abilityUpgrades = new AbilityUpgradeService(coreTarget, Economy, abilityUpgradeConfig);
                 var ctx = new DefenseDot.Domain.GameContext(
                     Economy, Core, Wave, Score, RoundTimer, Flow, Level,
                     modeBootstrap.EnemyDisplayCapacity, towerRoster,
-                    modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget, poolManager);
+                    modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget, poolManager,
+                    abilityUpgrades);
                 uiRoot.Inject(ctx);
             }
 

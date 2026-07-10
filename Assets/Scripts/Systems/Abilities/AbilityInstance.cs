@@ -7,6 +7,8 @@ namespace DefenseDot.Systems.Abilities
         public readonly AbilityData data;
         /// <summary> 현재 레벨. </summary>
         public int level;
+        /// <summary> 획득 라운드(강화비 스케일 기준). 스타터=1. </summary>
+        public int acquiredRound = 1;
         /// <summary> 남은 쿨다운(초, 액티브용). </summary>
         public float cooldownRemaining;
         /// <summary> 효과 핸들·커스텀 런타임 상태(상시형 사용). </summary>

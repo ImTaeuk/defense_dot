@@ -12,7 +12,7 @@ using DefenseDot.Systems.Abilities.Effects;
 namespace DefenseDot.Systems.Abilities
 {
     /// <summary> Arena 코어의 능력 로드아웃을 구동하고, 시전 애니 발사를 중계하는 컴포넌트입니다. </summary>
-    public sealed class CoreAbilitySystem : MonoBehaviour, ICastHost, ICardCommandTarget
+    public sealed class CoreAbilitySystem : MonoBehaviour, ICastHost, IAbilityCommandTarget
     {
         private AbilityLoadout loadout;      // 장착 능력 슬롯(액티브/패시브)
         private AbilityRunner runner;        // 능력 프레임 구동·장착 훅
@@ -75,7 +75,7 @@ namespace DefenseDot.Systems.Abilities
             }
         }
 
-        #region ICardCommandTarget
+        #region IAbilityCommandTarget
         /// <summary> 읽기 전용 로드아웃(카드 생성기 질의용). </summary>
         public AbilityLoadout Loadout => loadout;
 
@@ -93,6 +93,13 @@ namespace DefenseDot.Systems.Abilities
 
         /// <summary> 기존 능력 레벨업. </summary>
         public void LevelUpAbility(AbilityInstance instance) => loadout?.LevelUp(instance);
+
+        /// <summary> 능력 삭제. 액티브면 러너에서 언장착 후 로드아웃에서 제거합니다. </summary>
+        public void RemoveAbility(AbilityInstance instance)
+        {
+            if (instance?.data is ActiveAbilityData) runner?.Unequip(instance);
+            loadout?.Remove(instance);
+        }
         #endregion
 
         private void Update()

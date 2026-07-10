@@ -18,7 +18,7 @@ namespace DefenseDot.Tests.EditMode
             protected override void Fire(in AbilityContext ctx, AbilityInstance self, ITargetable target) { }
         }
 
-        private sealed class StubCore : ICardCommandTarget
+        private sealed class StubCore : IAbilityCommandTarget
         {
             public AbilityLoadout Loadout { get; }
             public int added;
@@ -36,6 +36,7 @@ namespace DefenseDot.Tests.EditMode
             }
 
             public void LevelUpAbility(AbilityInstance i) { leveled++; Loadout.LevelUp(i); }
+            public void RemoveAbility(AbilityInstance i) => Loadout.Remove(i);
         }
 
         private static StubActive Active(int max = 5)

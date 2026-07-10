@@ -17,6 +17,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 06477646001e37846b3955d3eb5da599, type: 3}
   rarity: 0
   maxLevel: 5
+  baseCost: 30
   description: "\uC804\uBC29 \uB2E8\uC77C \uD22C\uC0AC\uCCB4"
   baseCooldown: 0.4
   castAnimation: {fileID: 7400000, guid: b67b5b6acf7081e42b9a4e70ad535d22, type: 2}

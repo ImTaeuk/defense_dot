@@ -15,7 +15,7 @@ namespace DefenseDot.UI.Presenters
     public sealed class CardSelectionPresenter : UIPresenter<CardSelectionView>
     {
         private readonly LevelModel level;
-        private readonly ICardCommandTarget core;
+        private readonly IAbilityCommandTarget core;
         private readonly ArenaCardConfig config;
         private readonly AbilityPool pool;
         private readonly GameFlowModel flow;
