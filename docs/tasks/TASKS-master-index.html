@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>defense_dot — 마스터 TASK 인덱스 & 원작 갭 로드맵</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--line); padding: 8px 11px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .no { color: var(--red); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .note.hot { border-left-color: var(--accent); }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+  .star { color: var(--yellow); }
+  .matrix td { text-align: center; }
+  .matrix .rowh { background: var(--panel2); color: var(--purple); font-weight: bold; text-align: left; white-space: nowrap; }
+  .cell-hot { background: rgba(255,121,198,.14); }
+  .cell-warm { background: rgba(80,250,123,.08); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>defense_dot — 마스터 TASK 인덱스 &amp; 원작 갭 로드맵</h1>
+  <div class="sub">
+    <span class="tag must">SSOT · 크로스-세션</span>
+    <span class="tag opt">최신</span>
+    2026-07-08 · 근거: 원작 index.html (v608, 33,187줄) + 현재 코드 구현
+  </div>
+
+  <!-- 0. 사용법 -->
+  <h2>0. 사용법 (다른 세션 필독)</h2>
+  <div class="panel">
+    <p>이 문서는 <strong>여러 세션이 함께 읽고 갱신하는 마스터 인덱스</strong>다. 개별 <code>active/TASK-*.md</code>는 상세를, 이 문서는 <strong>전체 우선순위·원작 갭·진행 상태</strong>를 담는다. (원본: <code>docs/tasks/TASKS-master-index.md</code>)</p>
+    <ul>
+      <li>TASK 완료 → §2 갭 표 상태 갱신 + §7 이력 추가</li>
+      <li>TASK 신설/분리 → §4 상세·§6 인덱스에 추가</li>
+      <li><strong>상태 판단은 코드 기준</strong> — 문서 기술이 아니라 <code>Assets/Scripts/</code> 실제 구현·git 으로 확인 (문서의 "미커밋" 기술을 그대로 믿어 오판한 이력 있음)</li>
+      <li>원작 대비는 <strong>standard 모드 = Arena</strong> 기준. Grid 는 비정본 갈래로 분리</li>
+    </ul>
+    <p>범례: <span class="ok">✅ 완료</span> · <span class="warn">🔶 부분</span> · <span class="no">❌ 없음</span> · ⏸ 보류</p>
+  </div>
+
+  <!-- 1. 현재 위치 -->
+  <h2>1. 현재 위치 — 완료된 기반 (코드로 확인됨)</h2>
+  <div class="panel">
+    <p>원작 standard 모드의 <strong>"성장하는 자동전투 생존"</strong> 골격은 서 있다.</p>
+    <table>
+      <tr><th>영역</th><th>구현</th><th>위치</th></tr>
+      <tr><td>모드 합성 루트</td><td>Arena/Grid 분리</td><td><code>Systems/Mode/</code></td></tr>
+      <tr><td>종료 규칙 (유한+승리)</td><td>웨이브 소진→전멸 시 승리</td><td><code>EnemySpawner</code> (A0)</td></tr>
+      <tr><td>플레이 루프</td><td>결과 패널·재시작·정지</td><td>TASK-002 <span class="ok">✅ done</span></td></tr>
+      <tr><td>능력 데이터 아키텍처</td><td>Data/Instance/Loadout</td><td><code>Systems/Abilities/</code> (A1)</td></tr>
+      <tr><td>코어 자동전투</td><td>능력 실행 3종(투사체/궤도/영역)</td><td><code>Abilities/Definitions·Effects/</code> (A2)</td></tr>
+      <tr><td>레벨업·카드 선택</td><td>kills→레벨업→3장 모달</td><td><code>Systems/Cards/</code> (A3)</td></tr>
+      <tr><td>순수 패시브 4종</td><td>맹공·토벌·쇄도·각성</td><td><code>PureDamagePassiveData</code> (A5-2)</td></tr>
+      <tr><td>Actor BT 프레임워크</td><td>POCO BT (Phase 1)</td><td><code>Systems/Actor/</code></td></tr>
+      <tr><td>풀링·Addressables</td><td>Pool/PoolManager</td><td>TASK-013·015 <span class="ok">✅ done</span></td></tr>
+      <tr><td>전투 VFX</td><td>명중·머즐, unscaled time</td><td>TASK-014 <span class="warn">🔶</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 2. 갭 분석 -->
+  <h2>2. 원작 대비 갭 분석 (핵심)</h2>
+
+  <h3>2.1 성장 루프 — 원작 3단 중 우리는 1단만</h3>
+  <div class="panel">
+    <p>원작 코어 성장은 <strong>① 획득(레벨업 카드) → ② 강화(골드) → ③ 조합(재료)</strong> 3단. 우리는 ①만 있다.</p>
+    <table>
+      <tr><th>단계</th><th>원작 근거</th><th>우리 상태</th><th>TASK</th></tr>
+      <tr><td>① 획득 (레벨업→카드)</td><td><code>triggerLevelUp</code></td><td><span class="ok">✅ 완료</span></td><td>A3</td></tr>
+      <tr class="cell-hot"><td><strong>② 강화 (골드로 레벨업/삭제)</strong></td><td><code>actEnhance</code> · <code>actDelete</code></td><td><span class="no">❌ 없음</span></td><td><strong>A4</strong></td></tr>
+      <tr class="cell-hot"><td><strong>③ 조합 (재료2→상위)</strong></td><td><code>COMBO_RECIPES</code>(14)</td><td><span class="no">❌ 없음</span></td><td><strong>A5-1</strong></td></tr>
+    </table>
+    <div class="note hot">
+      <strong>②③ 부재가 "핵심인데 누락"의 최상위.</strong> 카드로 능력을 얻어도 <strong>키우거나 합칠 수 없어</strong>, 원작 빌드 성장의 2/3가 비어 있다.
+    </div>
+  </div>
+
+  <h3>2.2 페이싱·콘텐츠</h3>
+  <div class="panel">
+    <table>
+      <tr><th>시스템</th><th>원작 근거</th><th>상태</th><th>TASK</th></tr>
+      <tr><td>보스 (N라운드마다)</td><td><code>isBoss</code>(100)</td><td><span class="no">❌ 없음</span></td><td>A6</td></tr>
+      <tr><td>계보 공명 (SR+SSR 시너지, v608)</td><td><code>LINEAGE_RESONANCE</code> (23계보×5축)</td><td><span class="no">❌ 없음</span></td><td>A8</td></tr>
+      <tr><td>HUD/UI 리스킨 (메카닉 HUD·능력 도크)</td><td>v575~v606, <code>ABILITY_DOCK</code></td><td><span class="warn">🔶 부분</span></td><td>B</td></tr>
+    </table>
+  </div>
+
+  <h3>2.3 메타층 (런간 진행 = 로그라이트 정체성)</h3>
+  <div class="panel">
+    <table>
+      <tr><th>시스템</th><th>원작 근거</th><th>상태</th><th>TASK</th></tr>
+      <tr><td>가챠 (스타더스트→캐릭터/유물)</td><td><code>gacha</code></td><td><span class="no">❌</span></td><td>A7-1</td></tr>
+      <tr><td>유물 (런 시작 보정)</td><td><code>RELICS</code>(60)</td><td><span class="no">❌</span></td><td>A7-2</td></tr>
+      <tr><td>강화소·승천 (영구강화·난이도)</td><td><code>buyUpgrade</code> · <code>ascension</code>(81)</td><td><span class="no">❌</span></td><td>A7-3</td></tr>
+      <tr><td>행성 난이도 (3티어·31단계, v608)</td><td><code>PLANET_TIERS</code></td><td><span class="no">❌</span></td><td>A7-4</td></tr>
+      <tr><td>계정 레벨·계급 (8계급, v608)</td><td><code>RANKS</code></td><td><span class="no">❌</span></td><td>A7-5</td></tr>
+      <tr><td>업적 해금 (v608)</td><td><code>checkUnlockAchievements</code></td><td><span class="no">❌</span></td><td>A7-6</td></tr>
+      <tr><td>기록·블랙박스 분석 (v608)</td><td>v510/v511</td><td><span class="no">❌</span></td><td>A7-7</td></tr>
+      <tr><td>글로벌 랭킹 (서버, v608)</td><td><code>submitGlobalScore</code></td><td><span class="no">❌</span></td><td>A7-8</td></tr>
+    </table>
+  </div>
+
+  <h3>2.4 원작 재현과 분리된 트랙 (Arena 갭 아님)</h3>
+  <div class="panel">
+    <p>Grid 모드·품질·구조 작업. 원작 standard 재현과 독립적이나 프로젝트 완성도에 필요.</p>
+    <table>
+      <tr><th>작업</th><th>상태</th><th>TASK</th></tr>
+      <tr><td>Grid 타워 관리 모달·다종</td><td><span class="warn">🔶 SP1만</span></td><td>005</td></tr>
+      <tr><td>Actor Animator 방향/걷기 애니</td><td>⏸ 보류(방식 미결)</td><td>006</td></tr>
+      <tr><td>진입 흐름·타이틀·일시정지</td><td><span class="no">❌</span></td><td>008</td></tr>
+      <tr><td>코드 정리(빈 껍데기·리네임)</td><td><span class="no">❌</span> <span class="warn">※ PathfindingService는 보류(미완성 인프라)</span></td><td>009</td></tr>
+      <tr><td>코어 전용 프리팹 정리</td><td><span class="no">❌</span>(분석 완료)</td><td>016</td></tr>
+      <tr><td>디버그 공격 폐기</td><td><span class="warn">🔶 폐기 대상</span>(능력 시스템이 대체)</td><td>004</td></tr>
+    </table>
+  </div>
+
+  <!-- 3. 매트릭스 -->
+  <h2>3. 우선도 × 개발비용 매트릭스 (2축)</h2>
+  <div class="panel">
+    <p><strong>개발비용(공수) 등급</strong> — 1인 작업(코드+Unity 검증) 기준, 남은 항목 수 × 성격으로 추정. <code>*</code> = 선행 결정으로 변동.</p>
+    <table>
+      <tr><th>등급</th><th>절대 시간</th><th>성격</th></tr>
+      <tr><td><strong>XS</strong></td><td>≤ 0.5일 (2~4h)</td><td>에디터 검증만 / 저위험 리팩토링</td></tr>
+      <tr><td><strong>S</strong></td><td>~1일</td><td>계획 완비된 C# 구현 + 테스트</td></tr>
+      <tr><td><strong>M</strong></td><td>~2일</td><td>C# + UI/프리팹 배선, 다중 항목</td></tr>
+      <tr><td><strong>L</strong></td><td>~3~4일</td><td>여러 시스템 연계 / 디자인 결정 변수</td></tr>
+      <tr><td><strong>XL</strong></td><td>5일 ~ 2주+</td><td>대형 스코프 / 장기 메타</td></tr>
+    </table>
+    <p style="margin-top:16px"><strong>우선도</strong> = 원작 standard 정체성 재현 필수도 · 매트릭스 <strong>비용 낮음=XS~S · 중간=M · 높음=L~XL</strong>. 왼쪽 위(고우선·저비용)일수록 <span class="ok">즉시 가성비</span>.</p>
+    <table class="matrix">
+      <tr><th></th><th>비용: 낮음</th><th>비용: 중간</th><th>비용: 높음</th></tr>
+      <tr>
+        <td class="rowh"><span class="star">★★★</span> 코어 루프</td>
+        <td class="cell-hot"><strong>A4 인게임 강화</strong> ⭐즉시</td>
+        <td class="cell-hot"><strong>A5-1 능력 조합</strong></td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td class="rowh"><span class="star">★★</span> 페이싱·메타·UX</td>
+        <td class="cell-warm">A7-6 업적 · A7-3 승천수식</td>
+        <td class="cell-warm">A6 보스 · A7-1 가챠 · A7-2 유물 · A7-3 강화소</td>
+        <td>B HUD 리스킨 · A8 계보 공명</td>
+      </tr>
+      <tr>
+        <td class="rowh"><span class="star">★</span> 진행감·확장</td>
+        <td>009 코드정리</td>
+        <td>A7-4 행성 · A7-5 계급 · 005 Grid · 016 코어프리팹 · 008 진입 · 006 Animator</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td class="rowh">☆ 정보성·서버</td>
+        <td>004 디버그 폐기</td>
+        <td>A7-7 기록 · A7-8 랭킹(서버)</td>
+        <td>—</td>
+      </tr>
+    </table>
+    <div class="note hot">
+      <strong>⭐ 최우선 1건 = A4 인게임 강화</strong> — 고우선·저비용. Economy 가 이미 있어 강화/삭제 UI·로직만 얹으면 <strong>원작 성장 2축이 완성</strong>된다. 다음은 <strong>A5-1 능력 조합</strong>(빌드 깊이 마지막 조각).
+    </div>
+  </div>
+
+  <!-- 5. 진행 순서 -->
+  <h2>4. 권장 진행 순서</h2>
+  <div class="panel">
+    <table>
+      <tr><th>순서</th><th>작업</th><th>근거</th></tr>
+      <tr><td>1</td><td><strong>A4 인게임 강화</strong></td><td><span class="ok">⭐ 고우선·저비용</span>, 원작 성장 2축 완성</td></tr>
+      <tr><td>2</td><td><strong>A5-1 능력 조합</strong></td><td>빌드 깊이 마지막 조각 (여기까지 = 원작 코어 루프 완성)</td></tr>
+      <tr><td>3</td><td>A6 보스 + B HUD 리스킨</td><td>페이싱·체감 (병행 가능)</td></tr>
+      <tr><td colspan="3" style="text-align:center; color:var(--yellow)">─── Arena 방향(a 메타형 / b 인런형) 결정 게이트 ───</td></tr>
+      <tr><td>4</td><td>A7 메타층 (방향 a 확정 시)</td><td>로그라이트 런간 진행</td></tr>
+      <tr><td>5</td><td>A8 계보 공명 (가챠 선행 후)</td><td>콘텐츠 깊이, 고비용</td></tr>
+      <tr><td>병행</td><td>004 폐기 · 016 · 009 · 005 · 006 · 008</td><td>독립 트랙</td></tr>
+    </table>
+    <div class="note"><strong>게이트</strong>: A7·A8 은 <strong>Arena 정체성 방향</strong> 결정 선행 — (a) 메타 진행형 오토배틀러 / (b) 인런 조작형. 이 결정 전까지 메타층 착수 보류.</div>
+  </div>
+
+  <!-- 6. 인덱스 -->
+  <h2>5. 활성 TASK 인덱스</h2>
+  <div class="panel">
+    <table>
+      <tr><th>TASK</th><th>제목</th><th>우선순위</th><th>남은 공수</th><th>매핑</th></tr>
+      <tr><td>012</td><td>Arena 모드 로드맵 (마스터)</td><td><span class="warn">높음</span></td><td><strong>XL</strong></td><td>A0~A8·B 정본</td></tr>
+      <tr><td>014</td><td>전투 VFX 복구</td><td><span class="warn">높음</span></td><td>XS~S</td><td>🔶 B-1/B-2 남음</td></tr>
+      <tr><td>004</td><td>디버그 공격</td><td>높음→폐기후보</td><td>XS</td><td>능력 시스템이 대체</td></tr>
+      <tr><td>015</td><td>Addressables 인프라</td><td>높음</td><td>XS</td><td><span class="ok">✅ 사실상 완료</span></td></tr>
+      <tr><td>005</td><td>Grid 타워 배치</td><td>중간</td><td>L</td><td>SP2/SP3</td></tr>
+      <tr><td>010</td><td>Skill 시스템</td><td>중간</td><td>—</td><td>012 A1~A5 흡수</td></tr>
+      <tr><td>006</td><td>Actor Animator</td><td>중간(보류)</td><td>L*</td><td>방식 미결</td></tr>
+      <tr><td>016</td><td>코어 전용 프리팹</td><td>중간</td><td>S~M</td><td>독립</td></tr>
+      <tr><td>008</td><td>진입 흐름·일시정지</td><td>중간</td><td>S</td><td>독립</td></tr>
+      <tr><td>001</td><td>아레나 맵 남은 작업</td><td>중간</td><td>XS</td><td>대부분 012 흡수</td></tr>
+      <tr><td>009</td><td>코드 정리</td><td>낮음</td><td>XS</td><td>⚠️ PathfindingService 보류</td></tr>
+      <tr><td>011</td><td>메타 상점</td><td>낮음</td><td>XL*</td><td>012 A7 흡수</td></tr>
+    </table>
+    <div class="note"><strong>완료(done)</strong>: TASK-002 플레이 루프 · TASK-013 풀링 시스템 · 공수 등급은 6/29 matrix 계승·갱신(014 하향)</div>
+  </div>
+
+  <p class="foot">마스터 인덱스 (SSOT) — 다른 세션은 이 문서로 전체 그림 파악 후 개별 TASK 착수. 완료 시 §2·§7 갱신.</p>
+
+</div>
+</body>
+</html>

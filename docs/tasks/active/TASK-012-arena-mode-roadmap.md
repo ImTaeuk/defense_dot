@@ -86,6 +86,32 @@ Arena = 원작의 **`standard`(클래식) 모드**. 원형 경기장에서 중�
 ### A4. 인게임 강화
 - [ ] **A4-1.** 골드(Economy)로 능력 레벨업/삭제 UI·로직 (`enhanceCost` 라운드 비례)
 
+**비용 파라미터 SO 구조 (2026-07-08 확정)** — 원작 `enhanceCost`(index.html:21900) 분해:
+`cost = ceil(baseCost × lvScale × roundMul × totalMul)`
+
+- **능력별 값** → 기존 `AbilityData` SO에 `baseCost` 필드 (원작: 샷30·오비탈60·포격70·콤보120~350 등 능력마다 상이).
+- **아레나 모드 전역 값** → 신규 `AbilityUpgradeConfig` SO **1개**(모드 전역). 4필드:
+
+| 필드 | 원작값 | 의미 | 공식 반영 |
+|---|---|---|---|
+| `levelSlope` | 0.10 | 레벨에 따른 가격 배율(깊게 키울수록 가팔라짐) | `lvScale = (lv+1) + lv×levelSlope` |
+| `roundInflation` | 0.05 | 획득 라운드에 따른 가격 배율(늦게 얻을수록 비쌈) | `roundMul = 1 + (acquiredRound-1)×roundInflation` |
+| `maxDiscountRate` | 0.55 | 할인원(패시브·유물) 누적 최대 할인 상한 | `costMul = max(1-maxDiscountRate, 쌓인할인)` |
+| `refundRatio` | 0.40 | 삭제(Dismiss) 시 강화비 환급 비율(랜덤 획득비 제외) | `refund = Σ(레벨별 강화비) × refundRatio` |
+
+- `AbilityInstance`에 `acquiredRound` 필드 추가(획득 라운드 기록), `AbilityLoadout.TryAdd`가 획득 시점에 `combatState.Round`로 박제.
+- `maxDiscountRate`는 할인원(A7 메타 scholar·유물)이 붙기 전엔 비활성 — 미리 심는 손잡이. `scholar` 등 능력 고유 할인율은 이 config가 아니라 해당 능력 데이터에 귀속.
+- **네이밍 확정 (2026-07-09)**: 비용 계산은 정적 Calculator 대신 **확장 메서드**(`AbilityCostExtensions` in `Systems.Economy` — `ability.UpgradeCost(config)`/`RefundValue(config)`). 서비스는 **`AbilityUpgradeService`**(강화+삭제 둘 다 하므로 "Enhancer"보다 상위 개념 Upgrade로 통일; `GetUpgradeCost`/`TryUpgrade`/`Dismiss`). `GameContext.AbilityUpgrades`. **코드 어휘=upgrade, 플레이어 UI 텍스트=원작 용어 "강화" 유지.**
+- **미결(구현에서 확정)**: 능력별 `baseCost` 실값 밸런싱, 슬롯 UI 프리팹 상세.
+
+**구현 현황 (2026-07-09 · ✅ 완료 · 미커밋)** — 로직·데이터·UI·PlayMode 검증 모두 완료.
+- ✅ 코드: `AbilityUpgradeConfig`·`AbilityCostExtensions`·`AbilityUpgradeService`·`AbilityUpgradeRow/View/Presenter` 신규 + `AbilityData.baseCost`·`AbilityInstance.acquiredRound`·`AbilityLoadout`(박제·`OnChanged`)·`ICardCommandTarget/CoreAbilitySystem`(`RemoveAbility`)·`GameContext/GameManager`(배선) 수정. **EditMode 146/146 PASS, 컴파일 0 에러, 린트 통과.**
+- ✅ 데이터: `Assets/Settings/AbilityUpgradeConfig.asset` 생성 + GameManager 연결. 능력 7종 `baseCost`(Shot30·Orbital60·AreaWave55·Passive4×60).
+- ✅ UI: `Assets/Prefabs/UI/AbilityUpgradeRow.prefab` 생성(neodgm) + `AbilityUpgradePanel`(Layer_HUD, `AbilityUpgradeView`) 배치 + `UIRoot.views` 등록. ArenaScene 저장.
+- ✅ PlayMode 검증: 스타터 2종(샷 63G·오비탈 126G) 렌더 → 강화 클릭 시 골드 300→237(−63), 샷 Lv2·다음 96G로 즉시 재갱신. 비용 공식·차감·레벨업·통지 전 체인 정상.
+- ✅ 정리(2026-07-09): 컨벤션 정렬 리팩터 — `AbilityUpgradeRow`를 `UIWidget<AbilityUpgradeRowData>`(SetData)로 승격(CardSlotWidget 패턴 일치), `ICardCommandTarget`→`IAbilityCommandTarget` 개명(카드+강화 공용 포트). EditMode 146/146 유지·PlayMode 재검증(rows=2, isUIWidget=True, 바인딩 정상).
+- ⏳ 후속: `docs/superpowers/plans|specs/2026-07-08-a4-*.md`는 옛 이름(EnhanceCost*·ICardCommandTarget) → 커밋 전 최종 네이밍으로 동기화. 미커밋 상태(디스크 저장됨).
+
 ### A5. 능력 조합
 - [ ] **A5-1.** COMBO 레시피(재료2 소진→상위), 카드 풀에 combo 액션 추가
 - [x] **A5-2.** (v607) **순수 패시브 4종** — 맹공(>50%HP)/토벌(비보스)/쇄도(적수)/각성(라운드) 조건부 데미지 배수. `PureDamagePassiveData`(kind) + `AbilityModifiers.ConditionalMultiplier`(소스당 +500% cap), 명중 시점 적용(`DamageSource`). 적 `ICombatTargetInfo`(보스·HP) + `ICombatState`(라운드·적수) 주입. *(선행: 데미지 산출을 발사→피격 시점으로 리팩토링)*
