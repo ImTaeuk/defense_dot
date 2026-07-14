@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d14c611bfcb41d24ca0054a78d2816f8, type: 3}
+  m_Name: Ability_Tornado
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.Definitions.OrbitalAbilityData
+  id: tornado
+  displayName: "\uD68C\uC624\uB9AC"
+  icon: {fileID: 21300000, guid: 0cba706253a3f5940a0013f5e2ae2039, type: 3}
+  rarity: 0
+  maxLevel: 5
+  baseCost: 60
+  description: "\uCF54\uC5B4 \uC8FC\uC704 \uADA4\uB3C4 \uACF5\uACA9"
+  baseCooldown: 0.2
+  castAnimation: {fileID: 0}
+  orbiterAsset:
+    m_AssetGUID: c41eb85840eeb8a45aeda2d220e6c31b
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  baseDamage: 50
+  damagePerLevel: 2
+  rotSpeed: 2
