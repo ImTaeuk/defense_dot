@@ -4,7 +4,8 @@
     "references": [
         "DefenseDot",
         "Unity.TextMeshPro",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.Recorder.Editor"
     ],
     "includePlatforms": [
         "Editor"

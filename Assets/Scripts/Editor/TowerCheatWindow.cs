@@ -6,6 +6,9 @@ using DefenseDot.Data;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Management;
 using DefenseDot.Systems.Grid;
+using DefenseDot.Systems.Mode;
+using DefenseDot.Systems.Cards;
+using DefenseDot.Systems.Abilities;
 
 namespace DefenseDot.EditorTools
 {
@@ -17,6 +20,7 @@ namespace DefenseDot.EditorTools
         private TowerData[] towerDatas = new TowerData[0];
         private string[] towerNames = new string[0];
         private int selectedTower;
+        private int goldAmount = 1000;
         private float rangeOverride = 3f;
         private float dmgOverride = 5f;
         private float spdOverride = 1f;
@@ -67,6 +71,21 @@ namespace DefenseDot.EditorTools
             if (GUILayout.Button("2x")) Time.timeScale = 2f;
             if (GUILayout.Button("4x")) Time.timeScale = 4f;
             if (GUILayout.Button("8x")) Time.timeScale = 8f;
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+
+            // DEBUG: 합성 검증 치트 — 골드·재료MAX·카드팝업
+            EditorGUILayout.LabelField("── 합성 검증 ──", EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            goldAmount = EditorGUILayout.IntField("골드", goldAmount);
+            if (GUILayout.Button("골드 지급", GUILayout.Width(90)))
+                GiveGold();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("합성 재료 MAX"))
+                MaxFusionMaterials();
+            if (GUILayout.Button("레벨업 카드 팝업"))
+                ForceLevelUpCard();
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
 
@@ -203,6 +222,85 @@ namespace DefenseDot.EditorTools
                 if (so != null) Destroy(so);
                 clones.Remove(cell);
             }
+        }
+
+        /// <summary> 현재 골드에 설정액을 지급합니다. </summary>
+        private void GiveGold()
+        {
+            GameManager gm = FindFirstObjectByType<GameManager>();
+            if (gm == null || gm.Economy == null)
+            {
+                ShowNotification(new GUIContent("GameManager/Economy 없음"));
+                return;
+            }
+            gm.Economy.AddGold(goldAmount);
+        }
+
+        /// <summary> 대기 레벨업이 생길 때까지 처치를 집계해 레벨업 카드 팝업을 강제로 띄웁니다. </summary>
+        private void ForceLevelUpCard()
+        {
+            GameManager gm = FindFirstObjectByType<GameManager>();
+            if (gm == null || gm.Level == null)
+            {
+                ShowNotification(new GUIContent("GameManager/Level 없음"));
+                return;
+            }
+            int before = gm.Level.PendingLevelUps;
+            int guard = 0;
+            while (gm.Level.PendingLevelUps == before && guard++ < 100000) gm.Level.RegisterKill();
+        }
+
+        /// <summary> 계보 첫 레시피의 재료 2개를 코어에 확보하고 MAX 레벨로 올립니다. </summary>
+        private void MaxFusionMaterials()
+        {
+            ArenaModeBootstrap boot = FindFirstObjectByType<ArenaModeBootstrap>();
+            if (boot == null)
+            {
+                ShowNotification(new GUIContent("ArenaModeBootstrap 없음"));
+                return;
+            }
+            FusionRecipeSet lineage = boot.FusionLineage;
+            if (lineage == null || lineage.recipes.Count == 0)
+            {
+                ShowNotification(new GUIContent("계보/레시피 없음"));
+                return;
+            }
+            IAbilityCommandTarget core = boot.CoreAbility;
+            if (core == null)
+            {
+                ShowNotification(new GUIContent("CoreAbility 없음"));
+                return;
+            }
+
+            FusionRecipe recipe = lineage.recipes[0];
+            MaxAbility(core, recipe.materialA);
+            MaxAbility(core, recipe.materialB);
+        }
+
+        /// <summary> 코어 로드아웃에서 능력을 찾아(없으면 추가) MAX 레벨로 올립니다. </summary>
+        private void MaxAbility(IAbilityCommandTarget core, AbilityData data)
+        {
+            if (data == null)
+                return;
+            AbilityInstance inst = Find(core.Loadout, data);
+            if (inst == null)
+                inst = core.AddAbility(data);
+            if (inst == null)
+                return;
+            while (inst.level < data.maxLevel)
+                core.LevelUpAbility(inst);
+        }
+
+        /// <summary> 로드아웃의 액티브·패시브에서 설계도 일치 인스턴스를 찾습니다. </summary>
+        private static AbilityInstance Find(AbilityLoadout loadout, AbilityData data)
+        {
+            foreach (AbilityInstance i in loadout.Actives)
+                if (i.data == data)
+                    return i;
+            foreach (AbilityInstance i in loadout.Passives)
+                if (i.data == data)
+                    return i;
+            return null;
         }
     }
 }
