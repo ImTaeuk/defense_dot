@@ -19,7 +19,7 @@ MonoBehaviour:
   maxLevel: 5
   baseCost: 60
   description: "\uCF54\uC5B4 \uC8FC\uC704 \uADA4\uB3C4 \uACF5\uACA9"
-  baseCooldown: 1
+  baseCooldown: 0.2
   castAnimation: {fileID: 0}
   orbiterAsset:
     m_AssetGUID: c41eb85840eeb8a45aeda2d220e6c31b
@@ -27,6 +27,6 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
-  baseDamage: 3
+  baseDamage: 50
   damagePerLevel: 2
   rotSpeed: 2

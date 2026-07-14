@@ -19,3 +19,4 @@ MonoBehaviour:
   attackSpeed: 1
   cost: 50
   prefab: {fileID: 5787995391864394890, guid: 58afe9b187e9c18bc9a51f24a39e5bd7, type: 3}
+  fusionLineage: {fileID: 11400000, guid: c8446830ed7bc104b88ded33e03504bc, type: 2}
