@@ -29,6 +29,7 @@
   <Project Path="UnityEngine.UI.csproj" />
   <Project Path="MCPForUnity.Editor.csproj" />
   <Project Path="UniTask.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.csproj" />
   <Project Path="Unity.Searcher.Editor.csproj" />
   <Project Path="Unity.ResourceManager.csproj" />
   <Project Path="Unity.InferenceEngine.Tokenization.csproj" />
@@ -41,6 +42,7 @@
   <Project Path="Unity.RenderPipelines.Universal.Runtime.csproj" />
   <Project Path="Unity.Burst.CodeGen.csproj" />
   <Project Path="Unity.InputSystem.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.EditorTests.csproj" />
   <Project Path="Unity.Addressables.DocExampleCode.Editor.Tests.csproj" />
   <Project Path="Unity.VisualScripting.Flow.csproj" />
   <Project Path="UnityEngine.TestRunner.csproj" />
@@ -59,6 +61,7 @@
   <Project Path="Unity.Rider.Editor.csproj" />
   <Project Path="Unity.AI.Generators.IO.csproj" />
   <Project Path="HFDownloader.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.Popups.csproj" />
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
   <Project Path="Unity.VisualScripting.State.Editor.csproj" />
   <Project Path="Unity.AI.Assistant.Integrations.Profiler.Editor.csproj" />
@@ -83,10 +86,13 @@
   <Project Path="Unity.Multiplayer.Center.Common.csproj" />
   <Project Path="Unity.UnifiedRayTracing.Runtime.csproj" />
   <Project Path="Unity.2D.Sprite.Editor.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.PastePad.csproj" />
   <Project Path="Unity.AppUI.Navigation.csproj" />
   <Project Path="Unity.AI.Generators.Asset.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.Layout.csproj" />
   <Project Path="Unity.AI.Toolkit.Asset.csproj" />
   <Project Path="Unity.Collections.CodeGen.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.Comparables.csproj" />
   <Project Path="Unity.AI.Assistant.AssetGenerators.Editor.csproj" />
   <Project Path="Unity.UI.TestFramework.Editor.csproj" />
   <Project Path="UniTask.TextMeshPro.csproj" />
@@ -95,6 +101,7 @@
   <Project Path="Unity.AI.Assistant.Annotations.Editor.csproj" />
   <Project Path="Unity.UI.TestFramework.Runtime.csproj" />
   <Project Path="Unity.AppUI.Editor.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.Tables.csproj" />
   <Project Path="Unity.PathTracing.Runtime.csproj" />
   <Project Path="Unity.AI.Generators.UI.AIDropdownIntegrations.csproj" />
   <Project Path="Unity.AI.Assistant.API.Editor.csproj" />
@@ -119,6 +126,7 @@
   <Project Path="Unity.AI.Assistant.Bridge.Editor.csproj" />
   <Project Path="Unity.AI.Generators.Sdk.csproj" />
   <Project Path="Unity.InputSystem.ForUI.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.Scanning.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.004.csproj" />
   <Project Path="Unity.InputSystem.DocCodeSamples.csproj" />
   <Project Path="Unity.AI.Tracing.csproj" />
@@ -131,6 +139,7 @@
   <Project Path="Unity.AI.Generators.Contexts.csproj" />
   <Project Path="Unity.AI.Generators.IO.Srp.csproj" />
   <Project Path="Unity.AI.Animate.Motion.Runtime.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.Importers.csproj" />
   <Project Path="UniTask.Editor.csproj" />
   <Project Path="Unity.Rendering.LightTransport.Editor.csproj" />
   <Project Path="Unity.Collections.Editor.csproj" />
@@ -143,6 +152,8 @@
   <Project Path="Unity.ScriptableBuildPipeline.csproj" />
   <Project Path="Unity.Recorder.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.Shared.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.Shared.csproj" />
+  <Project Path="LunaWolfStudiosEditor.ScriptableSheets.Serializables.csproj" />
   <Project Path="Unity.AI.MCP.Runtime.csproj" />
   <Project Path="Unity.ShaderGraph.Utilities.csproj" />
   <Project Path="Unity.Recorder.Base.csproj" />
