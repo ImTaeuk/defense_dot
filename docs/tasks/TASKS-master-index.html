@@ -112,10 +112,10 @@
       <tr><th>단계</th><th>원작 근거</th><th>우리 상태</th><th>TASK</th></tr>
       <tr><td>① 획득 (레벨업→카드)</td><td><code>triggerLevelUp</code></td><td><span class="ok">✅ 완료</span></td><td>A3</td></tr>
       <tr class="cell-hot"><td><strong>② 강화 (골드로 레벨업/삭제)</strong></td><td><code>actEnhance</code> · <code>actDelete</code></td><td><span class="no">❌ 없음</span></td><td><strong>A4</strong></td></tr>
-      <tr class="cell-hot"><td><strong>③ 조합 (재료2→상위)</strong></td><td><code>COMBO_RECIPES</code>(14)</td><td><span class="no">❌ 없음</span></td><td><strong>A5-1</strong></td></tr>
+      <tr class="cell-hot"><td><strong>③ 조합/합성 (재료2→상위)</strong></td><td><code>COMBO_RECIPES</code>(14)</td><td>🔶 구현 완료(로직·배선·데이터·EditMode 152/152) · 플레이 검증/커밋 대기</td><td><strong>A5-1</strong></td></tr>
     </table>
     <div class="note hot">
-      <strong>②③ 부재가 "핵심인데 누락"의 최상위.</strong> 카드로 능력을 얻어도 <strong>키우거나 합칠 수 없어</strong>, 원작 빌드 성장의 2/3가 비어 있다.
+      <strong>①②③ 모두 코드상 갖춰짐.</strong> A4 강화 완료 + A5-1 합성 구현 완료(검증·커밋 잔여)로 <strong>원작 빌드 성장 3단이 코드상 완성</strong> — 남은 것은 A5-1 플레이 검증뿐.
     </div>
   </div>
 
@@ -232,6 +232,8 @@
       <tr><td>010</td><td>Skill 시스템</td><td>중간</td><td>—</td><td>012 A1~A5 흡수</td></tr>
       <tr><td>006</td><td>Actor Animator</td><td>중간(보류)</td><td>L*</td><td>방식 미결</td></tr>
       <tr><td>016</td><td>코어 전용 프리팹</td><td>중간</td><td>S~M</td><td>독립</td></tr>
+      <tr><td>017</td><td>합성 계보 비주얼 에디터</td><td>낮음</td><td>M</td><td>A5-1 후속(에디터 툴)</td></tr>
+      <tr><td>018</td><td>레비나 폭풍 계보 능력 세부</td><td>중간</td><td>M</td><td>계보 구조 검증 완료·세부(이펙트·스탯·풀) 미완</td></tr>
       <tr><td>008</td><td>진입 흐름·일시정지</td><td>중간</td><td>S</td><td>독립</td></tr>
       <tr><td>001</td><td>아레나 맵 남은 작업</td><td>중간</td><td>XS</td><td>대부분 012 흡수</td></tr>
       <tr><td>009</td><td>코드 정리</td><td>낮음</td><td>XS</td><td>⚠️ PathfindingService 보류</td></tr>

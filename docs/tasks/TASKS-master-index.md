@@ -52,9 +52,9 @@
 |---|---|---|---|
 | ① 획득 (레벨업→카드) | `triggerLevelUp`, `generateLevelUpChoices` | ✅ 완료 | A3 |
 | ② **강화 (골드로 능력 레벨업/삭제)** | `actEnhance`, `actDelete` | ✅ **완료(로직·UI·PlayMode 검증)** | **A4** |
-| ③ **조합 (재료2→상위)** | `COMBO_RECIPES`(14) | ❌ **없음** | **A5-1** |
+| ③ **조합 (재료2→상위)** | `COMBO_RECIPES`(14) | 🔶 **구현 완료(로직·배선·데이터·EditMode 152/152) · 플레이 검증/커밋 대기** | **A5-1** |
 
-→ **②③ 부재가 "핵심인데 누락"의 최상위.** 카드로 능력을 얻어도 키우거나 합칠 수 없어, 원작 빌드 성장의 2/3가 비어 있다.
+→ **①②③ 모두 코드상 갖춰짐.** A4 강화 완료 + A5-1 합성 구현 완료(검증·커밋 잔여)로 원작 빌드 성장 3단이 코드상 완성 — 남은 것은 A5-1 플레이 검증뿐.
 
 ### 2.2 페이싱·콘텐츠
 
@@ -134,9 +134,10 @@ Grid 모드·품질·구조 작업. 원작 standard 재현과 독립적이나 �
 - **우리**: `EconomyController` 존재. 능력은 `AbilityInstance.level`·`CoreAbilitySystem.LevelUpAbility` 존재. **UI + 골드 차감 로직만 없음.**
 - **착수**: 능력 슬롯 클릭 → 강화/삭제 액션 UI. `superpowers:brainstorming` 선행(신규 기능).
 
-### A5-1. 능력 조합 ★★★ · 비용 중간
+### A5-1. 능력 합성(Fusion) ★★★ · 비용 중간 · 🔶 구현 완료(플레이 검증/커밋 대기)
 - **원작**: `COMBO_RECIPES`(14) — 재료 능력 2개 소진 → 상위 능력. 카드 풀에 combo 액션 추가.
-- **우리**: 능력 데이터·풀 구조 있음. 조합 레시피 데이터·판정·카드 통합 없음.
+- **우리**: 타워별 계보 테이블(`FusionRecipeSet`)로 재해석. 데이터(`TowerData.fusionLineage`)와 로직(`FusionResolver`·`CardChoiceGenerator`·`CardChoiceApplier`) 분리 배선 완료.
+- **상태**: 로직·배선·데모 데이터·EditMode 152/152 통과. 남은 것: 플레이(PlayMode) 체감 검증 + 커밋. 상세: `docs/tasks/active/A5-1-fusion-implementation-report.html`, 계획: `docs/superpowers/plans/2026-07-10-a5-1-ability-fusion.md`.
 
 ### A6. 보스 ★★ · 비용 중간
 - **원작**: `isBoss`(100), `bossIntro`, `roundConfig`. 5라운드마다 보스 + 보상.
@@ -184,6 +185,8 @@ Grid 모드·품질·구조 작업. 원작 standard 재현과 독립적이나 �
 | [010](active/TASK-010-skill-system.md) | Skill 시스템 | 중간 | — | 012 A1~A5로 흡수 |
 | [006](active/TASK-006-actor-animator-redesign.md) | Actor Animator | 중간(보류) | L* | 방식 결정 선행 |
 | [016](active/TASK-016-core-tower-prefab.md) | 코어 전용 프리팹 | 중간 | S~M | 독립 |
+| [017](active/TASK-017-fusion-lineage-visual-editor.md) | 합성 계보 비주얼 에디터 | 낮음 | M | A5-1 후속(에디터 툴) |
+| [018](active/TASK-018-levina-storm-lineage-ability-details.md) | 레비나 폭풍 계보 능력 세부 | 중간 | M | 계보 구조 검증 완료·세부(이펙트·스탯·풀) 미완 |
 | [008](active/TASK-008-entry-flow-pause.md) | 진입 흐름·일시정지 | 중간 | S | 독립 |
 | [001](active/TASK-001-arena-map-remaining.md) | 아레나 맵 남은 작업 | 중간 | XS | 대부분 012 흡수 |
 | [009](active/TASK-009-code-cleanup.md) | 코드 정리 | 낮음 | XS | ⚠️ PathfindingService는 보류(미완성 인프라) |
@@ -197,4 +200,7 @@ Grid 모드·품질·구조 작업. 원작 standard 재현과 독립적이나 �
 
 ## 7. 갱신 이력
 
+- **2026-07-14** — **계보 다단(높이3) 구조 검증**. 원작 레비나 시그니처 라인을 레퍼런스해 Aris 계보를 높이 3 트리로 구축(데이터만, 코드 0). 신규 능력 7개(기존 타입/프리팹 복제)·레시피 3개 추가 → 1층 StormBrand+StunBomb→LevinLash / 2층 +Tornado→TempestVeil / 3층 +Railgun→StormSovereign 다단 등반 + 기존 분기 공존을 런타임 검증(PASS). FusionSystem 평면 리스트가 다단+분기 지원 확인. 능력 세부(이펙트·스탯·밸런스·풀 편입)는 **TASK-018** 신규 등록으로 이연.
+
+- **2026-07-13** — **A5-1 능력 합성(Fusion) 구현 완료**(플레이 검증/커밋 대기)로 §2.1 조합 상태 `❌→🔶`, §4 A5-1 상세 갱신. 타워별 계보(`FusionRecipeSet`) 데이터/로직 분리 설계로 구현: `FusionResolver`·`CardChoiceGenerator`·`CardChoiceApplier`·`TowerData.fusionLineage` 배선, 데모 계보(Shot+Orbital→AreaWave) 에셋, EditMode 152/152 통과. 보고서 `active/A5-1-fusion-implementation-report.html`. → 원작 성장 3단(획득 A3·강화 A4·조합 A5-1) 코드상 모두 갖춰짐(A5-1 검증·커밋만 잔여). **TASK-017**(합성 계보 비주얼 에디터) 신규 등록 — A5-1 후속 에디터 툴.
 - **2026-07-08** — 문서 신설. 원작 v608(33,187줄) 갭 재검증, 우선도×개발비용 2축 매트릭스 작성. 선행 3개 정리 문서 통합·대체: `TASKS-remaining-overview.html`(6/11 낡음)·`task-backlog-triage`(7/7 우선도×볼륨)·`TASKS-priority-effort-matrix.html`(6/29 우선도×소요시간 — 공수 등급 XS~XL 정의·TASK별 공수 추정을 §3.0·§6에 흡수). 핵심 결론: 원작 성장 3단(획득/강화/조합) 중 강화(A4)·조합(A5-1) 누락이 최상위 갭.

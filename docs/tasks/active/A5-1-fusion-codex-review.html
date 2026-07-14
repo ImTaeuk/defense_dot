@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>표준 분석 보고서 — html-report 스킬 디폴트 골격</title>
+<!--
+  이 파일은 html-report 스킬의 "표준 분석 보고서 구조" 골격입니다.
+  새 HTML 보고서를 만들 때 이 파일을 복사해 <body> 내용만 교체하세요.
+  <style> 블록(디자인 시스템)은 절대 수정하지 않습니다.
+
+  ┌─ 표준 9개 섹션 매트릭스 ─────────────────────────────────────────┐
+  │ 0. 타이틀 (h1 + .sub + .tag)                                    │
+  │ 1. 제보 요지   .panel + .note                                   │
+  │ 2. 현재 동작   .panel + <ol> + <code><strong>file:line</strong> │
+  │ 3. 근본 원인   .panel + .file + <pre> (.hl-line/.hl-inline)     │
+  │ 4. 요구사항    .panel + <ul>                                    │
+  │ 5. 설계 원칙   .panel + <table> (레퍼런스 비교, 최소 2건)        │
+  │ 5b. 레퍼런스 상세 (h3별 .panel + .file + <pre>)                 │
+  │ 6. 해결 방안   h3 + .tag + .panel + .file + Before/After Diff   │
+  │ 7. 영향 범위   .panel + <table> + .ok/.warn                     │
+  │ 8. 검증 시나리오 .panel + <table>                               │
+  │ 9. 수정 파일 요약 <table> + .note                               │
+  │ 10. .foot                                                       │
+  └─────────────────────────────────────────────────────────────────┘
+-->
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Codex 구조 리뷰 — A5-1 능력 합성(Fusion)</h1>
+  <div class="sub">
+    <span class="tag must">Codex 협업 리뷰</span>
+    <span class="tag opt">NEEDS_REVISION</span>
+    Codex CLI 0.128.0 · 2026-07-13
+  </div>
+
+  <h2>1. 변경 요약 (리뷰 대상)</h2>
+  <div class="panel">
+    <p>미커밋 상태의 A5-1 능력 합성 구조 전체를 Codex에 제출했다. 리뷰 초점은 <strong>데이터·로직 분리(SRP), 계보 배선 경로, Generator/Resolver/Applier 책임 분리, 다단 계보 확장성, Fuse 적용 정합성</strong>이었다.</p>
+    <table>
+      <tr><th>구분</th><th>파일</th></tr>
+      <tr><td>신규</td><td><code><strong>FusionRecipeSet.cs</strong></code>(계보 데이터) · <code><strong>FusionResolver.cs</strong></code>(가용 판정) · 테스트 2</td></tr>
+      <tr><td>수정</td><td>CardChoice · CardChoiceApplier · CardChoiceGenerator · CardEnums · TowerData · ArenaModeBootstrap · GameContext · GameManager · CardSelectionPresenter</td></tr>
+    </table>
+    <div class="note">Codex 판정: <strong>NEEDS_REVISION</strong> — "기능 형태는 근접했으나, 현재 seam이 raw 계보 데이터를 UI/카드 조립까지 너무 깊이 전달하고, fuse 경로는 다단 계보 전에 원자적 도메인 경계가 필요하다."</div>
+  </div>
+
+  <h2>2. Codex 검토 결과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>#</th><th>심각도</th><th>위치</th><th>지적</th></tr>
+      <tr><td>H1</td><td><span class="warn">High</span></td><td><code><strong>CardChoiceApplier.cs:20</strong></code></td><td>Fuse 적용이 비원자적 — 재료 제거 후 <code>AddAbility</code> 실패를 무시, 상태 변동 시 로드아웃이 훼손된 채 남음</td></tr>
+      <tr><td>H2</td><td><span class="warn">High</span></td><td><code><strong>CardChoice.cs:11</strong></code></td><td>합성 카드가 생성 시점의 가변 <code>AbilityInstance</code>를 포획 → 예열 await·연속 레벨업·로드아웃 변동 사이 stale 가능</td></tr>
+      <tr><td>H3</td><td><span class="warn">High</span></td><td><code><strong>GameContext.cs:45</strong></code> 외</td><td>raw <code>FusionRecipeSet</code>가 DI를 타고 UI 프리젠터·생성기까지 누출 → 프리젠터가 계보 데이터를 알게 됨</td></tr>
+      <tr><td>M1</td><td>Medium</td><td><code><strong>CardChoiceGenerator.cs:21</strong></code></td><td>합성 규칙 분산 — resolver는 가용성, generator는 우선순위+결과배제를 담당(경계 흐림)</td></tr>
+      <tr><td>M2</td><td>Medium</td><td><code><strong>FusionRecipeSet.cs:11</strong></code></td><td>평면 리스트는 단순 체인만 지원 — 다단 계보의 순환·중복결과·모호성·도달불가 검증 없음</td></tr>
+      <tr><td>M3</td><td>Medium</td><td><code><strong>CardChoiceGenerator.cs:34</strong></code></td><td><code>IsLineageResult</code>가 풀×레시피 전수 스캔, <code>Available</code>가 매번 새 리스트 할당</td></tr>
+      <tr><td>M4</td><td>Medium</td><td><code><strong>CardChoiceApplier.cs:21</strong></code></td><td>예열 await 후 재료가 여전히 MAX·보유인지 재확인 없음</td></tr>
+    </table>
+  </div>
+
+  <h2>3. reconcile 결과 (프로젝트 제약·컨벤션 대조)</h2>
+  <div class="panel">
+    <p>Codex 제안을 HARD 제약·CLAUDE.md 컨벤션·실사용 위험도로 판정했다. <strong>HARD 위반은 0건</strong>이며, 대부분 유효하나 재설계가 필요해 후속 TASK로 분류한다.</p>
+    <table>
+      <tr><th>#</th><th>판정</th><th>근거 / 실제 위험</th></tr>
+      <tr><td>H1</td><td><span class="warn">Accept · 재설계</span></td><td>유효. 단 Fuse는 재료 2개를 먼저 제거하므로 슬롯 여유가 생겨 <code>AddAbility</code> 실패 가능성은 실사용상 낮음. 원자적 커맨드(성공 반환)로 묶는 개선은 후속.</td></tr>
+      <tr><td>H2</td><td><span class="warn">Accept · 재설계</span></td><td>구조적으로 타당. 실사용 위험은 낮음 — 선택 즉시 <code><strong>current=null</strong></code>로 재클릭 차단, 선택 중 <code>timeScale=0</code>이라 로드아웃 불변. 결과 능력은 <code>AbilityData</code> 식별자로 재해석하는 편이 견고.</td></tr>
+      <tr><td>H3</td><td><span class="note" style="display:inline">Defer · 사용자 판단</span></td><td>가장 가치 있는 장기 제안. <code>CardOfferService</code>/<code>FusionCatalog</code> 경계 도입은 실제 리팩토링 규모라 승인 필요.</td></tr>
+      <tr><td>M1</td><td>Defer</td><td>H3와 한 묶음(경계 신설 시 자연 해소).</td></tr>
+      <tr><td>M2</td><td><span class="ok">Accept · 후속</span></td><td>다단 계보 도입 시 필수. 지금은 단일단계 데모라 <strong>YAGNI</strong> — 검증된 불변 그래프/인덱스를 부트스트랩에서 구축하는 안을 다단 구현 TASK에 반영.</td></tr>
+      <tr><td>M3</td><td>Defer</td><td>레시피 1·풀 7로 규모 미미, 생성은 레벨업 시에만 발생 → 조기 최적화. 단 <code>CollectionPool</code> 컨벤션 정렬 여지는 인정.</td></tr>
+      <tr><td>M4</td><td><span class="warn">Accept · 재설계</span></td><td>H1/H2와 동일 계열 — 원자적 fuse 커맨드로 함께 해소.</td></tr>
+    </table>
+    <div class="note">Codex 질문 답변: ① 예열 중 입력은 <code><strong>current=null</strong></code>로 <span class="ok">차단됨</span>(이중적용 안전). ② <code>RemoveAbility</code>의 슬롯 해제·실패보고 동기성은 <code>IAbilityCommandTarget</code> 구현 확인 필요(원자성 개선 시 함께 점검).</div>
+  </div>
+
+  <h2>4. 미해결 · 사용자 판단 필요</h2>
+  <div class="panel">
+    <p>다음 두 축은 규모가 있어 결정을 요청한다.</p>
+    <table>
+      <tr><th>주제</th><th>Codex 제안</th><th>현 구조</th><th>판단 포인트</th></tr>
+      <tr>
+        <td><strong>카드 도메인 경계</strong> (H3·M1)</td>
+        <td>프리젠터↔데이터 사이 <code>CardOfferService</code> 신설, 프리젠터는 "카드 요청"만</td>
+        <td>프리젠터가 lineage 보유 → generator 직접 호출</td>
+        <td>지금 MVP 규모에 과할 수 있음. 카드 종류가 더 늘면(합성 외 신규 티어) 가치↑</td>
+      </tr>
+      <tr>
+        <td><strong>원자적 fuse 커맨드</strong> (H1·H2·M4)</td>
+        <td>재검증→소진→부여를 코어 도메인의 단일 원자 연산으로, 성공 결과 반환</td>
+        <td>Applier가 Remove·Remove·Add 순차 호출(반환 무시)</td>
+        <td>단일단계·일시정지 선택에선 저위험. 다단·비정지 도입 전 선제 정리하면 안전</td>
+      </tr>
+      <tr>
+        <td><strong>다단 계보 그래프</strong> (M2)</td>
+        <td>부트스트랩에서 검증된 불변 그래프 구축(순환·중복·도달불가 차단)</td>
+        <td>평면 <code>List&lt;FusionRecipe&gt;</code> + OnValidate 경고</td>
+        <td>다단 도입 시점에 필요 — 미래 TASK로 예약</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>5. 잔여 작업 / 커밋 가능 여부</h2>
+  <div class="panel">
+    <ul>
+      <li><span class="ok">현재 구현은 커밋 가능</span> — HARD 위반 0건, EditMode 619/619 통과, 인게임 합성 라이브 검증 완료. Codex 지적은 <strong>전부 개선·확장 방향</strong>이지 현 기능을 막는 결함이 아님.</li>
+      <li><strong>후속 TASK 후보</strong>: (A) 원자적 fuse 커맨드 + 재검증(H1·H2·M4) → 다단/비정지 도입 전 우선. (B) 카드 도메인 경계 <code>CardOfferService</code>(H3·M1) → 카드 종류 확장 시. (C) 다단 계보 검증 그래프(M2) → 기존 <strong>TASK-017</strong>(계보 비주얼 에디터)와 함께 다룰 영역.</li>
+      <li><strong>즉시 적용 안 함</strong>: 사용자가 "피드백 요청"만 했고, 세 항목 모두 재설계/규모가 있어 승인 후 진행.</li>
+    </ul>
+    <div class="note">권장 순서: <strong>지금 커밋(기능 확정) → (A) 원자 커맨드 소규모 정리 → 다단 계보 착수 시 (B)(C)</strong>. (A)만 선행하면 다단 확장이 안전해진다.</div>
+  </div>
+
+  <p class="foot">Codex 협업 리뷰 완료 — 후속 적용 항목은 사용자 결정 대기</p>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>표준 분석 보고서 — html-report 스킬 디폴트 골격</title>
+<!--
+  이 파일은 html-report 스킬의 "표준 분석 보고서 구조" 골격입니다.
+  새 HTML 보고서를 만들 때 이 파일을 복사해 <body> 내용만 교체하세요.
+  <style> 블록(디자인 시스템)은 절대 수정하지 않습니다.
+
+  ┌─ 표준 9개 섹션 매트릭스 ─────────────────────────────────────────┐
+  │ 0. 타이틀 (h1 + .sub + .tag)                                    │
+  │ 1. 제보 요지   .panel + .note                                   │
+  │ 2. 현재 동작   .panel + <ol> + <code><strong>file:line</strong> │
+  │ 3. 근본 원인   .panel + .file + <pre> (.hl-line/.hl-inline)     │
+  │ 4. 요구사항    .panel + <ul>                                    │
+  │ 5. 설계 원칙   .panel + <table> (레퍼런스 비교, 최소 2건)        │
+  │ 5b. 레퍼런스 상세 (h3별 .panel + .file + <pre>)                 │
+  │ 6. 해결 방안   h3 + .tag + .panel + .file + Before/After Diff   │
+  │ 7. 영향 범위   .panel + <table> + .ok/.warn                     │
+  │ 8. 검증 시나리오 .panel + <table>                               │
+  │ 9. 수정 파일 요약 <table> + .note                               │
+  │ 10. .foot                                                       │
+  └─────────────────────────────────────────────────────────────────┘
+-->
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>계보 합성(Fusion) 시스템 — 스크립트별 정리</h1>
+  <div class="sub">
+    <span class="tag must">구조 개요</span>
+    <span class="tag opt">현행 반영</span>
+    역할 · 이름 · 동작 · 2026-07-14
+  </div>
+
+  <h2>1. 개요</h2>
+  <div class="panel">
+    <p>
+      타워마다 <strong>합성 계보</strong>를 두고, 재료 능력 2개가 각각 MAX 레벨이며 결과가 미보유일 때
+      레벨업 카드에 <strong>합성 카드(Fusion 티어)</strong>를 제시한다. 선택 시 재료 2개를 소진하고 결과 능력을 부여한다.
+    </p>
+    <div class="note">
+      설계 원칙: <strong>① 합성 규칙은 한 집(<code>FusionSystem</code>)에만</strong> · <strong>② 데이터 원천(계보)은 그 집이 직접 소유</strong> · <strong>③ 이름은 동작 그대로(게임 어휘)</strong>.
+    </div>
+  </div>
+
+  <h2>2. 데이터 흐름</h2>
+  <div class="panel">
+    <div class="file">계보 데이터 → 시스템 생성 → DI → UI → 위임</div>
+<pre><code><span class="hl-line">TowerData.fusionLineage        <span class="hl-inline">// 데이터 원천</span></span>
+   ↓ 구성 시점 노출
+ArenaModeBootstrap.FusionLineage
+   ↓ 합성 루트에서 생성
+GameManager  →  new FusionSystem(lineage)
+   ↓ 주입 (서비스만 노출, raw 계보는 UI에 안 감)
+GameContext.Fusion
+   ↓
+CardSelectionPresenter
+   ├─ AbilityCardGenerator.Generate(..., fusion)   → fusion.CollectOffers / fusion.IsResult 위임
+   └─ AbilityCardApplier.ApplyAsync(..., fusion)    → fusion.Apply 위임
+                                                         ↓ 모든 합성 규칙
+<span class="hl-line">                                                    FusionSystem  <span class="hl-inline">// 단일 원천</span></span></code></pre>
+  </div>
+
+  <h2>3. 스크립트별 정리</h2>
+
+  <h3>① 데이터 계층</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Cards/FusionRecipeSet.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>한 타워의 <strong>합성 계보 데이터</strong>(ScriptableObject). 순수 데이터, 로직 없음</td></tr>
+      <tr><td>주요 멤버</td><td><code>List&lt;FusionRecipe&gt; recipes</code> · <code>FusionRecipe{ materialA, materialB, result }</code>(모두 AbilityData)</td></tr>
+      <tr><td>동작</td><td><code>OnValidate</code>로 디자이너 실수(참조 누락·자기합성·결과=재료)를 콘솔 경고</td></tr>
+    </table>
+    <div class="file">Assets/Scripts/Data/TowerData.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>타워 정의 데이터. 자기 계보를 필드로 보유</td></tr>
+      <tr><td>추가 멤버</td><td><code>public FusionRecipeSet fusionLineage</code></td></tr>
+    </table>
+  </div>
+
+  <h3>② 핵심 시스템 — 합성의 단일 원천</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Cards/FusionSystem.cs</div>
+    <p><strong>역할</strong>: 합성의 <strong>단일 원천</strong>. 계보 데이터를 직접 소유하고 판정·카드 생성·결과 배제·원자적 적용을 모두 담당. 나머지 코드는 여기에 위임만 한다.</p>
+    <table>
+      <tr><th>멤버</th><th>동작</th></tr>
+      <tr><td><code>FusionSystem(FusionRecipeSet lineage)</code></td><td>계보를 직접 소유(null이면 합성 비활성)</td></tr>
+      <tr><td><code>CollectOffers(loadout, into, max)</code></td><td>재료 둘 다 보유+MAX & 결과 미보유인 레시피를 합성 카드로 만들어 목록에 채움(max 도달 시 중단)</td></tr>
+      <tr><td><code>IsResult(data)</code></td><td>해당 능력이 계보 결과인지 판정(일반 카드 풀에서 배제용)</td></tr>
+      <tr><td><code>Apply(core, card)</code></td><td>적용 직전 재검증(재료 재해석·MAX·결과 미보유) 후 <strong>원자적</strong>으로 재료 2개 소진→결과 부여</td></tr>
+    </table>
+    <div class="note"><code>FindMaxed</code>/<code>Find</code>는 내부 헬퍼(로드아웃에서 MAX 인스턴스 탐색).</div>
+  </div>
+
+  <h3>③ 카드 모델 · 조립 · 적용</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Cards/AbilityCard.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>카드 한 장이 <strong>하는 일(동작 명세)</strong>. "선택지"가 아니라 능력에 New/Level/Fuse를 적용하는 카드(readonly struct)</td></tr>
+      <tr><td>주요 필드</td><td><code>action</code>(New/Level/Fuse) · <code>data</code>(대상 능력) · <code>instance</code>(Level 대상) · <code>fromLevel/toLevel</code> · <code>tier</code> · <code>materialA/materialB</code>(합성 재료, AbilityData 식별자)</td></tr>
+      <tr><td>팩토리</td><td><code>NewCard</code> · <code>LevelCard</code> · <code>FusionCard</code></td></tr>
+    </table>
+    <div class="file">Assets/Scripts/Systems/Cards/AbilityCardGenerator.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>레벨업 시 보유/슬롯/풀을 보고 <strong>카드 N장 조립</strong>. 합성은 FusionSystem에 위임</td></tr>
+      <tr><td>동작</td><td><code>Generate(loadout, pool, config, level, fusion)</code> — ① <code>fusion.CollectOffers</code>로 합성 카드 우선 채움 ② 일반 풀에서 <code>fusion.IsResult</code> 결과 배제 후 신규/레벨업 채움</td></tr>
+    </table>
+    <div class="file">Assets/Scripts/Systems/Cards/AbilityCardApplier.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>선택된 카드를 <strong>능력 대상에 적용</strong>(뷰 비의존)</td></tr>
+      <tr><td>동작</td><td><code>ApplyAsync(core, card, pool, fusion)</code> — New: 예열 후 추가·레벨업 / <strong>Fuse: 예열 후 <code>fusion.Apply</code> 위임</strong> / Level: 목표까지 레벨업</td></tr>
+    </table>
+    <div class="file">Assets/Scripts/Systems/Cards/CardEnums.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td><code>CardAction</code></td><td><code>New · Level · Fuse</code></td></tr>
+      <tr><td><code>CardTier</code></td><td><code>New · Upgrade · Fusion · Lucky · SuperLucky</code></td></tr>
+    </table>
+  </div>
+
+  <h3>④ 배선(DI) — 데이터 원천에서 시스템까지</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/Systems/Mode/ArenaModeBootstrap.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>중앙 타워의 계보를 상위(GameManager)에 노출</td></tr>
+      <tr><td>멤버</td><td><code>FusionLineage =&gt; centerTowerData?.fusionLineage</code></td></tr>
+    </table>
+    <div class="file">Assets/Scripts/Systems/Management/GameManager.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>합성 루트 — 계보로 <code>FusionSystem</code>을 생성해 컨텍스트에 주입</td></tr>
+      <tr><td>동작</td><td><code>new FusionSystem(fusionLineage)</code> → <code>GameContext(..., fusion)</code></td></tr>
+    </table>
+    <div class="file">Assets/Scripts/Domain/GameContext.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>DI 컨테이너. 합성은 <strong>서비스만</strong> 노출(raw 계보 UI 미노출)</td></tr>
+      <tr><td>멤버</td><td><code>public FusionSystem Fusion { get; }</code></td></tr>
+    </table>
+  </div>
+
+  <h3>⑤ 뷰 연결</h3>
+  <div class="panel">
+    <div class="file">Assets/Scripts/UI/Presenters/CardSelectionPresenter.cs</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>역할</td><td>레벨업 → 카드 생성 → 표시/정지 → 선택 적용 → 복귀 오케스트레이션</td></tr>
+      <tr><td>동작</td><td><code>ctx.Fusion</code> 보유 · <code>generator.Generate(..., fusion)</code>로 카드 생성 · 선택 시 <code>AbilityCardApplier.ApplyAsync(core, card, pooling, fusion)</code></td></tr>
+    </table>
+    <div class="note">렌더링은 <code>CardPresentation.Build(card) → CardDisplay → CardSlotWidget</code>(변경 없음, 뷰 계층).</div>
+  </div>
+
+  <h2>4. 검증 · 테스트</h2>
+  <div class="panel">
+    <table>
+      <tr><th>파일</th><th>검증</th></tr>
+      <tr><td><code><strong>FusionSystemTests.cs</strong></code></td><td>가용 판정 4 + 원자적 적용 2(재검증 실패 시 무변경 포함) + 결과 배제 1</td></tr>
+      <tr><td><code><strong>FusionCardTests.cs</strong></code></td><td>AbilityCardGenerator × FusionSystem 통합(합성 카드 제시 · 결과 이중노출 배제)</td></tr>
+    </table>
+    <div class="note">현재: 컴파일 <span class="ok">에러 0건</span> · EditMode <span class="ok">621/621 통과</span> · 미커밋. 데이터 에셋: <code>Aris_FusionLineage.asset</code>(Shot + Orbital → 노바) + <code>TowerData.asset</code> 배선.</div>
+  </div>
+
+  <h2>5. 네이밍 원칙(이 시스템에 적용)</h2>
+  <div class="panel">
+    <ul>
+      <li><strong>동작 그대로 읽히게</strong>: 카드 모델은 "선택지(CardChoice)"가 아니라 능력에 동작을 적용하는 <code>AbilityCard</code></li>
+      <li><strong>게임 어휘</strong>: 합성 단일 원천은 Repository/Service가 아니라 <code>FusionSystem</code>(<code>CoreAbilitySystem</code>과 짝)</li>
+      <li><strong>데이터 원천 직접 소유</strong>: 계보는 <code>FusionSystem</code>이 <code>private</code>로 직접 보유</li>
+    </ul>
+  </div>
+
+  <p class="foot">계보 합성 시스템 스크립트별 정리 — 현행 코드 반영</p>
+
+</div>
+</body>
+</html>
