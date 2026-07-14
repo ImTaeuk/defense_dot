@@ -13,17 +13,17 @@ namespace DefenseDot.Systems.Cards
         public Sprite icon;
     }
 
-    /// <summary> CardChoice → 표시용 데이터 변환(순수). </summary>
+    /// <summary> Card → 표시용 데이터 변환(순수). </summary>
     public static class CardPresentation
     {
-        public static CardDisplay Build(in CardChoice c)
+        public static CardDisplay Build(in Card c)
         {
             AbilityData d = c.data;
             bool passive = d is PassiveAbilityData;
             string kind = passive ? "[ 패시브 ]" : "[ 액티브 ]";
             string luckMark = c.tier == CardTier.SuperLucky ? "★★ "
                 : c.tier == CardTier.Lucky ? "★ " : "";
-            string body = c.action == CardAction.Level
+            string body = c.applyType == CardApplyType.Level
                 ? $"Lv{c.fromLevel} > Lv{c.toLevel}"
                 : (string.IsNullOrEmpty(d.description) ? d.displayName : d.description);
             string desc = luckMark + body;

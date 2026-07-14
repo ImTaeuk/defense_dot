@@ -20,8 +20,9 @@ namespace DefenseDot.UI.Presenters
         private readonly AbilityPool pool;
         private readonly GameFlowModel flow;
         private readonly PoolManager pooling;
-        private readonly CardChoiceGenerator generator = new CardChoiceGenerator();
-        private List<CardChoice> current;
+        private readonly FusionSystem fusion;
+        private readonly CardGenerator generator = new CardGenerator();
+        private List<Card> current;
 
         public CardSelectionPresenter(CardSelectionView view, GameContext ctx) : base(view)
         {
@@ -31,6 +32,7 @@ namespace DefenseDot.UI.Presenters
             pool = ctx.AbilityPool;
             flow = ctx.Flow;
             pooling = ctx.Pooling;
+            fusion = ctx.Fusion;
         }
 
         protected override void OnInitialize()
@@ -56,7 +58,7 @@ namespace DefenseDot.UI.Presenters
         private void TryShowNextLevelUpCard()
         {
             if (!level.TryConsumePending()) return;   // 대기 레벨업 없으면 종료
-            current = generator.Generate(core.Loadout, pool, config, level.Level);
+            current = generator.Generate(core.Loadout, pool, config, level.Level, fusion);
             if (current == null || current.Count == 0) { current = null; TryShowNextLevelUpCard(); return; }   // 후보 0개면 다음 대기 소비
             view.ShowChoices(current);
             if (config.pauseOnCardSelect) Time.timeScale = 0f;   // 카드 선택 중 정지
@@ -65,17 +67,17 @@ namespace DefenseDot.UI.Presenters
         private void HandleSelected(int idx)
         {
             if (current == null || idx < 0 || idx >= current.Count) return;
-            CardChoice choice = current[idx];
+            Card card = current[idx];
             current = null;   // 예열 대기 중 재선택 가드
-            ApplySelectedAsync(choice).Forget();
+            ApplySelectedAsync(card).Forget();
         }
 
         /// <summary> 선택 카드의 이펙트를 예열한 뒤 적용하고 카드 UI를 닫습니다. </summary>
-        private async UniTaskVoid ApplySelectedAsync(CardChoice choice)
+        private async UniTaskVoid ApplySelectedAsync(Card card)
         {
             try
             {
-                await CardChoiceApplier.ApplyAsync(core, choice, pooling);
+                await CardApplier.ApplyAsync(core, card, pooling, fusion);
             }
             finally
             {

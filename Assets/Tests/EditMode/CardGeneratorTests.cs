@@ -6,7 +6,7 @@ using DefenseDot.Core;
 
 namespace DefenseDot.Tests.EditMode
 {
-    public class CardChoiceGeneratorTests
+    public class CardGeneratorTests
     {
         private sealed class StubActive : ActiveAbilityData
         {
@@ -40,7 +40,7 @@ namespace DefenseDot.Tests.EditMode
         public void Generate_NoDuplicates_AndRespectsCount()
         {
             var lo = new AbilityLoadout(6, 6);
-            var gen = new CardChoiceGenerator(() => 0f); // 항상 첫 인덱스/New
+            var gen = new CardGenerator(() => 0f); // 항상 첫 인덱스/New
             var pool = Pool(Active(), Active(), Active());
             var choices = gen.Generate(lo, pool, Config(3), level: 1);
             Assert.AreEqual(3, choices.Count);
@@ -54,9 +54,9 @@ namespace DefenseDot.Tests.EditMode
             var owned = Active();
             lo.TryAdd(owned);                    // 슬롯 가득
             var pool = Pool(Active(), Active());  // 신규 후보 있지만 슬롯 없음
-            var gen = new CardChoiceGenerator(() => 0f);
+            var gen = new CardGenerator(() => 0f);
             var choices = gen.Generate(lo, pool, Config(3), level: 1);
-            foreach (var c in choices) Assert.AreEqual(CardAction.Level, c.action);
+            foreach (var c in choices) Assert.AreEqual(CardApplyType.Level, c.applyType);
             Assert.AreEqual(1, choices.Count, "레벨업 가능한 1종만");
         }
 
@@ -66,7 +66,7 @@ namespace DefenseDot.Tests.EditMode
             var lo = new AbilityLoadout(1, 0);
             var maxed = Active(max: 1);
             lo.TryAdd(maxed);                    // 이미 max, 레벨업 불가
-            var gen = new CardChoiceGenerator(() => 0f);
+            var gen = new CardGenerator(() => 0f);
             var choices = gen.Generate(lo, Pool(), Config(3), level: 1); // 풀 비움
             Assert.AreEqual(0, choices.Count);
         }
@@ -77,7 +77,7 @@ namespace DefenseDot.Tests.EditMode
             var lo = new AbilityLoadout(6, 6);
             var cfg = Config(1);
             cfg.enableLucky = true; cfg.superLuckyChance = 1f;   // 항상 슈퍼럭키
-            var gen = new CardChoiceGenerator(() => 0f);
+            var gen = new CardGenerator(() => 0f);
             var choices = gen.Generate(lo, Pool(Active()), cfg, level: 1);
             Assert.AreEqual(1, choices.Count);
             Assert.AreEqual(CardTier.SuperLucky, choices[0].tier);
@@ -88,7 +88,7 @@ namespace DefenseDot.Tests.EditMode
         public void Generate_LuckyDisabled_NormalTierAndLevel()
         {
             var lo = new AbilityLoadout(6, 6);
-            var gen = new CardChoiceGenerator(() => 0f);
+            var gen = new CardGenerator(() => 0f);
             var choices = gen.Generate(lo, Pool(Active()), Config(1), level: 1); // enableLucky 기본 false
             Assert.AreEqual(CardTier.New, choices[0].tier);
             Assert.AreEqual(1, choices[0].toLevel);

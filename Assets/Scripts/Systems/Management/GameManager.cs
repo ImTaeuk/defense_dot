@@ -123,11 +123,13 @@ namespace DefenseDot.Systems.Management
             {
                 DefenseDot.Systems.Abilities.IAbilityCommandTarget coreTarget = arenaBoot != null ? arenaBoot.CoreAbility : null;
                 var abilityUpgrades = new AbilityUpgradeService(coreTarget, Economy, abilityUpgradeConfig);
+                DefenseDot.Systems.Cards.FusionRecipeSet fusionLineage = arenaBoot != null ? arenaBoot.FusionLineage : null;
+                var fusion = new DefenseDot.Systems.Cards.FusionSystem(fusionLineage);
                 var ctx = new DefenseDot.Domain.GameContext(
                     Economy, Core, Wave, Score, RoundTimer, Flow, Level,
                     modeBootstrap.EnemyDisplayCapacity, towerRoster,
                     modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget, poolManager,
-                    abilityUpgrades);
+                    abilityUpgrades, fusion);
                 uiRoot.Inject(ctx);
             }
 

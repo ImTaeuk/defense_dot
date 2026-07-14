@@ -22,5 +22,7 @@ namespace DefenseDot.Data
         public int cost;
         [Tooltip("게임 내에 생성될 타워 프리팹")]
         public GameObject prefab;
+        [Tooltip("이 타워(캐릭터)의 합성 계보")]
+        public DefenseDot.Systems.Cards.FusionRecipeSet fusionLineage;
     }
 }

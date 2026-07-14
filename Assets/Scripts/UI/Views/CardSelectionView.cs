@@ -40,7 +40,7 @@ namespace DefenseDot.UI.Views
         }
 
         /// <summary> 카드 목록을 위젯에 반영하고 모달을 표시합니다. </summary>
-        public void ShowChoices(IReadOnlyList<CardChoice> choices)
+        public void ShowChoices(IReadOnlyList<Card> choices)
         {
             Show();   // gameObject 활성화(UIView)
             if (root != null) root.SetActive(true);

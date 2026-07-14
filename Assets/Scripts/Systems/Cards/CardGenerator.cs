@@ -4,19 +4,23 @@ using DefenseDot.Systems.Abilities;
 namespace DefenseDot.Systems.Cards
 {
     /// <summary> 레벨업 시 보유/슬롯/풀을 보고 카드 N장을 생성. </summary>
-    public sealed class CardChoiceGenerator
+    public sealed class CardGenerator
     {
         private readonly System.Func<float> rng;
 
-        public CardChoiceGenerator(System.Func<float> rng = null)
+        public CardGenerator(System.Func<float> rng = null)
         {
             this.rng = rng ?? (() => UnityEngine.Random.value);
         }
 
-        public List<CardChoice> Generate(AbilityLoadout loadout, AbilityPool pool, ArenaCardConfig config, int level)
+        /// <summary> 보유/슬롯/풀/합성을 보고 카드 N장을 생성합니다. 가용 합성이 있으면 우선 제시. </summary>
+        public List<Card> Generate(AbilityLoadout loadout, AbilityPool pool, ArenaCardConfig config, int level, FusionSystem fusion = null)
         {
-            var result = new List<CardChoice>();
+            var result = new List<Card>();
             if (loadout == null || config == null) return result;
+
+            // 1. 가용 합성 우선 제시 — 판정·생성은 FusionSystem에 위임
+            fusion?.CollectOffers(loadout, result, config.choiceCount);
 
             var newPool = new List<AbilityData>();
             if (pool != null)
@@ -24,7 +28,9 @@ namespace DefenseDot.Systems.Cards
                 for (int i = 0; i < pool.abilities.Count; i++)
                 {
                     var d = pool.abilities[i];
-                    if (d != null && loadout.CanAdd(d)) newPool.Add(d); // 슬롯+미보유 동시 검사
+                    // 슬롯+미보유 검사 + 합성 결과는 합성 전용이라 일반 풀에서 제외(FusionSystem 판정)
+                    if (d != null && loadout.CanAdd(d) && !(fusion != null && fusion.IsResult(d)))
+                        newPool.Add(d);
                 }
             }
 
@@ -35,7 +41,7 @@ namespace DefenseDot.Systems.Cards
             float newChance = level < config.earlyLevelThreshold
                 ? config.newCardChanceEarly : config.newCardChanceLate;
 
-            for (int n = 0; n < config.choiceCount; n++)
+            for (int n = result.Count; n < config.choiceCount; n++)
             {
                 bool canNew = newPool.Count > 0;
                 bool canLv = levelPool.Count > 0;
@@ -51,7 +57,7 @@ namespace DefenseDot.Systems.Cards
                     int idx = Index(newPool.Count);
                     AbilityData picked = newPool[idx];
                     int toLevel = UnityEngine.Mathf.Min(picked.maxLevel, 1 + bonusLevels);
-                    result.Add(CardChoice.NewCard(picked, tier, toLevel));
+                    result.Add(Card.NewCard(picked, tier, toLevel));
                     newPool.RemoveAt(idx);
                 }
                 else
@@ -59,7 +65,7 @@ namespace DefenseDot.Systems.Cards
                     int idx = Index(levelPool.Count);
                     AbilityInstance inst = levelPool[idx];
                     int toLevel = UnityEngine.Mathf.Min(inst.data.maxLevel, inst.level + 1 + bonusLevels);
-                    result.Add(CardChoice.LevelCard(inst, tier, toLevel));
+                    result.Add(Card.LevelCard(inst, tier, toLevel));
                     levelPool.RemoveAt(idx);
                 }
             }

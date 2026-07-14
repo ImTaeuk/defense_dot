@@ -45,6 +45,9 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 코어 능력 시스템(카드 명령 대상). CreateMode 이후 non-null. </summary>
         public CoreAbilitySystem CoreAbility => coreAbility;
 
+        /// <summary> 선택된 타워의 합성 계보(카드 생성용). </summary>
+        public DefenseDot.Systems.Cards.FusionRecipeSet FusionLineage => centerTowerData != null ? centerTowerData.fusionLineage : null;
+
         /// <summary> 아레나 모드의 적 수 표시 한계(수용 한계)입니다. </summary>
         public override int EnemyDisplayCapacity =>
             arenaView != null && arenaView.Config != null ? arenaView.Config.maxAlive : 80;
