@@ -1,8 +1,15 @@
 # TASK-017: 합성 계보(Fusion Lineage) 비주얼 에디터
 
 **작성일**: 2026-07-13
-**상태**: 대기 (계획 전)
+**상태**: 구현 완료 (GraphView 에디터 · 로드·편집·저장 검증)
 **우선순위**: 낮음 (A5-1 플레이 검증·안정화 이후)
+
+> **구현 (2026-07-15)**: `Assets/Scripts/Editor/` 에 GraphView 기반 에디터 4파일 —
+> `FusionLineageEditorWindow`(메뉴 `DefenseDot/Fusion Lineage Editor` · 계보 드롭다운) ·
+> `FusionLineageGraphView`(로드·저장·연결) · `AbilityNode`(이름·아이콘·포트 입력2·출력1) ·
+> `FusionLineageLayout`(깊이별 자동 배치). "결과 노드=2입력 포트" 모델로 다단 체인 표현.
+> 노드 추가=캔버스 우클릭, 레시피 추가/삭제=포트 연결/엣지 삭제, 편집 시 자동 저장.
+> 검증: Aris 계보 로드(10노드/8엣지), 편집(추가 4→5·제거 5→4) 에셋 반영 확인.
 
 ---
 
