@@ -1,7 +1,7 @@
 # TASK-018: 레비나 폭풍 계보 능력 세부 구현
 
 **작성일**: 2026-07-14
-**상태**: 대기 (구조 검증 완료 · 세부 미구현)
+**상태**: 진행 중 (잎 풀 편입·실플레이 등반 검증 완료 · 스탯/VFX 미완)
 **우선순위**: 중간 (계보 다단 실플레이 시)
 
 ---
@@ -31,7 +31,7 @@
 
 - **A. 스탯/밸런스**: 각 능력의 damage·pierce·cooldown·baseCost를 티어별로 차등(정점이 가장 강). 현재는 원본 복제값 그대로.
 - **B. 이펙트/VFX**: 현재 프로젝타일 2종은 Shot, 에어리어 4종은 AreaWave와 **완전히 동일한 외형**. 최소한 티어·능력별로 구분되는 VFX/색.
-- **C. 능력 획득 경로(실플레이)**: 잎 능력(stormBrand·stunBomb·tornado·railgun)이 현재 `AbilityPool`에 없어 일반 카드로 안 뜸 → 실제 플레이로 계보를 등반하려면 잎을 풀에 편입(또는 계보 시작 능력 지정).
+- **C. 능력 획득 경로(실플레이)** ✅ 완료: 잎 4종(stormBrand·stunBomb·tornado·railgun)을 `AbilityPool.asset`에 편입 → 신규 카드로 뽑힘 확인. 실제 플레이(카드 UI)로 1층→2층→3층 정점(StormSovereign)까지 등반 완주 검증. (계보 결과는 `IsResult`가 풀에서 배제)
 - **D. 표시**: displayName 한글 확정, description·icon 지정(현재 복제본 아이콘 공유).
 - **E. (선택) 타입 매핑 재검토**: tornado=Orbital 등 매핑이 능력 성격에 맞는지.
 

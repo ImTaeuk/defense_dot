@@ -186,7 +186,7 @@ Grid 모드·품질·구조 작업. 원작 standard 재현과 독립적이나 �
 | [006](active/TASK-006-actor-animator-redesign.md) | Actor Animator | 중간(보류) | L* | 방식 결정 선행 |
 | [016](active/TASK-016-core-tower-prefab.md) | 코어 전용 프리팹 | 중간 | S~M | 독립 |
 | [017](active/TASK-017-fusion-lineage-visual-editor.md) | 합성 계보 비주얼 에디터 | 낮음 | ✅ 구현완료 | GraphView 에디터·편집/저장 검증 |
-| [018](active/TASK-018-levina-storm-lineage-ability-details.md) | 레비나 폭풍 계보 능력 세부 | 중간 | M | 계보 구조 검증 완료·세부(이펙트·스탯·풀) 미완 |
+| [018](active/TASK-018-levina-storm-lineage-ability-details.md) | 레비나 폭풍 계보 능력 세부 | 중간 | S~M | 잎 풀 편입·실플레이 등반 검증 완료·스탯/VFX 미완 |
 | [008](active/TASK-008-entry-flow-pause.md) | 진입 흐름·일시정지 | 중간 | S | 독립 |
 | [001](active/TASK-001-arena-map-remaining.md) | 아레나 맵 남은 작업 | 중간 | XS | 대부분 012 흡수 |
 | [009](active/TASK-009-code-cleanup.md) | 코드 정리 | 낮음 | XS | ⚠️ PathfindingService는 보류(미완성 인프라) |
@@ -200,6 +200,7 @@ Grid 모드·품질·구조 작업. 원작 standard 재현과 독립적이나 �
 
 ## 7. 갱신 이력
 
+- **2026-07-15** — **계보 실 플레이 완성.** 계보 잎 능력 4종(StormBrand·StunBomb·Tornado·Railgun)을 `AbilityPool`에 편입 → 신규 카드로 드로우 가능 확인(계보 결과는 `IsResult` 배제). 플레이 모드에서 실제 카드 UI로 높이3 체인을 완주: 잎 MAX→1층 번개 채찍→2층 폭풍의 장막→3층 정점 폭풍의 군주 획득 검증. 스탯·VFX 구분·밸런스는 TASK-018 잔여.
 - **2026-07-15** — **A5-1 합성 마무리·커밋 + 계보 비주얼 에디터(TASK-017) 구현.** A5-1을 단일원천 `FusionSystem`으로 리팩토링·Card 도메인 통일 후 7커밋으로 커밋, 라이브 검증 완료 → §2.1 조합 `🔶→✅`. TASK-017: GraphView 계보 에디터(메뉴 `DefenseDot/Fusion Lineage Editor`) 구현 — 결과노드=2입력 모델·깊이별 자동배치·우클릭 노드추가·포트연결로 레시피 편집·자동저장. Aris 계보 로드(10노드/8엣지)·편집(추가 4→5·제거 5→4 에셋 반영) 검증. 레비나 계보 능력 세부는 TASK-018.
 
 - **2026-07-14** — **계보 다단(높이3) 구조 검증**. 원작 레비나 시그니처 라인을 레퍼런스해 Aris 계보를 높이 3 트리로 구축(데이터만, 코드 0). 신규 능력 7개(기존 타입/프리팹 복제)·레시피 3개 추가 → 1층 StormBrand+StunBomb→LevinLash / 2층 +Tornado→TempestVeil / 3층 +Railgun→StormSovereign 다단 등반 + 기존 분기 공존을 런타임 검증(PASS). FusionSystem 평면 리스트가 다단+분기 지원 확인. 능력 세부(이펙트·스탯·밸런스·풀 편입)는 **TASK-018** 신규 등록으로 이연.
