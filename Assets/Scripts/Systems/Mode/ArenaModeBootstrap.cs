@@ -96,6 +96,10 @@ namespace DefenseDot.Systems.Mode
             ArisTowerVisual arisVisual = ReplaceWithArisVisual(go, ctx);
             Transform fireOrigin = arisVisual != null ? arisVisual.FirePoint : null;
 
+            // 모션·기본 공격 속도를 먼저 주입해야 무기가 올바른 값으로 생성된다
+            if (arisVisual != null) coreAbility.SetAttackMotion(arisVisual);
+            coreAbility.SetBaseAttackSpeed(data.attackSpeed);
+
             coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, ctx.CombatState, starterAbilities, ctx.Pooling, fireOrigin);
             StartCoreAbilities(coreAbility).Forget();   // 예열 → 장착 순서 조율
 

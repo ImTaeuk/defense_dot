@@ -8,7 +8,6 @@ namespace DefenseDot.Tests.EditMode
     {
         private sealed class StubActive : ActiveAbilityData
         {
-            public override void Tick(in AbilityContext ctx, AbilityInstance self, float deltaTime) { }
             protected override void Fire(in AbilityContext ctx, AbilityInstance self, DefenseDot.Core.ITargetable target) { }
         }
         private sealed class StubPassive : PassiveAbilityData
@@ -16,12 +15,51 @@ namespace DefenseDot.Tests.EditMode
             public float perLevelBonus = 2f;
             public override void ApplyModifiers(AbilityModifiers mods, int level) { mods.damageBonus += perLevelBonus * level; }
         }
+        private sealed class StubMain : MainAbilityData
+        {
+            protected override void Fire(in AbilityContext ctx, AbilityInstance self, DefenseDot.Core.ITargetable target) { }
+        }
 
         private static StubActive NewActive(int maxLevel = 5)
         {
             var a = ScriptableObject.CreateInstance<StubActive>();
             a.maxLevel = maxLevel;
             return a;
+        }
+        private static StubMain NewMain()
+        {
+            var m = ScriptableObject.CreateInstance<StubMain>();
+            m.maxLevel = 5;
+            return m;
+        }
+
+        [Test]
+        public void CanAdd_AllowsMain_WhenNoneEquipped()
+        {
+            var loadout = new AbilityLoadout();
+            Assert.IsFalse(loadout.HasMain());
+            Assert.IsTrue(loadout.CanAdd(NewMain()));
+        }
+
+        [Test]
+        public void CanAdd_RejectsSecondMain_PreventsDowngrade()
+        {
+            var loadout = new AbilityLoadout();
+            loadout.TryAdd(NewMain());
+
+            Assert.IsTrue(loadout.HasMain());
+            Assert.IsFalse(loadout.CanAdd(NewMain()), "주축 보유 중에는 다른 주축을 카드로 받을 수 없어야 한다");
+        }
+
+        [Test]
+        public void CanAdd_AllowsMainAgain_AfterMainRemoved()
+        {
+            var loadout = new AbilityLoadout();
+            loadout.TryAdd(NewMain());
+            loadout.Remove(loadout.Actives[0]);   // 합성이 주축을 재료로 소진한 상황
+
+            Assert.IsFalse(loadout.HasMain());
+            Assert.IsTrue(loadout.CanAdd(NewMain()), "주축이 비면 합성 결과가 새 주축으로 들어올 수 있어야 한다");
         }
         private static StubPassive NewPassive()
         {

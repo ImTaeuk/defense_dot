@@ -1,4 +1,4 @@
-// 코어 능력 구동 — 로드아웃·러너 보유 + 시전 호스트(ICastHost): 발사 프레임에 대기 발사 실행
+// 코어 능력 구동 — 로드아웃·러너·무기 보유. 자율 능력은 러너가, 주축·동반은 무기가 구동
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -11,23 +11,34 @@ using DefenseDot.Systems.Abilities.Effects;
 
 namespace DefenseDot.Systems.Abilities
 {
-    /// <summary> Arena 코어의 능력 로드아웃을 구동하고, 시전 애니 발사를 중계하는 컴포넌트입니다. </summary>
-    public sealed class CoreAbilitySystem : MonoBehaviour, ICastHost, IAbilityCommandTarget
+    /// <summary> Arena 코어의 능력 로드아웃과 무기를 구동하는 컴포넌트입니다. </summary>
+    public sealed class CoreAbilitySystem : MonoBehaviour, IAbilityCommandTarget
     {
         private AbilityLoadout loadout;      // 장착 능력 슬롯(액티브/패시브)
-        private AbilityRunner runner;        // 능력 프레임 구동·장착 훅
+        private AbilityRunner runner;        // 자율 능력 프레임 구동·장착 훅
+        private CoreWeapon weapon;           // 주축·동반 발사 묶음(공격 주기 소유)
         private GameFlowModel flow;          // 진행 단계(발동 게이트)
         private AbilityContext ctx;          // 공용 컨텍스트(모든 능력 공유)
-        private ICastReceiver castReceiver;  // 시전 비주얼 수신자
+        private IAttackMotion motion;        // 공격 모션 재생 대상
         private PoolManager pool;            // 스타터 예열용
+        private float baseAttackSpeed = 1f;  // 타워 기본 공격 속도(초당 횟수)
 
-        // 대기 발사 (시전 시작 ~ 발사 프레임)
-        private ActiveAbilityData pendingSkill;
-        private AbilityInstance pendingSelf;
-        private ITargetable pendingTarget;
+        /// <summary> 공격 모션 재생 대상을 연결합니다(무기 생성 전에 호출). </summary>
+        /// <param name="attackMotion">타워 비주얼</param>
+        public void SetAttackMotion(IAttackMotion attackMotion)
+        {
+            motion = attackMotion;
+            weapon?.Detach();
+            weapon = null;
+        }
 
-        /// <summary> 시전 비주얼을 연결합니다. </summary>
-        public void SetCastReceiver(ICastReceiver receiver) => castReceiver = receiver;
+        /// <summary> 타워 기본 공격 속도를 설정합니다. </summary>
+        /// <param name="attacksPerSecond">초당 공격 횟수</param>
+        public void SetBaseAttackSpeed(float attacksPerSecond)
+        {
+            baseAttackSpeed = attacksPerSecond;
+            weapon?.SetBaseAttackSpeed(attacksPerSecond);
+        }
 
         /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. fireOrigin은 발사체·머즐 스폰용 총구(없으면 origin 폴백). </summary>
         public void Setup(TargetFinder finder, Vector3 origin, GameFlowModel gameFlow,
@@ -39,13 +50,19 @@ namespace DefenseDot.Systems.Abilities
             loadout = new AbilityLoadout();
             loadout.Modifiers.combatState = combatState;
             if (starters != null)
+            {
                 for (int i = 0; i < starters.Count; i++)
+                {
                     if (starters[i] != null) loadout.TryAdd(starters[i]);
+                }
+            }
 
             IEffectSpawner effects = new PooledEffectSpawner(poolManager);
-            ctx = new AbilityContext(this, origin, finder, loadout.Modifiers, effects, this, fireOrigin);
+            ctx = new AbilityContext(this, origin, finder, loadout.Modifiers, effects, fireOrigin);
             runner = new AbilityRunner(loadout, ctx);
-            // 장착은 예열 후로 미룸(예열 전 Spawn 방지) → WarmupAndEquipAsync
+            weapon = new CoreWeapon(loadout, motion);
+            weapon.SetBaseAttackSpeed(baseAttackSpeed);
+            // 장착은 예열 후로 미룸(예열 전 Spawn 방지) → WarmupStartersAsync → EquipAll
         }
 
         /// <summary> 스타터 이펙트를 예열합니다(장착 전. 로드 실패는 값으로 스킵되어 예외 없음). </summary>
@@ -71,7 +88,9 @@ namespace DefenseDot.Systems.Abilities
                 AbilityData d = list[i].data;
                 if (d == null) continue;
                 foreach (AssetReferenceGameObject a in d.EffectAssets)
+                {
                     if (a != null) set.Add(a);
+                }
             }
         }
 
@@ -79,10 +98,18 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 읽기 전용 로드아웃(카드 생성기 질의용). </summary>
         public AbilityLoadout Loadout => loadout;
 
-        /// <summary> 신규 능력 추가. 액티브면 러너에 즉시 장착(라이프사이클 동기화). 추가된 인스턴스 반환(실패 시 null). </summary>
+        /// <summary> 신규 능력 추가. 주축이면 기존 주축을 먼저 해제합니다(주축은 1개만). </summary>
+        /// <param name="data">추가할 능력 설계도</param>
         public AbilityInstance AddAbility(AbilityData data)
         {
-            if (loadout == null || !loadout.TryAdd(data)) return null;
+            if (loadout == null) return null;
+
+            // 주축은 1개만 보유 — 교체 규칙은 무기가 판단한다
+            AbilityInstance replaced = weapon?.FindMainToReplace(data);
+            if (replaced != null)
+                RemoveAbility(replaced);
+
+            if (!loadout.TryAdd(data)) return null;
             bool isActive = data is ActiveAbilityData;
             AbilityInstance inst = isActive
                 ? loadout.Actives[loadout.Actives.Count - 1]
@@ -92,9 +119,11 @@ namespace DefenseDot.Systems.Abilities
         }
 
         /// <summary> 기존 능력 레벨업. </summary>
+        /// <param name="instance">레벨업할 인스턴스</param>
         public void LevelUpAbility(AbilityInstance instance) => loadout?.LevelUp(instance);
 
         /// <summary> 능력 삭제. 액티브면 러너에서 언장착 후 로드아웃에서 제거합니다. </summary>
+        /// <param name="instance">제거할 인스턴스</param>
         public void RemoveAbility(AbilityInstance instance)
         {
             if (instance?.data is ActiveAbilityData) runner?.Unequip(instance);
@@ -102,32 +131,24 @@ namespace DefenseDot.Systems.Abilities
         }
         #endregion
 
-        private void Update()
-        {
-            if (runner == null || flow == null || !flow.IsPlaying) return;
-            runner.Tick(Time.deltaTime);
-        }
-
-        #region ICastHost
-        /// <summary> 시전을 요청합니다. 비주얼이 시전 중이면 거부(false)합니다. </summary>
-        public bool RequestCast(ActiveAbilityData skill, AbilityInstance self, ITargetable target, AnimationClip clip)
-        {
-            if (castReceiver == null || castReceiver.IsCasting) return false;
-            pendingSkill = skill;
-            pendingSelf = self;
-            pendingTarget = target;
-            castReceiver.PlayCast(clip, target);
-            return true;
-        }
-
-        /// <summary> 애니메이션 발사 프레임 — 대기 중인 발사를 실행합니다. </summary>
+        /// <summary> 공격 모션의 발사 프레임에서 비주얼이 호출합니다. </summary>
         public void NotifyFireFrame()
         {
-            if (pendingSkill == null) return;
-            ActiveAbilityData skill = pendingSkill;
-            pendingSkill = null;
-            skill.FireFromHost(ctx, pendingSelf, pendingTarget);
+            weapon?.FireAll(ctx);
         }
-        #endregion
+
+        private void Update()
+        {
+            if (flow == null || !flow.IsPlaying) return;
+
+            float dt = Time.deltaTime;
+            runner?.Tick(dt);
+            weapon?.Tick(ctx, dt);
+        }
+
+        private void OnDestroy()
+        {
+            weapon?.Detach();
+        }
     }
 }

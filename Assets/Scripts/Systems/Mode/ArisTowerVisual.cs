@@ -1,4 +1,4 @@
-// Aris 코어 타워 연출 — 스킬 시전 애니 오버라이드(ICastReceiver) + 코어 상태·적 방향 연동
+// Aris 코어 타워 연출 — 공격 애니 오버라이드·속도 동기화(IAttackMotion) + 코어 상태·적 방향 연동
 using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Domain;
@@ -9,10 +9,10 @@ using DefenseDot.Systems.Abilities;
 namespace DefenseDot.Systems.Mode
 {
     /// <summary>
-    /// Aris 코어 타워의 연출 컴포넌트입니다. 스킬별 시전 애니를 AnimatorOverrideController로 갈아끼우고
-    /// (ICastReceiver), 코어 HP·게임 단계·적 방향을 Animator·회전에 연동합니다.
+    /// Aris 코어 타워의 연출 컴포넌트입니다. 공격 모션을 AnimatorOverrideController로 갈아끼우고
+    /// 발사 주기에 맞춰 재생 속도를 맞추며(IAttackMotion), 코어 HP·게임 단계·적 방향을 Animator·회전에 연동합니다.
     /// </summary>
-    public sealed class ArisTowerVisual : MonoBehaviour, ICastReceiver
+    public sealed class ArisTowerVisual : MonoBehaviour, IAttackMotion
     {
         [SerializeField] private Animator animator;
         [SerializeField] private Transform firePoint;   // 발사체·머즐 스폰 위치(레일건 총구 본)
@@ -25,6 +25,7 @@ namespace DefenseDot.Systems.Mode
 
         private const string AttackClipKey = "Aris_Original_Normal_Attack_Ing";
         private static readonly int AttackHash = Animator.StringToHash("Attack");
+        private static readonly int AttackSpeedHash = Animator.StringToHash("AttackSpeed");
         private static readonly int LowHpHash = Animator.StringToHash("LowHP");
         private static readonly int DeathHash = Animator.StringToHash("Death");
         private static readonly int VictoryHash = Animator.StringToHash("Victory");
@@ -36,15 +37,10 @@ namespace DefenseDot.Systems.Mode
         private Camera viewCamera;
         private System.IDisposable healthSub;
         private AnimatorOverrideController overrideController;
-        private bool locked;        // 파괴/승리 시 회전·시전 잠금
-        private bool isCasting;
-        private float castRemaining;
-        private ITargetable castTarget;   // 시전 중 조준 대상
+        private bool locked;              // 파괴/승리 시 회전·공격 잠금
+        private ITargetable castTarget;   // 발사 대상(조준 유지용)
 
-        /// <summary> 현재 시전(애니 재생) 중인지 여부입니다. </summary>
-        public bool IsCasting => isCasting;
-
-        /// <summary> 합성 루트가 의존성을 주입하고 이벤트·시전 비주얼을 연결합니다. </summary>
+        /// <summary> 합성 루트가 의존성을 주입하고 이벤트를 연결합니다. </summary>
         public void Setup(CoreAbilitySystem coreSystem, TargetFinder targetFinder,
             GameFlowModel gameFlow, CoreModel coreModel)
         {
@@ -67,7 +63,6 @@ namespace DefenseDot.Systems.Mode
                 }
             }
 
-            if (core != null) core.SetCastReceiver(this);
             if (coreHp != null)
             {
                 healthSub = coreHp.Health.Subscribe(HandleHealthChanged);
@@ -79,18 +74,13 @@ namespace DefenseDot.Systems.Mode
         private void Update()
         {
             if (!locked) FaceTarget();
-            if (isCasting)
-            {
-                castRemaining -= Time.deltaTime;
-                if (castRemaining <= 0f) isCasting = false;
-            }
         }
 
         /// <summary> 최근접 적(없으면 카메라)을 향해 Y축으로 부드럽게 회전합니다. </summary>
         private void FaceTarget()
         {
             Vector3 dir;
-            ITargetable target = (isCasting && castTarget != null && castTarget.IsActive)
+            ITargetable target = (castTarget != null && castTarget.IsActive)
                 ? castTarget
                 : (finder != null ? finder.FindNearest(transform.position, targetRange) : null);
             if (target != null) dir = target.Position - transform.position;
@@ -103,20 +93,23 @@ namespace DefenseDot.Systems.Mode
             transform.rotation = Quaternion.Slerp(transform.rotation, want, rotateSpeed * Time.deltaTime);
         }
 
-        #region ICastReceiver
-        /// <summary> 지정 클립으로 Attack 슬롯을 교체하고 시전 애니를 재생합니다. </summary>
-        public void PlayCast(AnimationClip clip, ITargetable target)
+        #region IAttackMotion
+        /// <summary> Attack 슬롯을 지정 클립으로 교체하고 지정 속도로 재생합니다. </summary>
+        /// <param name="clip">재생할 공격 모션</param>
+        /// <param name="target">조준 대상</param>
+        /// <param name="speed">재생 속도 배수</param>
+        public void PlayAttack(AnimationClip clip, ITargetable target, float speed)
         {
             if (locked || animator == null) return;
+
             castTarget = target;
             if (clip != null && overrideController != null) overrideController[AttackClipKey] = clip;
+            animator.SetFloat(AttackSpeedHash, Mathf.Max(0.01f, speed));
             animator.SetTrigger(AttackHash);
-            isCasting = true;
-            castRemaining = clip != null ? clip.length : 0.5f;
         }
         #endregion
 
-        /// <summary> 시전 애니의 발사 프레임에서 AnimationEvent가 호출합니다. </summary>
+        /// <summary> 공격 모션의 발사 프레임에서 AnimationEvent가 호출합니다. </summary>
         public void OnFireFrame()
         {
             // 발사 순간 대상으로 정확히 정렬 → 보는 방향과 투사체 방향 일치
@@ -138,15 +131,14 @@ namespace DefenseDot.Systems.Mode
         private void HandleCoreDestroyed()
         {
             locked = true;
-            isCasting = false;
             if (animator != null) animator.SetTrigger(DeathHash);
         }
 
         private void HandlePhaseChanged(GamePhase phase)
         {
             if (phase != GamePhase.Victory) return;
+
             locked = true;
-            isCasting = false;
             if (animator != null) animator.SetTrigger(VictoryHash);
         }
 

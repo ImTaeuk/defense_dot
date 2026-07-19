@@ -10,7 +10,6 @@ namespace DefenseDot.Tests.EditMode
         private sealed class StubActive : ActiveAbilityData
         {
             public override float ValueAtLevel(int level) { return level * 10f; }
-            public override void Tick(in AbilityContext ctx, AbilityInstance self, float deltaTime) { }
             protected override void Fire(in AbilityContext ctx, AbilityInstance self, ITargetable target) { }
         }
 

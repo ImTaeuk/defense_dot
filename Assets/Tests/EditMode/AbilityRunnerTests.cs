@@ -6,14 +6,14 @@ namespace DefenseDot.Tests.EditMode
 {
     public class AbilityRunnerTests
     {
-        private sealed class CountTick : ActiveAbilityData
+        private sealed class CountTick : AutoAbilityData
         {
             public int ticks;
             public override void Tick(in AbilityContext ctx, AbilityInstance self, float dt) { ticks++; }
             protected override void Fire(in AbilityContext ctx, AbilityInstance self, DefenseDot.Core.ITargetable target) { }
         }
 
-        private sealed class LifeAbility : ActiveAbilityData, IAbilityLifecycle
+        private sealed class LifeAbility : AutoAbilityData, IAbilityLifecycle
         {
             public int equips, unequips;
             public override void Tick(in AbilityContext ctx, AbilityInstance self, float dt) { }

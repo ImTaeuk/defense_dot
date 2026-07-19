@@ -10,7 +10,7 @@ namespace DefenseDot.Tests.EditMode
         private sealed class CdAbility : ActiveAbilityData
         {
             public int fireCount;
-            public override void Tick(in AbilityContext ctx, AbilityInstance self, float dt)
+            public void Tick(in AbilityContext ctx, AbilityInstance self, float dt)
             {
                 if (!TickCooldown(self, dt)) return;
                 fireCount++;

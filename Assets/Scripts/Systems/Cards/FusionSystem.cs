@@ -37,6 +37,10 @@ namespace DefenseDot.Systems.Cards
                 if (loadout.Contains(r.result))
                     continue;
 
+                // 주축을 소진하는데 결과가 주축이 아니면 주 공격을 잃으므로 제시하지 않음
+                if (!r.KeepsMainWeapon())
+                    continue;
+
                 // 재료 둘 다 MAX 보유해야 가용
                 if (FindMaxed(loadout, r.materialA) == null || FindMaxed(loadout, r.materialB) == null)
                     continue;
@@ -75,6 +79,10 @@ namespace DefenseDot.Systems.Cards
             AbilityInstance a = FindMaxed(loadout, card.materialA);
             AbilityInstance b = FindMaxed(loadout, card.materialB);
             if (a == null || b == null || loadout.Contains(card.data))
+                return;
+
+            // 주 공격을 잃는 합성은 적용하지 않음(카드 생성과 같은 규칙)
+            if (!FusionRecipe.KeepsMainWeapon(card.materialA, card.materialB, card.data))
                 return;
 
             // 2. 재료 소진 → 결과 부여(여기까지 await 없음 = 원자적)

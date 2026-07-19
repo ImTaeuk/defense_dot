@@ -19,15 +19,12 @@ namespace DefenseDot.Systems.Abilities
         public readonly AbilityModifiers Modifiers;
         /// <summary> 효과 엔티티 스포너. </summary>
         public readonly IEffectSpawner Effects;
-        /// <summary> 시전(애니 동반 발사) 요청 대상. null이면 즉시 발사. </summary>
-        public readonly ICastHost Cast;
 
         /// <summary> 발사 시점의 총구 월드 위치. 발사점 미배선이면 코어 중심(Origin). </summary>
         public Vector3 FirePosition => FireOrigin != null ? FireOrigin.position : Origin;
 
         public AbilityContext(MonoBehaviour host, Vector3 origin, TargetFinder finder,
-            AbilityModifiers modifiers, IEffectSpawner effects, ICastHost cast = null,
-            Transform fireOrigin = null)
+            AbilityModifiers modifiers, IEffectSpawner effects, Transform fireOrigin = null)
         {
             Host = host;
             Origin = origin;
@@ -35,7 +32,6 @@ namespace DefenseDot.Systems.Abilities
             Finder = finder;
             Modifiers = modifiers;
             Effects = effects;
-            Cast = cast;
         }
     }
 }

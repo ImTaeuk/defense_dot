@@ -8,7 +8,7 @@ namespace DefenseDot.Systems.Abilities.Definitions
 {
     /// <summary> 장착 동안 코어 주위를 도는 위성을 유지하는 상시 능력입니다. </summary>
     [CreateAssetMenu(fileName = "OrbitalAbility", menuName = "DefenseDot/Abilities/Orbital")]
-    public sealed class OrbitalAbilityData : ActiveAbilityData, IAbilityLifecycle
+    public sealed class OrbitalAbilityData : AutoAbilityData, IAbilityLifecycle
     {
         [SerializeField] private AssetReferenceGameObject orbiterAsset;
         [SerializeField] private float baseDamage = 3f;

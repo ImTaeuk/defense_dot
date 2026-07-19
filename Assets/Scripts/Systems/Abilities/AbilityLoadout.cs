@@ -34,11 +34,30 @@ namespace DefenseDot.Systems.Abilities
             return false;
         }
 
-        /// <summary> 추가 가능 여부(타입별 슬롯 여유 + 미보유). </summary>
+        /// <summary> 주축 공격 능력을 이미 보유했는지 여부입니다. </summary>
+        public bool HasMain()
+        {
+            for (int i = 0; i < actives.Count; i++)
+            {
+                if (actives[i].data is MainAbilityData)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary> 추가 가능 여부(타입별 슬롯 여유 + 미보유 + 주축 중복 금지). </summary>
+        /// <param name="data">추가하려는 능력 설계도</param>
         public bool CanAdd(AbilityData data)
         {
-            if (data == null || Contains(data)) return false;
-            if (data is PassiveAbilityData) return passives.Count < passiveCapacity;
+            if (data == null || Contains(data))
+                return false;
+            if (data is PassiveAbilityData)
+                return passives.Count < passiveCapacity;
+
+            // 주축은 1개만 — 교체는 합성으로만 일어난다(하위 주축으로 되돌아가는 다운그레이드 방지)
+            if (data is MainAbilityData && HasMain())
+                return false;
+
             return actives.Count < activeCapacity;   // 그 외(ActiveAbilityData)
         }
 

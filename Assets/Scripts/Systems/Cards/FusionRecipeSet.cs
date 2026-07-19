@@ -11,7 +11,7 @@ namespace DefenseDot.Systems.Cards
         /// <summary> 합성 레시피 목록. </summary>
         public List<FusionRecipe> recipes = new List<FusionRecipe>();
 
-        /// <summary> 디자이너 실수(null·자기합성·결과=재료)를 콘솔 경고로 알립니다. </summary>
+        /// <summary> 디자이너 실수(null·자기합성·결과=재료·주축 상실)를 콘솔 경고로 알립니다. </summary>
         private void OnValidate()
         {
             if (recipes == null)
@@ -25,6 +25,8 @@ namespace DefenseDot.Systems.Cards
                     Debug.LogWarning($"[FusionRecipeSet] {name} 레시피 {i}: 재료 A==B", this);
                 else if (r.result == r.materialA || r.result == r.materialB)
                     Debug.LogWarning($"[FusionRecipeSet] {name} 레시피 {i}: 결과가 재료와 같음", this);
+                else if (!r.KeepsMainWeapon())
+                    Debug.LogWarning($"[FusionRecipeSet] {name} 레시피 {i}: 주축을 재료로 쓰는데 결과가 주축이 아님 — 합성 시 주 공격을 잃습니다", this);
             }
         }
     }
@@ -39,5 +41,21 @@ namespace DefenseDot.Systems.Cards
         public AbilityData materialB;
         /// <summary> 결과 능력(일반 카드 풀 제외). </summary>
         public AbilityData result;
+
+        /// <summary> 이 레시피가 합성 후에도 주 공격을 남기는지 검사합니다. </summary>
+        public bool KeepsMainWeapon() => KeepsMainWeapon(materialA, materialB, result);
+
+        /// <summary> 주축을 재료로 소진하면 결과도 주축이어야 합니다(합성 후 주 공격 상실 방지). </summary>
+        /// <param name="materialA">재료 A</param>
+        /// <param name="materialB">재료 B</param>
+        /// <param name="result">결과 능력</param>
+        public static bool KeepsMainWeapon(AbilityData materialA, AbilityData materialB, AbilityData result)
+        {
+            bool consumesMain = materialA is MainAbilityData || materialB is MainAbilityData;
+            if (!consumesMain)
+                return true;
+
+            return result is MainAbilityData;
+        }
     }
 }
