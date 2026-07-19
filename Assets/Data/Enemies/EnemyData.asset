@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EnemyData
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.EnemyData
   enemyName: Enemy Test
-  health: 10
+  health: 30
   moveSpeed: 1
   rewardGold: 5
   coreDamage: 1

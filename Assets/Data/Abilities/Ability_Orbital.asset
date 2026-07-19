@@ -27,6 +27,12 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
-  baseDamage: 50
-  damagePerLevel: 2
+  hitVfxAsset:
+    m_AssetGUID: 083c17ed86759cc4487ffa6ca1c4eb1a
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_SubObjectGUID: 
+    m_EditorAssetChanged: 0
+  baseDamage: 5
+  damagePerLevel: 1.5
   rotSpeed: 2

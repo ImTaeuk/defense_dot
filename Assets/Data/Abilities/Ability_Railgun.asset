@@ -28,8 +28,8 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
-  baseDamage: 50
-  damagePerLevel: 1
+  baseDamage: 10
+  damagePerLevel: 3
   speed: 35
   pierce: 1
   range: 30

@@ -28,8 +28,8 @@ MonoBehaviour:
     m_SubObjectType: 
     m_SubObjectGUID: 
     m_EditorAssetChanged: 0
-  baseDamage: 3
-  damagePerLevel: 2
+  baseDamage: 10
+  damagePerLevel: 3
   radius: 5
   duration: 1.5
   range: 30
