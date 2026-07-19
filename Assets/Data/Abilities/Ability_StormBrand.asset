@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e387753030e57947b71a8a4a1f27799, type: 3}
+  m_Script: {fileID: 11500000, guid: 6af9fca97409f7149b9cf8d8f657c06a, type: 3}
   m_Name: Ability_StormBrand
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.Definitions.ProjectileAbilityData
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.Definitions.SubProjectileAbilityData
   id: stormBrand
   displayName: "\uD3ED\uD48D \uB099\uC778"
   icon: {fileID: 21300000, guid: 06477646001e37846b3955d3eb5da599, type: 3}
@@ -20,6 +20,7 @@ MonoBehaviour:
   baseCost: 30
   description: "\uC804\uBC29 \uB2E8\uC77C \uD22C\uC0AC\uCCB4"
   baseCooldown: 0.4
+  cycleDelta: 0.2
   castAnimation: {fileID: 7400000, guid: b67b5b6acf7081e42b9a4e70ad535d22, type: 2}
   projectileAsset:
     m_AssetGUID: 6a69eecf8d11bfc43a543e8ac90745bc
