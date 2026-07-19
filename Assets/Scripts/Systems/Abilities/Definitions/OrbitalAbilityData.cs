@@ -11,16 +11,23 @@ namespace DefenseDot.Systems.Abilities.Definitions
     public sealed class OrbitalAbilityData : AutoAbilityData, IAbilityLifecycle
     {
         [SerializeField] private AssetReferenceGameObject orbiterAsset;
+        [SerializeField] private AssetReferenceGameObject hitVfxAsset;   // 접촉 명중 VFX
         [SerializeField] private float baseDamage = 3f;
         [SerializeField] private float damagePerLevel = 2f;
         [SerializeField] private float rotSpeed = 2f;
 
         public override float ValueAtLevel(int level) { return baseDamage + damagePerLevel * (level - 1); }
 
-        /// <summary> 위성 프리팹(예열 대상). </summary>
+        /// <summary> 위성·명중 VFX 프리팹(예열 대상). </summary>
         public override IEnumerable<AssetReferenceGameObject> EffectAssets
         {
-            get { if (orbiterAsset != null && orbiterAsset.RuntimeKeyIsValid()) yield return orbiterAsset; }
+            get
+            {
+                if (orbiterAsset != null && orbiterAsset.RuntimeKeyIsValid())
+                    yield return orbiterAsset;
+                if (hitVfxAsset != null && hitVfxAsset.RuntimeKeyIsValid())
+                    yield return hitVfxAsset;
+            }
         }
 
         public void OnEquip(in AbilityContext ctx, AbilityInstance self)
@@ -29,7 +36,7 @@ namespace DefenseDot.Systems.Abilities.Definitions
             OrbiterSetEffect fx = ctx.Effects.Spawn<OrbiterSetEffect>(orbiterAsset);
             if (fx == null) return;   // 스폰 실패 시 장착 무산
             DamageSource src = new DamageSource(this, self, ctx.Modifiers);
-            fx.Activate(ctx.Origin, 1 + self.level, src, rotSpeed, ctx.Finder);
+            fx.Activate(ctx.Origin, 2 + self.level, src, rotSpeed, ctx.Finder, hitVfxAsset);   // 기본 3개(레벨1), 레벨당 +1
             self.runtimeState = fx;
         }
 

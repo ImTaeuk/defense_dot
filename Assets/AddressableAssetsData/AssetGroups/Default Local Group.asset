@@ -15,6 +15,11 @@ MonoBehaviour:
   m_GroupName: Default Local Group
   m_GUID: 2c354e72c34ec984984dd4e0699c15cb
   m_SerializeEntries:
+  - m_GUID: 083c17ed86759cc4487ffa6ca1c4eb1a
+    m_Address: CyanBlueHit
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 3428211ee08e9f443a44710e9689fe26
     m_Address: Hit_Water
     m_ReadOnly: 0

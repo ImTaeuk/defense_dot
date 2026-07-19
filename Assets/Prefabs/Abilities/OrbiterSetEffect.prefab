@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.Effects.OrbiterSetEffect
   orbVisualPrefab: {fileID: 2515062251073914603, guid: ea616136abce1f343aa9340c4bb13b38, type: 3}
-  hitRadius: 0.6
+  hitRadius: 6
   rehitCooldown: 0.3
-  minRadius: 1.5
-  maxRadius: 12
+  minOrbitRadius: 6
+  maxOrbitReach: 27
+  orbitHeight: 1
