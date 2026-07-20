@@ -137,6 +137,9 @@ namespace DefenseDot.Systems.Enemy
 
         // ─────────────── 공통 스폰 ───────────────
 
+        /// <summary> 웨이브의 적을 간격대로 스폰합니다(취소되면 중단하고 플래그만 복원). </summary>
+        /// <param name="wave">스폰할 웨이브 데이터</param>
+        /// <param name="token">라운드 전환 시 취소되는 토큰</param>
         private async UniTask SpawnWaveRoutineAsync(WaveData wave, System.Threading.CancellationToken token)
         {
             isSpawning = true;
@@ -153,11 +156,14 @@ namespace DefenseDot.Systems.Enemy
             }
             catch (System.OperationCanceledException)
             {
-                return;   // 라운드 진행으로 취소됨
+                return;   // 라운드 진행으로 취소됨 (finally가 플래그 복원)
+            }
+            finally
+            {
+                isSpawning = false;   // 취소 경로에서도 복원(진행 정지 방지)
             }
 
-            isSpawning = false;
-            CheckWaveComplete();
+            CheckWaveComplete();   // 정상 완료에서만 호출
         }
 
         private void SpawnEnemy(EnemyData data)
