@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.WaveData
   entries:
   - enemyData: {fileID: 11400000, guid: 6b331d538dfe87e46a675c065b4b359d, type: 2}
-    count: 20
-    spawnInterval: 0.5
+    count: 16
+    spawnInterval: 0.7
   nextWaveDelay: 2
   duration: 30
   killScoreMultiplier: 1

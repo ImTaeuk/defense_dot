@@ -16,6 +16,6 @@ MonoBehaviour:
   coreRadius: 2.2
   spawnInnerMargin: 11
   spawnOuterMargin: 2
-  maxAlive: 80
+  maxAlive: 50
   baseAngularSpeed: 0.5
   enemyHeight: 0.8

@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c61f24f56952a9b45b16f2ef3abdb80d, type: 3}
-  m_Name: Wave_02
+  m_Name: Wave_10
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.WaveData
   entries:
   - enemyData: {fileID: 11400000, guid: 6b331d538dfe87e46a675c065b4b359d, type: 2}
-    count: 9
-    spawnInterval: 0.9
+    count: 58
+    spawnInterval: 0.4
   nextWaveDelay: 2
-  duration: 30
+  duration: 40
   killScoreMultiplier: 1
   timeBonusMultiplier: 1
