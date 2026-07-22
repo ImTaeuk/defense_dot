@@ -28,8 +28,10 @@ namespace DefenseDot.Systems.Cards
                 for (int i = 0; i < pool.abilities.Count; i++)
                 {
                     var d = pool.abilities[i];
-                    // 슬롯+미보유 검사 + 합성 결과는 합성 전용이라 일반 풀에서 제외(FusionSystem 판정)
-                    if (d != null && loadout.CanAdd(d) && !(fusion != null && fusion.IsResult(d)))
+                    // 슬롯+미보유 + 합성 결과 제외 + 합성으로 소진된 재료 재등장 방지(FusionSystem 판정)
+                    if (d != null && loadout.CanAdd(d)
+                        && !(fusion != null && fusion.IsResult(d))
+                        && !(fusion != null && fusion.WasConsumed(d)))
                         newPool.Add(d);
                 }
             }

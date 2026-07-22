@@ -9,6 +9,9 @@ namespace DefenseDot.Systems.Cards
         /// <summary> 이 시스템이 직접 소유하는 합성 계보(데이터 원천). </summary>
         private readonly FusionRecipeSet lineage;
 
+        /// <summary> 이번 런에서 합성으로 소진된 능력들(카드 재등장 방지). </summary>
+        private readonly HashSet<AbilityData> consumed = new HashSet<AbilityData>();
+
         /// <summary> 계보를 주입받습니다(null이면 합성 비활성). </summary>
         /// <param name="lineage">이 타워의 합성 계보 데이터.</param>
         public FusionSystem(FusionRecipeSet lineage)
@@ -88,7 +91,16 @@ namespace DefenseDot.Systems.Cards
             // 2. 재료 소진 → 결과 부여(여기까지 await 없음 = 원자적)
             core.RemoveAbility(a);
             core.RemoveAbility(b);
+            consumed.Add(card.materialA);
+            consumed.Add(card.materialB);
             core.AddAbility(card.data);
+        }
+
+        /// <summary> 이 능력이 합성으로 소진됐는지 검사합니다(카드 재등장 방지용). </summary>
+        /// <param name="data">검사할 능력 설계도.</param>
+        public bool WasConsumed(AbilityData data)
+        {
+            return data != null && consumed.Contains(data);
         }
 
         /// <summary> 로드아웃에서 해당 능력의 MAX 인스턴스를 찾습니다(없거나 비MAX면 null). </summary>

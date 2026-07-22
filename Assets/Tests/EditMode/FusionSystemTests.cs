@@ -114,6 +114,43 @@ namespace DefenseDot.Tests.EditMode
         }
 
         [Test]
+        public void Apply_RecordsMaterialsAsConsumed()
+        {
+            StubActive a = Ability(), b = Ability(), r = Ability();
+            StubCore core = new StubCore();
+            AddMaxed(core.Loadout, a); AddMaxed(core.Loadout, b);
+            FusionSystem svc = new FusionSystem(Lineage(a, b, r));
+
+            svc.Apply(core, Card.FusionCard(r, a, b, CardTier.Fusion));
+
+            Assert.IsTrue(svc.WasConsumed(a), "재료 A는 소진 기록");
+            Assert.IsTrue(svc.WasConsumed(b), "재료 B는 소진 기록");
+            Assert.IsFalse(svc.WasConsumed(r), "결과는 소진 아님");
+        }
+
+        [Test]
+        public void ConsumedMaterial_DoesNotReappearInCardPool()
+        {
+            StubActive a = Ability(), b = Ability(), r = Ability();
+            StubCore core = new StubCore();
+            AddMaxed(core.Loadout, a); AddMaxed(core.Loadout, b);
+            FusionSystem svc = new FusionSystem(Lineage(a, b, r));
+            svc.Apply(core, Card.FusionCard(r, a, b, CardTier.Fusion));   // a, b 소진
+
+            AbilityPool pool = ScriptableObject.CreateInstance<AbilityPool>();
+            pool.abilities.Add(a);   // 소진된 재료가 풀에 남아 있어도
+            ArenaCardConfig config = ScriptableObject.CreateInstance<ArenaCardConfig>();
+            config.choiceCount = 3;
+            config.newCardChanceEarly = 1f;
+            config.newCardChanceLate = 1f;
+
+            List<Card> choices = new CardGenerator(() => 0f).Generate(core.Loadout, pool, config, 1, svc);
+
+            foreach (Card c in choices)
+                Assert.AreNotSame(a, c.data, "합성으로 소진된 재료는 카드로 재등장하면 안 됨");
+        }
+
+        [Test]
         public void Apply_MaterialNotMaxed_NoMutation()
         {
             StubActive a = Ability(), b = Ability(), r = Ability();
