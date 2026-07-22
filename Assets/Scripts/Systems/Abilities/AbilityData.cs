@@ -22,6 +22,11 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 카드 표시용 설명(선택). </summary>
         [TextArea] public string description;
 
+        /// <summary> 위계. 카드 가중치·비용·기본 공격 판정에 쓰입니다. </summary>
+        public AbilityTier tier;
+        /// <summary> 형태. 실행기 분기·3D 모션 분류의 기준입니다. </summary>
+        public AbilityKind kind;
+
         /// <summary> 이 능력이 사용하는 모든 풀링 프리팹(예열 대상). </summary>
         public virtual IEnumerable<AssetReferenceGameObject> EffectAssets
             => System.Array.Empty<AssetReferenceGameObject>();
