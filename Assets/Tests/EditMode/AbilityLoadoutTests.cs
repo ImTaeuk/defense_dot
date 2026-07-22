@@ -15,10 +15,6 @@ namespace DefenseDot.Tests.EditMode
             public float perLevelBonus = 2f;
             public override void ApplyModifiers(AbilityModifiers mods, int level) { mods.damageBonus += perLevelBonus * level; }
         }
-        private sealed class StubMain : MainAbilityData
-        {
-            protected override void Fire(in AbilityContext ctx, AbilityInstance self, DefenseDot.Core.ITargetable target) { }
-        }
 
         private static StubActive NewActive(int maxLevel = 5)
         {
@@ -26,41 +22,56 @@ namespace DefenseDot.Tests.EditMode
             a.maxLevel = maxLevel;
             return a;
         }
-        private static StubMain NewMain()
+
+        private static StubActive MakeBasic()
         {
-            var m = ScriptableObject.CreateInstance<StubMain>();
-            m.maxLevel = 5;
-            return m;
+            var a = NewActive();
+            a.tier = AbilityTier.Basic;
+            return a;
+        }
+
+        private static StubActive MakeSignature()
+        {
+            var a = NewActive();
+            a.tier = AbilityTier.Signature;
+            return a;
         }
 
         [Test]
-        public void CanAdd_AllowsMain_WhenNoneEquipped()
+        public void CanAdd_AllowsBasic_WhenNoneEquipped()
         {
             var loadout = new AbilityLoadout();
-            Assert.IsFalse(loadout.HasMain());
-            Assert.IsTrue(loadout.CanAdd(NewMain()));
+            Assert.IsFalse(loadout.HasBasicAttack());
+            Assert.IsTrue(loadout.CanAdd(MakeBasic()));
         }
 
         [Test]
-        public void CanAdd_RejectsSecondMain_PreventsDowngrade()
+        public void CanAdd_RejectsSecondBasic()
         {
             var loadout = new AbilityLoadout();
-            loadout.TryAdd(NewMain());
-
-            Assert.IsTrue(loadout.HasMain());
-            Assert.IsFalse(loadout.CanAdd(NewMain()), "주축 보유 중에는 다른 주축을 카드로 받을 수 없어야 한다");
+            loadout.TryAdd(MakeBasic());          // tier=Basic 스텁
+            Assert.IsFalse(loadout.CanAdd(MakeBasic()), "Basic은 1개만");
         }
 
         [Test]
-        public void CanAdd_AllowsMainAgain_AfterMainRemoved()
+        public void CanAdd_AllowsNonBasic()
         {
             var loadout = new AbilityLoadout();
-            loadout.TryAdd(NewMain());
+            loadout.TryAdd(MakeBasic());
+            Assert.IsTrue(loadout.CanAdd(MakeSignature()), "비-Basic 능력은 추가 가능");
+        }
+
+        [Test]
+        public void CanAdd_AllowsBasicAgain_AfterBasicRemoved()
+        {
+            var loadout = new AbilityLoadout();
+            loadout.TryAdd(MakeBasic());
             loadout.Remove(loadout.Actives[0]);   // 합성이 주축을 재료로 소진한 상황
 
-            Assert.IsFalse(loadout.HasMain());
-            Assert.IsTrue(loadout.CanAdd(NewMain()), "주축이 비면 합성 결과가 새 주축으로 들어올 수 있어야 한다");
+            Assert.IsFalse(loadout.HasBasicAttack());
+            Assert.IsTrue(loadout.CanAdd(MakeBasic()), "주축이 비면 합성 결과가 새 주축으로 들어올 수 있어야 한다");
         }
+
         private static StubPassive NewPassive()
         {
             var p = ScriptableObject.CreateInstance<StubPassive>();

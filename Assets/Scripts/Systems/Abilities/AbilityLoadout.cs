@@ -34,12 +34,12 @@ namespace DefenseDot.Systems.Abilities
             return false;
         }
 
-        /// <summary> 주축 공격 능력을 이미 보유했는지 여부입니다. </summary>
-        public bool HasMain()
+        /// <summary> 기본 공격(Basic)을 이미 보유했는지 여부입니다. </summary>
+        public bool HasBasicAttack()
         {
             for (int i = 0; i < actives.Count; i++)
             {
-                if (actives[i].data is MainAbilityData)
+                if (actives[i].data.tier == AbilityTier.Basic)
                     return true;
             }
             return false;
@@ -54,8 +54,8 @@ namespace DefenseDot.Systems.Abilities
             if (data is PassiveAbilityData)
                 return passives.Count < passiveCapacity;
 
-            // 주축은 1개만 — 교체는 합성으로만 일어난다(하위 주축으로 되돌아가는 다운그레이드 방지)
-            if (data is MainAbilityData && HasMain())
+            // 기본 공격(Basic)은 1개만 — 교체는 합성 승계로만 일어난다
+            if (data.tier == AbilityTier.Basic && HasBasicAttack())
                 return false;
 
             return actives.Count < activeCapacity;   // 그 외(ActiveAbilityData)
