@@ -45,12 +45,39 @@ namespace DefenseDot.Systems.Abilities
             return self.cooldownRemaining <= 0f;
         }
 
-        /// <summary> 발동 성공 후 쿨다운을 리셋합니다(보정·하한 적용). </summary>
+        /// <summary> 발동 성공 후 쿨다운을 재적재합니다(초과분 이월·배율·하한 적용). </summary>
         /// <param name="self">이 능력의 런타임 인스턴스</param>
         /// <param name="ctx">능력 구동 컨텍스트</param>
         protected void ResetCooldown(AbilityInstance self, in AbilityContext ctx)
         {
-            self.cooldownRemaining = Mathf.Max(0.05f, CooldownAtLevel(self.level) - ctx.Modifiers.cooldownReduction);
+            float rate = ctx.Stats != null ? ctx.Stats.cooldownRate : 1f;
+            float cooldown = Mathf.Max(0.05f, CooldownAtLevel(self.level) * rate);
+            self.cooldownRemaining += cooldown;
+            if (self.cooldownRemaining < 0f)
+            {
+                self.cooldownRemaining = 0f;
+            }
+        }
+
+        /// <summary> 자기 쿨다운으로 1회 구동합니다(준비 시 타겟 탐색·발사·재적재). </summary>
+        /// <param name="ctx">능력 구동 컨텍스트</param>
+        /// <param name="self">런타임 인스턴스</param>
+        /// <param name="deltaTime">경과 시간(초)</param>
+        public void DriveAutonomously(in AbilityContext ctx, AbilityInstance self, float deltaTime)
+        {
+            if (!TickCooldown(self, deltaTime))
+            {
+                return;
+            }
+
+            ITargetable target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, TargetRange) : null;
+            if (target == null)
+            {
+                return;
+            }
+
+            Fire(ctx, self, target);
+            ResetCooldown(self, ctx);
         }
     }
 }

@@ -18,12 +18,12 @@ namespace DefenseDot.Tests.EditMode
                 ResetCooldown(self, ctx);
             }
             protected override void Fire(in AbilityContext ctx, AbilityInstance self, DefenseDot.Core.ITargetable target) { }
+            public void ResetForTest(AbilityInstance self, in AbilityContext ctx) { ResetCooldown(self, ctx); }
         }
 
-        private static AbilityContext Ctx(float cdr = 0f)
+        private static AbilityContext Ctx()
         {
-            var mods = new AbilityModifiers { cooldownReduction = cdr };
-            return new AbilityContext(null, Vector3.zero, null, mods, null, new CombatStats());
+            return new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null, new CombatStats());
         }
 
         [Test]
@@ -40,22 +40,14 @@ namespace DefenseDot.Tests.EditMode
         }
 
         [Test]
-        public void ResetCooldown_AppliesReductionClamped()
+        public void ResetCooldown_ClampsToFloor()
         {
             var a = ScriptableObject.CreateInstance<CdAbility>();
             a.baseCooldown = 1f;
             var inst = new AbilityInstance(a, 1) { cooldownRemaining = 0f };
-            a.Tick(Ctx(cdr: 0.3f), inst, 0.1f);   // 발동 후 reset = 1 - 0.3 = 0.7
-            Assert.AreEqual(0.7f, inst.cooldownRemaining, 0.0001f);
-        }
-
-        [Test]
-        public void ResetCooldown_ClampsToFloor()
-        {
-            var a = ScriptableObject.CreateInstance<CdAbility>();
-            a.baseCooldown = 0.1f;
-            var inst = new AbilityInstance(a, 1) { cooldownRemaining = 0f };
-            a.Tick(Ctx(cdr: 5f), inst, 0.1f);   // 0.1 - 5 = 음수 → 0.05 클램프
+            var stats = new CombatStats { cooldownRate = 0.01f };
+            var ctx = new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null, stats);
+            a.ResetForTest(inst, ctx);   // 1 * 0.01 = 0.01 → 0.05 클램프
             Assert.AreEqual(0.05f, inst.cooldownRemaining, 0.0001f);
         }
     }

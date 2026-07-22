@@ -1,5 +1,3 @@
-using DefenseDot.Core;
-
 namespace DefenseDot.Systems.Abilities
 {
     /// <summary>
@@ -13,15 +11,7 @@ namespace DefenseDot.Systems.Abilities
         /// <param name="deltaTime">경과 시간(초)</param>
         public virtual void Tick(in AbilityContext ctx, AbilityInstance self, float deltaTime)
         {
-            if (!TickCooldown(self, deltaTime))
-                return;
-
-            ITargetable target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, Range) : null;
-            if (target == null)
-                return;   // 준비 유지·재시도
-
-            Fire(ctx, self, target);
-            ResetCooldown(self, ctx);
+            DriveAutonomously(ctx, self, deltaTime);
         }
     }
 }
