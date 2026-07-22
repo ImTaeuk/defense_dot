@@ -1,4 +1,4 @@
-// 코어 능력 구동 — 로드아웃·러너·무기 보유. 자율 능력은 러너가, 주축·동반은 무기가 구동
+// 코어 능력 구동 — 로드아웃·러너·무기 보유. 기본 공격은 무기가, 그 외 자율 능력은 러너가 구동
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -17,7 +17,7 @@ namespace DefenseDot.Systems.Abilities
     {
         private AbilityLoadout loadout;      // 장착 능력 슬롯(액티브/패시브)
         private AbilityRunner runner;        // 자율 능력 프레임 구동·장착 훅
-        private CoreWeapon weapon;           // 주축·동반 발사 묶음(공격 주기 소유)
+        private CoreWeapon weapon;           // 기본 공격 구동(공격속도로 애니 재생)
         private GameFlowModel flow;          // 진행 단계(발동 게이트)
         private AbilityContext ctx;          // 공용 컨텍스트(모든 능력 공유)
         private IAttackMotion motion;        // 공격 모션 재생 대상
@@ -39,7 +39,7 @@ namespace DefenseDot.Systems.Abilities
         public void SetBaseAttackSpeed(float attacksPerSecond)
         {
             baseAttackSpeed = attacksPerSecond;
-            weapon?.SetBaseAttackSpeed(attacksPerSecond);
+            stats.attackSpeed = Mathf.Max(0.01f, attacksPerSecond);
         }
 
         /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. fireOrigin은 발사체·머즐 스폰용 총구(없으면 origin 폴백). </summary>
@@ -63,7 +63,6 @@ namespace DefenseDot.Systems.Abilities
             ctx = new AbilityContext(this, origin, finder, loadout.Modifiers, effects, stats, fireOrigin);
             runner = new AbilityRunner(loadout, ctx);
             weapon = new CoreWeapon(loadout, motion);
-            weapon.SetBaseAttackSpeed(baseAttackSpeed);
             // 장착은 예열 후로 미룸(예열 전 Spawn 방지) → WarmupStartersAsync → EquipAll
         }
 
@@ -100,16 +99,11 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 읽기 전용 로드아웃(카드 생성기 질의용). </summary>
         public AbilityLoadout Loadout => loadout;
 
-        /// <summary> 신규 능력 추가. 주축이면 기존 주축을 먼저 해제합니다(주축은 1개만). </summary>
+        /// <summary> 신규 능력 추가. </summary>
         /// <param name="data">추가할 능력 설계도</param>
         public AbilityInstance AddAbility(AbilityData data)
         {
             if (loadout == null) return null;
-
-            // 주축은 1개만 보유 — 교체 규칙은 무기가 판단한다
-            AbilityInstance replaced = weapon?.FindMainToReplace(data);
-            if (replaced != null)
-                RemoveAbility(replaced);
 
             if (!loadout.TryAdd(data)) return null;
             bool isActive = data is ActiveAbilityData;
