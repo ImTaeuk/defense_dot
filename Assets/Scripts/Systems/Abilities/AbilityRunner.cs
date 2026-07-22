@@ -37,7 +37,7 @@ namespace DefenseDot.Systems.Abilities
             if (inst != null && inst.data is IAbilityLifecycle life) life.OnUnequip(ctx, inst);
         }
 
-        /// <summary> 매 프레임 기본 공격 외 모든 액티브를 자율 구동합니다. 기본 공격은 CoreWeapon이 담당합니다. </summary>
+        /// <summary> 매 프레임 기본 공격·상시 능력을 제외한 액티브를 자율 구동합니다. </summary>
         /// <param name="deltaTime">경과 시간(초)</param>
         public void Tick(float deltaTime)
         {
@@ -48,6 +48,11 @@ namespace DefenseDot.Systems.Abilities
                 if (inst.data.tier == AbilityTier.Basic)
                 {
                     continue;   // 기본 공격은 CoreWeapon이 애니로 구동
+                }
+
+                if (inst.data is IAbilityLifecycle)
+                {
+                    continue;   // 상시 능력은 OnEquip/OnUnequip으로 구동(러너 구동 대상 아님)
                 }
 
                 if (inst.data is ActiveAbilityData active)

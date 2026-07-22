@@ -81,6 +81,24 @@ namespace DefenseDot.Tests.EditMode
             }
         }
 
+        private sealed class PersistentFiring : ActiveAbilityData, IAbilityLifecycle
+        {
+            public int fires;
+
+            protected override void Fire(in AbilityContext ctx, AbilityInstance self, DefenseDot.Core.ITargetable target)
+            {
+                fires++;
+            }
+
+            public void OnEquip(in AbilityContext ctx, AbilityInstance self)
+            {
+            }
+
+            public void OnUnequip(in AbilityContext ctx, AbilityInstance self)
+            {
+            }
+        }
+
         private static BasicFiring MakeBasicFiring()
         {
             BasicFiring a = ScriptableObject.CreateInstance<BasicFiring>();
@@ -96,6 +114,13 @@ namespace DefenseDot.Tests.EditMode
             return a;
         }
 
+        private static PersistentFiring MakePersistentFiring()
+        {
+            PersistentFiring a = ScriptableObject.CreateInstance<PersistentFiring>();
+            a.tier = AbilityTier.Signature;
+            return a;
+        }
+
         private static int FireCountOf(AbilityData data)
         {
             if (data is BasicFiring basic)
@@ -106,6 +131,11 @@ namespace DefenseDot.Tests.EditMode
             if (data is SignatureFiring signature)
             {
                 return signature.fires;
+            }
+
+            if (data is PersistentFiring persistent)
+            {
+                return persistent.fires;
             }
 
             return -1;
@@ -132,11 +162,14 @@ namespace DefenseDot.Tests.EditMode
         public void Tick_FiresNonBasic_OnOwnCooldown()
         {
             var loadout = new AbilityLoadout();
-            var sub = MakeSignatureFiring(cooldown: 0.5f);   // tier=Signature, Fire 시 카운트
+            var sub = MakeSignatureFiring(cooldown: 1f);   // tier=Signature, Fire 시 카운트
             loadout.TryAdd(sub);
             var runner = new AbilityRunner(loadout, MakeCtx());
             runner.Tick(0.5f);
             Assert.AreEqual(1, FireCountOf(sub), "비-Basic 능력은 자기 쿨다운으로 발사");
+
+            runner.Tick(0.1f);
+            Assert.AreEqual(1, FireCountOf(sub), "쿨다운이 남아있으면 재발사되지 않음");
         }
 
         [Test]
@@ -148,6 +181,25 @@ namespace DefenseDot.Tests.EditMode
             var runner = new AbilityRunner(loadout, MakeCtx());
             runner.Tick(5f);
             Assert.AreEqual(0, FireCountOf(basic), "기본 공격은 러너가 발사하지 않음(CoreWeapon 담당)");
+        }
+
+        [Test]
+        public void Tick_SkipsPersistentAbility_ButFiresNonBasicInMixedLoadout()
+        {
+            var loadout = new AbilityLoadout();
+            var basic = MakeBasicFiring();
+            var signature = MakeSignatureFiring(cooldown: 0.5f);
+            var persistent = MakePersistentFiring();
+            loadout.TryAdd(basic);
+            loadout.TryAdd(signature);
+            loadout.TryAdd(persistent);
+
+            var runner = new AbilityRunner(loadout, MakeCtx());
+            runner.Tick(0.5f);
+
+            Assert.AreEqual(0, FireCountOf(basic), "기본 공격은 러너가 발사하지 않음(CoreWeapon 담당)");
+            Assert.AreEqual(1, FireCountOf(signature), "비-Basic 액티브는 자율 발사");
+            Assert.AreEqual(0, FireCountOf(persistent), "상시 능력(IAbilityLifecycle)은 DriveAutonomously 대상이 아님");
         }
     }
 }
