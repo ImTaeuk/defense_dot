@@ -19,9 +19,10 @@ MonoBehaviour:
   maxLevel: 5
   baseCost: 30
   description: "\uC804\uBC29 \uB2E8\uC77C \uD22C\uC0AC\uCCB4"
+  tier: 2
+  kind: 0
   baseCooldown: 0.4
   cycleDelta: 0.2
-  castAnimation: {fileID: 7400000, guid: b67b5b6acf7081e42b9a4e70ad535d22, type: 2}
   projectileAsset:
     m_AssetGUID: 6a69eecf8d11bfc43a543e8ac90745bc
     m_SubObjectName: 

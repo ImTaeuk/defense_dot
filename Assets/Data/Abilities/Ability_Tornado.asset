@@ -19,6 +19,8 @@ MonoBehaviour:
   maxLevel: 5
   baseCost: 60
   description: "\uCF54\uC5B4 \uC8FC\uC704 \uADA4\uB3C4 \uACF5\uACA9"
+  tier: 2
+  kind: 3
   baseCooldown: 0.2
   castAnimation: {fileID: 0}
   orbiterAsset:

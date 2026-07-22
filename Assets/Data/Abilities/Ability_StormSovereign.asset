@@ -19,6 +19,8 @@ MonoBehaviour:
   maxLevel: 5
   baseCost: 55
   description: "\uC8FC\uBCC0 \uBC94\uC704 \uD30C\uB3D9"
+  tier: 2
+  kind: 2
   baseCooldown: 3
   castAnimation: {fileID: 0}
   zoneAsset:
