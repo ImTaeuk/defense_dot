@@ -74,6 +74,16 @@ namespace DefenseDot.EditorTools
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
 
+            // DEBUG: 타워 공격속도 — 애니·발사 반영 확인용
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("공격속도(회/s)", GUILayout.Width(150));
+            if (GUILayout.Button("1")) SetAttackSpeed(1f);
+            if (GUILayout.Button("2")) SetAttackSpeed(2f);
+            if (GUILayout.Button("3")) SetAttackSpeed(3f);
+            if (GUILayout.Button("5")) SetAttackSpeed(5f);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+
             // DEBUG: 합성 검증 치트 — 골드·재료MAX·카드팝업
             EditorGUILayout.LabelField("── 합성 검증 ──", EditorStyles.boldLabel);
             EditorGUILayout.BeginHorizontal();
@@ -248,6 +258,21 @@ namespace DefenseDot.EditorTools
             int before = gm.Level.PendingLevelUps;
             int guard = 0;
             while (gm.Level.PendingLevelUps == before && guard++ < 100000) gm.Level.RegisterKill();
+        }
+
+        /// <summary> 타워 기본 공격속도(초당 횟수)를 즉시 설정합니다(애니·발사 반영 확인용). </summary>
+        /// <param name="attacksPerSecond">초당 공격 횟수</param>
+        private void SetAttackSpeed(float attacksPerSecond)
+        {
+            ArenaModeBootstrap boot = FindFirstObjectByType<ArenaModeBootstrap>();
+            if (boot == null || boot.CoreAbility == null)
+            {
+                ShowNotification(new GUIContent("CoreAbility 없음"));
+                return;
+            }
+
+            boot.CoreAbility.SetBaseAttackSpeed(attacksPerSecond);
+            ShowNotification(new GUIContent($"공격속도 {attacksPerSecond:0.##}회/s"));
         }
 
         /// <summary> 계보 첫 레시피의 재료 2개를 코어에 확보하고 MAX 레벨로 올립니다. </summary>
