@@ -21,7 +21,7 @@ MonoBehaviour:
   description: "\uC804\uBC29 \uB2E8\uC77C \uD22C\uC0AC\uCCB4"
   tier: 2
   kind: 0
-  baseCooldown: 0.4
+  baseCooldown: 0.8
   cycleDelta: 0.5
   projectileAsset:
     m_AssetGUID: 6a69eecf8d11bfc43a543e8ac90745bc
