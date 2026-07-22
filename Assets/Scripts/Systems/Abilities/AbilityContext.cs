@@ -1,6 +1,7 @@
 using UnityEngine;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Abilities.Effects;
+using DefenseDot.Systems.Combat;
 
 namespace DefenseDot.Systems.Abilities
 {
@@ -19,12 +20,14 @@ namespace DefenseDot.Systems.Abilities
         public readonly AbilityModifiers Modifiers;
         /// <summary> 효과 엔티티 스포너. </summary>
         public readonly IEffectSpawner Effects;
+        /// <summary> 전투 능력치(공격속도·쿨다운 배율). </summary>
+        public readonly CombatStats Stats;
 
         /// <summary> 발사 시점의 총구 월드 위치. 발사점 미배선이면 코어 중심(Origin). </summary>
         public Vector3 FirePosition => FireOrigin != null ? FireOrigin.position : Origin;
 
         public AbilityContext(MonoBehaviour host, Vector3 origin, TargetFinder finder,
-            AbilityModifiers modifiers, IEffectSpawner effects, Transform fireOrigin = null)
+            AbilityModifiers modifiers, IEffectSpawner effects, CombatStats stats, Transform fireOrigin = null)
         {
             Host = host;
             Origin = origin;
@@ -32,6 +35,7 @@ namespace DefenseDot.Systems.Abilities
             Finder = finder;
             Modifiers = modifiers;
             Effects = effects;
+            Stats = stats;
         }
     }
 }

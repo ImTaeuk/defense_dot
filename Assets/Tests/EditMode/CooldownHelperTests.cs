@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using DefenseDot.Systems.Abilities;
+using DefenseDot.Systems.Combat;
 
 namespace DefenseDot.Tests.EditMode
 {
@@ -22,7 +23,7 @@ namespace DefenseDot.Tests.EditMode
         private static AbilityContext Ctx(float cdr = 0f)
         {
             var mods = new AbilityModifiers { cooldownReduction = cdr };
-            return new AbilityContext(null, Vector3.zero, null, mods, null);
+            return new AbilityContext(null, Vector3.zero, null, mods, null, new CombatStats());
         }
 
         [Test]

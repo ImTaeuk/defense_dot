@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using UnityEngine;
 using DefenseDot.Systems.Abilities;
+using DefenseDot.Systems.Combat;
 
 namespace DefenseDot.Tests.EditMode
 {
@@ -23,7 +24,7 @@ namespace DefenseDot.Tests.EditMode
         }
 
         private static AbilityContext Ctx()
-            => new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null);
+            => new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null, new CombatStats());
 
         [Test]
         public void Tick_CallsEachActive()

@@ -2,6 +2,7 @@ using NUnit.Framework;
 using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Systems.Abilities;
+using DefenseDot.Systems.Combat;
 
 namespace DefenseDot.Tests.EditMode
 {
@@ -23,7 +24,7 @@ namespace DefenseDot.Tests.EditMode
         }
 
         private static AbilityContext Ctx(AbilityModifiers mods)
-            => new AbilityContext(null, Vector3.zero, null, mods, null);
+            => new AbilityContext(null, Vector3.zero, null, mods, null, new CombatStats());
 
         private static CoreWeapon Weapon(AbilityLoadout loadout, float attacksPerSecond)
         {
