@@ -21,6 +21,12 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 중앙에 생성할 타워 데이터입니다. (추후 선택 UI 주입점) </summary>
         [SerializeField] private TowerData centerTowerData;
 
+        /// <summary> 플레이할 캐릭터(기본 공격·모션·공격속도·전용 계보 소유). </summary>
+        [SerializeField] private CharacterData characterData;
+
+        /// <summary> 활성 공통 계보 세트(버전 갈아끼기 지점). </summary>
+        [SerializeField] private DefenseDot.Systems.Cards.FusionRecipeSet universalLineage;
+
         /// <summary> 코어 스타터 능력(샷·오비탈 등). 카드 획득(A3) 전 기본 장착. </summary>
         [SerializeField] private List<AbilityData> starterAbilities = new List<AbilityData>();
 
@@ -45,8 +51,15 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 코어 능력 시스템(카드 명령 대상). CreateMode 이후 non-null. </summary>
         public CoreAbilitySystem CoreAbility => coreAbility;
 
-        /// <summary> 선택된 타워의 합성 계보(카드 생성용). </summary>
-        public DefenseDot.Systems.Cards.FusionRecipeSet FusionLineage => centerTowerData != null ? centerTowerData.fusionLineage : null;
+        /// <summary> 캐릭터 전용 계보입니다(없으면 null). </summary>
+        public DefenseDot.Systems.Cards.FusionRecipeSet CharacterLineage =>
+            characterData != null ? characterData.CharacterLineage : null;
+
+        /// <summary> 활성 공통 계보 세트입니다(없으면 null). </summary>
+        public DefenseDot.Systems.Cards.FusionRecipeSet UniversalLineage => universalLineage;
+
+        /// <summary> (잠정) 구 호출부 호환 — T6에서 삭제 예정. </summary>
+        public DefenseDot.Systems.Cards.FusionRecipeSet FusionLineage => CharacterLineage;
 
         /// <summary> 아레나 모드의 적 수 표시 한계(수용 한계)입니다. </summary>
         public override int EnemyDisplayCapacity =>
@@ -98,9 +111,15 @@ namespace DefenseDot.Systems.Mode
 
             // 모션·기본 공격 속도를 먼저 주입해야 무기가 올바른 값으로 생성된다
             if (arisVisual != null) coreAbility.SetAttackMotion(arisVisual);
-            coreAbility.SetBaseAttackSpeed(data.attackSpeed);
+            coreAbility.SetBaseAttackSpeed(characterData != null ? characterData.BaseAttackSpeed : data.attackSpeed);
 
-            coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, ctx.CombatState, starterAbilities, ctx.Pooling, fireOrigin);
+            // 캐릭터 기본 공격을 스타터 맨 앞에 합성(중복은 로드아웃 Contains가 방어)
+            List<AbilityData> starters = new List<AbilityData>();
+            if (characterData != null && characterData.BasicAttack != null)
+                starters.Add(characterData.BasicAttack);
+            starters.AddRange(starterAbilities);
+
+            coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, ctx.CombatState, starters, ctx.Pooling, fireOrigin);
             StartCoreAbilities(coreAbility).Forget();   // 예열 → 장착 순서 조율
 
             // 총구 확보 후 비주얼에 능력 시스템 연동
