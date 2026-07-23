@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: AbilityPool
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Cards.AbilityPool
   abilities:
-  - {fileID: 11400000, guid: d7292e215a9d97e4cb6163bdbe06f306, type: 2}
   - {fileID: 11400000, guid: 301b691825a438f44ad99a99cbc480b1, type: 2}
   - {fileID: 11400000, guid: 47cf0f1622367b847aea2715031f929e, type: 2}
   - {fileID: 11400000, guid: 2749b68dae18c394bbcbb2ccbba0815e, type: 2}
