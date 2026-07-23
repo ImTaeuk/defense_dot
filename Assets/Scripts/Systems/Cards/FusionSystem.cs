@@ -6,17 +6,31 @@ namespace DefenseDot.Systems.Cards
     /// <summary> 합성(Fusion)의 단일 원천 — 계보 데이터 소유 + 판정·생성·배제·원자적 적용. </summary>
     public sealed class FusionSystem
     {
-        /// <summary> 이 시스템이 직접 소유하는 합성 계보(데이터 원천). </summary>
-        private readonly FusionRecipeSet lineage;
+        /// <summary> 이 시스템이 소유하는 계보 세트들(공통 + 캐릭터 전용). </summary>
+        private readonly List<FusionRecipeSet> lineages = new List<FusionRecipeSet>();
 
         /// <summary> 이번 런에서 합성으로 소진된 능력들(카드 재등장 방지). </summary>
         private readonly HashSet<AbilityData> consumed = new HashSet<AbilityData>();
 
-        /// <summary> 계보를 주입받습니다(null이면 합성 비활성). </summary>
-        /// <param name="lineage">이 타워의 합성 계보 데이터.</param>
-        public FusionSystem(FusionRecipeSet lineage)
+        /// <summary> 계보 세트 목록(공통 ∪ 캐릭터)을 주입받습니다. null 세트는 건너뜁니다. </summary>
+        /// <param name="sets">활성 계보 세트들.</param>
+        public FusionSystem(IEnumerable<FusionRecipeSet> sets)
         {
-            this.lineage = lineage;
+            if (sets == null)
+                return;
+
+            foreach (FusionRecipeSet set in sets)
+            {
+                if (set != null)
+                    lineages.Add(set);
+            }
+        }
+
+        /// <summary> 단일 세트 편의 생성자(기존 호출부 호환). </summary>
+        /// <param name="lineage">계보 세트 하나(null 허용 = 합성 비활성).</param>
+        public FusionSystem(FusionRecipeSet lineage)
+            : this(lineage != null ? new[] { lineage } : null)
+        {
         }
 
         /// <summary> 지금 가능한 합성을 카드로 만들어 목록에 채웁니다. </summary>
@@ -25,30 +39,45 @@ namespace DefenseDot.Systems.Cards
         /// <param name="max">into가 도달하면 멈출 카드 총 개수 한도.</param>
         public void CollectOffers(AbilityLoadout loadout, List<Card> into, int max)
         {
-            if (loadout == null || into == null || lineage == null || lineage.recipes == null)
+            if (loadout == null || into == null)
                 return;
 
-            for (int i = 0; i < lineage.recipes.Count && into.Count < max; i++)
+            using (UnityEngine.Pool.HashSetPool<AbilityData>.Get(out HashSet<AbilityData> offered))
             {
-                FusionRecipe r = lineage.recipes[i];
+                for (int s = 0; s < lineages.Count && into.Count < max; s++)
+                {
+                    List<FusionRecipe> recipes = lineages[s].recipes;
+                    if (recipes == null)
+                        continue;
 
-                // 참조 누락 레시피는 건너뜀
-                if (r.materialA == null || r.materialB == null || r.result == null)
-                    continue;
+                    for (int i = 0; i < recipes.Count && into.Count < max; i++)
+                    {
+                        FusionRecipe r = recipes[i];
 
-                // 결과를 이미 보유하면 제시하지 않음
-                if (loadout.Contains(r.result))
-                    continue;
+                        // 참조 누락 레시피는 건너뜀
+                        if (r.materialA == null || r.materialB == null || r.result == null)
+                            continue;
 
-                // 주축을 소진하는데 결과가 주축이 아니면 주 공격을 잃으므로 제시하지 않음
-                if (!r.KeepsMainWeapon())
-                    continue;
+                        // 공통·캐릭터 중복 레시피는 1회만
+                        if (offered.Contains(r.result))
+                            continue;
 
-                // 재료 둘 다 MAX 보유해야 가용
-                if (FindMaxed(loadout, r.materialA) == null || FindMaxed(loadout, r.materialB) == null)
-                    continue;
+                        // 결과를 이미 보유하면 제시하지 않음
+                        if (loadout.Contains(r.result))
+                            continue;
 
-                into.Add(Card.FusionCard(r.result, r.materialA, r.materialB, CardTier.Fusion));
+                        // 주축을 소진하는데 결과가 주축이 아니면 주 공격을 잃으므로 제시하지 않음
+                        if (!r.KeepsMainWeapon())
+                            continue;
+
+                        // 재료 둘 다 MAX 보유해야 가용
+                        if (FindMaxed(loadout, r.materialA) == null || FindMaxed(loadout, r.materialB) == null)
+                            continue;
+
+                        offered.Add(r.result);
+                        into.Add(Card.FusionCard(r.result, r.materialA, r.materialB, CardTier.Fusion));
+                    }
+                }
             }
         }
 
@@ -56,13 +85,17 @@ namespace DefenseDot.Systems.Cards
         /// <param name="data">검사할 능력 설계도.</param>
         public bool IsResult(AbilityData data)
         {
-            if (lineage == null || lineage.recipes == null)
-                return false;
-
-            for (int i = 0; i < lineage.recipes.Count; i++)
+            for (int s = 0; s < lineages.Count; s++)
             {
-                if (lineage.recipes[i].result == data)
-                    return true;
+                List<FusionRecipe> recipes = lineages[s].recipes;
+                if (recipes == null)
+                    continue;
+
+                for (int i = 0; i < recipes.Count; i++)
+                {
+                    if (recipes[i].result == data)
+                        return true;
+                }
             }
 
             return false;
