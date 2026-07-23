@@ -23,6 +23,7 @@ namespace DefenseDot.Systems.Abilities
         private IAttackMotion motion;        // 공격 모션 재생 대상
         private PoolManager pool;            // 스타터 예열용
         private float baseAttackSpeed = 1f;  // 타워 기본 공격 속도(초당 횟수)
+        private AnimationClip castAnimation;   // 캐릭터 기본 공격 모션(무기 생성 전에 주입)
         private readonly CombatStats stats = new CombatStats();   // 전투 능력치(ctx로 주입)
 
         /// <summary> 공격 모션 재생 대상을 연결합니다(무기 생성 전에 호출). </summary>
@@ -30,6 +31,15 @@ namespace DefenseDot.Systems.Abilities
         public void SetAttackMotion(IAttackMotion attackMotion)
         {
             motion = attackMotion;
+            weapon?.Detach();
+            weapon = null;
+        }
+
+        /// <summary> 캐릭터 기본 공격 모션을 연결합니다(무기 생성 전에 호출). </summary>
+        /// <param name="clip">기본 공격 클립(없으면 즉시 발사)</param>
+        public void SetCastAnimation(AnimationClip clip)
+        {
+            castAnimation = clip;
             weapon?.Detach();
             weapon = null;
         }
@@ -62,7 +72,7 @@ namespace DefenseDot.Systems.Abilities
             IEffectSpawner effects = new PooledEffectSpawner(poolManager);
             ctx = new AbilityContext(this, origin, finder, loadout.Modifiers, effects, stats, fireOrigin);
             runner = new AbilityRunner(loadout, ctx);
-            weapon = new CoreWeapon(loadout, motion);
+            weapon = new CoreWeapon(loadout, motion, castAnimation);
             // 장착은 예열 후로 미룸(예열 전 Spawn 방지) → WarmupStartersAsync → EquipAll
         }
 

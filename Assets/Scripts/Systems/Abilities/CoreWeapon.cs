@@ -18,10 +18,11 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 공격 모션 재생 대상. null이면 모션 없이 즉시 발사합니다. </summary>
         private readonly IAttackMotion motion;
 
+        /// <summary> 기본 공격 모션 클립(캐릭터 소유, 생성자 주입 고정). </summary>
+        private readonly AnimationClip castClip;
+
         /// <summary> 현재 기본 공격. 없으면 null. </summary>
         private AbilityInstance basicAttack;
-        /// <summary> 기본 공격 모션 클립(고정이라 1회 캐시). </summary>
-        private AnimationClip castClip;
         /// <summary> 기본 공격 타겟 탐색 사거리(1회 캐시). </summary>
         private float basicRange = 30f;
         /// <summary> 다음 발사까지 남은 시간(초). </summary>
@@ -35,10 +36,12 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 로드아웃을 구독해 기본 공격을 추적합니다. </summary>
         /// <param name="loadout">장착 능력의 원천</param>
         /// <param name="motion">공격 모션 재생 대상(없으면 null)</param>
-        public CoreWeapon(AbilityLoadout loadout, IAttackMotion motion)
+        /// <param name="castClip">기본 공격 모션 클립(캐릭터 소유, 없으면 즉시 발사)</param>
+        public CoreWeapon(AbilityLoadout loadout, IAttackMotion motion, AnimationClip castClip = null)
         {
             this.loadout = loadout;
             this.motion = motion;
+            this.castClip = castClip;
             if (loadout != null)
             {
                 loadout.OnChanged += Rebuild;
@@ -119,7 +122,6 @@ namespace DefenseDot.Systems.Abilities
         private void Rebuild()
         {
             basicAttack = null;
-            castClip = null;
             basicRange = 30f;
             if (loadout == null)
             {
@@ -139,10 +141,6 @@ namespace DefenseDot.Systems.Abilities
                 if (inst.data is ActiveAbilityData active)
                 {
                     basicRange = active.TargetRange;
-                }
-                if (inst.data is MainAbilityData mainData)
-                {
-                    castClip = mainData.CastAnimation;
                 }
                 return;
             }

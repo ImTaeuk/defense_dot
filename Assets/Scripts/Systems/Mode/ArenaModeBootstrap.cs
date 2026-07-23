@@ -109,8 +109,9 @@ namespace DefenseDot.Systems.Mode
             ArisTowerVisual arisVisual = ReplaceWithArisVisual(go, ctx);
             Transform fireOrigin = arisVisual != null ? arisVisual.FirePoint : null;
 
-            // 모션·기본 공격 속도를 먼저 주입해야 무기가 올바른 값으로 생성된다
+            // 모션·캐스트 애니메이션·기본 공격 속도를 먼저 주입해야 무기가 올바른 값으로 생성된다
             if (arisVisual != null) coreAbility.SetAttackMotion(arisVisual);
+            coreAbility.SetCastAnimation(characterData != null ? characterData.CastAnimation : null);
             coreAbility.SetBaseAttackSpeed(characterData != null ? characterData.BaseAttackSpeed : data.attackSpeed);
 
             // 캐릭터 기본 공격을 스타터 맨 앞에 합성(중복은 로드아웃 Contains가 방어)
