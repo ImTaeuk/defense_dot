@@ -58,9 +58,6 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 활성 공통 계보 세트입니다(없으면 null). </summary>
         public DefenseDot.Systems.Cards.FusionRecipeSet UniversalLineage => universalLineage;
 
-        /// <summary> (잠정) 구 호출부 호환 — T6에서 삭제 예정. </summary>
-        public DefenseDot.Systems.Cards.FusionRecipeSet FusionLineage => CharacterLineage;
-
         /// <summary> 아레나 모드의 적 수 표시 한계(수용 한계)입니다. </summary>
         public override int EnemyDisplayCapacity =>
             arenaView != null && arenaView.Config != null ? arenaView.Config.maxAlive : 80;
