@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3af913cadff4463418f757ba4dcb7d76, type: 3}
+  m_Name: Character_Aris
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.CharacterData
+  basicAttack: {fileID: 11400000, guid: d7292e215a9d97e4cb6163bdbe06f306, type: 2}
+  castAnimation: {fileID: 7400000, guid: b67b5b6acf7081e42b9a4e70ad535d22, type: 2}
+  baseAttackSpeed: 1
+  characterLineage: {fileID: 11400000, guid: c8446830ed7bc104b88ded33e03504bc, type: 2}
