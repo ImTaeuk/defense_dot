@@ -1,7 +1,7 @@
 # defense_dot — 마스터 TASK 인덱스 & 원작 갭 로드맵
 
 **최초 작성**: 2026-07-08
-**최종 갱신**: 2026-07-08
+**최종 갱신**: 2026-07-23
 **성격**: 크로스-세션 단일 진실 공급원(SSOT) — 남은 작업의 마스터 인덱스
 **근거**: 원작 `Assets/Reference/dot-defense-main/index.html` (APP_VERSION 608, 33,187줄) + 현재 `Assets/Scripts/Systems/` 구현 상태
 
@@ -34,6 +34,8 @@
 | 코어 자동전투 | 능력 실행 3종(투사체/궤도/영역) | `Systems/Abilities/Definitions·Effects/` (A2) |
 | 레벨업·카드 선택 | kills→레벨업→3장 선택 모달 | `Systems/Cards/` (A3) |
 | 순수 패시브 4종 | 맹공·토벌·쇄도·각성 조건부 배수 | `PureDamagePassiveData` (A5-2) |
+| 능력 분류·발사 모델 | tier/kind 분류, `CombatStats`(공격속도·쿨타임감소) 단일 원천, 구동 소유권 3분할 | `Systems/Abilities/`·`Systems/Combat/CombatStats.cs` (TASK-024 검증 대기) |
+| 캐릭터 층 | 기본공격·시전모션·기본공격속도·전용계보를 캐릭터가 소유 | `Data/CharacterData.cs`, `Data/Characters/Character_Aris.asset` |
 | Actor BT 프레임워크 | POCO BT (Node/Selector/Sequence/Blackboard) | `Systems/Actor/` (Phase 1) |
 | 풀링 인프라 | Pool/PoolManager, Addressables | TASK-013·015 ✅ done |
 | 전투 VFX | 명중·머즐 이펙트, unscaled time | `Systems/Abilities/Effects/`, Rendering (TASK-014 🔶) |
@@ -177,6 +179,7 @@ Grid 모드·품질·구조 작업. 원작 standard 재현과 독립적이나 �
 
 | TASK | 제목 | 우선순위 | 남은 공수 | 매핑 |
 |---|---|---|---|---|
+| [024](active/TASK-024-ability-redesign-play-verification.md) | 능력 재설계 플레이 검증 | **최우선(PC 복귀 즉시)** | XS | Plan 1·2 완료 선언 게이트. 자동검증 6/6 통과, 수동 5건 잔여 |
 | [012](active/TASK-012-arena-mode-roadmap.md) | Arena 모드 로드맵 (마스터) | 높음 | **XL** (2주+) | 위 A0~A8·B 전체의 정본 |
 | [014](active/TASK-014-combat-vfx-restore.md) | 전투 VFX 복구 | 높음 | XS~S | 🔶 B-1/B-2 연출만 남음 |
 | [004](active/TASK-004-debug-attack-types-resume.md) | 디버그 공격 | 높음→폐기후보 | XS (폐기 시) | 능력 시스템이 대체 |
@@ -197,11 +200,24 @@ Grid 모드·품질·구조 작업. 원작 standard 재현과 독립적이나 �
 
 > 공수는 6/29 `priority-effort-matrix` 추정을 계승·갱신(013·002 done 반영, 014 B-0/B-3 완료로 하향). `*` = 선행 결정으로 변동.
 
-**완료(done)**: [TASK-002](done/TASK-002-game-end-result-restart.md) 플레이 루프 · [TASK-013](done/TASK-013-effect-pooling-system.md) 풀링 시스템
+**완료(done)**: [TASK-002](done/TASK-002-game-end-result-restart.md) 플레이 루프 · [TASK-013](done/TASK-013-effect-pooling-system.md) 풀링 시스템 · [TASK-025](done/TASK-025-code-style-portable-merge.html) 코드 컨벤션 개정
+
+### 6.1 TASK 문서 미등재 백로그 (2026-07-23 능력 재설계에서 파생)
+
+| 항목 | 성격 | 공수 | 상태 |
+|---|---|---|---|
+| 골드 강화 Arena 제외 | 결정 완료(그리드 모드 도입 시 추가) · 구현 미착수 | XS | 착수 대기 |
+| Plan 3 — 타입 통일(5→1)·kind 실행기·데이터 3층·GUID 스왑 | 능력 체계 재설계 마지막 단계 · **별도 브랜치, 최후 수행** | L | 계획 미작성 |
+| 패시브 재설계 (rules SO) | 미결 4건 남음 — 설계 협업 선행 필요 | M* | 설계 대기 |
+| 마이너 롤업 | Auto 에셋 4종 잔여 castAnimation 키, `CanAdd` summary 문구, 공허 가드 테스트, `MainAbilityData.CastAnimation` 제거 | XS | Plan 3 동반 |
 
 ---
 
 ## 7. 갱신 이력
+
+- **2026-07-27** — **코드 컨벤션 개정(코드 변경 0건, 문서만).** 개인 포터블 코드 스타일 문서(`code-style-portable.md`)를 흡수해 규약 3중 구조(전역 CLAUDE.md 원문 · 프로젝트 체크리스트 · lint 판정표)를 동기화. 신규 규칙은 비동기 요청-응답 마커 시점(성공 응답 콜백에서 설정), 임시 컬렉션 escape 판단축, 런타임 LINQ 금지 대상 확장(`.FirstOrDefault`·`.All`·무인자 `.Any()`), 「분석·검증 규율」·「보고·승인·커밋 규율」 2개 절. 커밋 메시지 규칙은 상시 로드를 줄이기 위해 `commit` 스킬로 이관. `GetComponent` 는 포터블의 "금지"를 채택하지 않고 기존 "지양" 유지(사용자 확정). 훅이 `.cs` 편집 전 강제로 읽히는 `unity-standards/references/naming.md` 가 전역 규약과 충돌하던 것(const PascalCase·`Manager`/`Controller` 권장·file-scoped namespace 권장)을 실측 기반으로 정정 — Unity 6000.4.8f1 의 `LangVersion` 이 9.0 이라 file-scoped 는 컴파일 불가이며 `Assets/Scripts` 192개 파일 전부가 이미 중괄호 방식. **TASK-025** 완료·done 이동.
+
+- **2026-07-23** — **능력 체계 재설계 Plan 1·2 구현 완료(검증 대기).** 발사 모델을 `CombatStats`(공격속도·쿨타임감소) 두 능력치의 단일 원천으로 재정의 — 기본 공격은 시전 모션 재생 속도를 공격속도에 맞춰 구동하고, 그 외 능력은 각자 쿨다운으로 자율 발사(동시 발사·주기 카운팅 폐기). 능력 분류를 `AbilityTier`·`AbilityKind` 로 이원화하고 `AbilityFiring` 폐기. 기본공격·시전모션·기본공격속도·전용계보를 `CharacterData` 로 이관해 캐릭터가 소유(씬 `starterAbilities` 비움, `AbilityPool` 에서 샷 제거). `FusionSystem` 이 계보 세트 목록(공통 ∪ 캐릭터)을 소유하고 합성 소진 재료를 카드 풀에서 영구 배제. 18커밋(전부 로컬 미push), EditMode 644/644. **TASK-024**(플레이 검증) 신규 등록 — 수동 검증 5건이 Plan 1·2 완료 선언의 게이트.
 
 - **2026-07-20** — **로드맵 후반부 정리(범위 결정).** ① A6 보스·B HUD 리스킨은 **리소스(보스·UI 에셋) 부재로 착수 대기**로 표시. ② 메타층(A7) 볼륨이 커 **별도 TASK-022로 분리**. ③ 계보 공명(구 A8)은 캐릭터 SR+SSR 조합 각성 이벤트로 우리 능력 합성(A5-1)과 다른 층이며 **A7 가챠 선행 필요** → A7-9로 재번호·메타층 묶음에 편입.
 

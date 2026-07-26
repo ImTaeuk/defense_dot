@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TASK-025 — code-style-portable.md 흡수에 따른 코드 컨벤션 개정</title>
+<style>
+  :root {
+    --bg: #1e1f26; --panel: #282a36; --panel2: #21222c;
+    --text: #f8f8f2; --muted: #9aa0b4; --line: #44475a;
+    --accent: #ff79c6; --green: #50fa7b; --red: #ff5555;
+    --cyan: #8be9fd; --yellow: #f1fa8c; --purple: #bd93f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; line-height: 1.7;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 28px; }
+  h1 { font-size: 25px; margin: 0 0 6px; }
+  h2 {
+    font-size: 19px; margin: 38px 0 14px; padding-bottom: 8px;
+    border-bottom: 2px solid var(--line); color: var(--cyan);
+  }
+  h3 { font-size: 16px; margin: 22px 0 10px; color: var(--purple); }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 26px; }
+  .tag {
+    display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 10px;
+    background: var(--line); color: var(--text); margin-right: 6px; vertical-align: middle;
+  }
+  .tag.must { background: #5a2b3a; color: var(--accent); }
+  .tag.opt { background: #2b4a3a; color: var(--green); }
+  p { margin: 10px 0; }
+  code {
+    background: var(--panel2); padding: 2px 6px; border-radius: 4px;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; color: var(--yellow);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 22px; margin: 14px 0;
+  }
+  .file {
+    font-family: Consolas, monospace; font-size: 13px; color: var(--cyan);
+    margin: 4px 0 12px;
+  }
+  pre {
+    background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+    padding: 14px 16px; overflow-x: auto; margin: 8px 0;
+    font-family: Consolas, "Courier New", monospace; font-size: 13px; line-height: 1.55;
+  }
+  pre.before { border-left: 3px solid var(--red); }
+  pre.after  { border-left: 3px solid var(--green); }
+  .lbl { font-size: 12px; font-weight: bold; letter-spacing: .5px; }
+  .lbl.before { color: var(--red); }
+  .lbl.after  { color: var(--green); }
+  .del { color: var(--red); }
+  .add { color: var(--green); }
+  .cmt { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--panel2); color: var(--cyan); }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 5px 0; }
+  .ok { color: var(--green); font-weight: bold; }
+  .warn { color: var(--yellow); font-weight: bold; }
+  .note {
+    background: var(--panel2); border-left: 3px solid var(--cyan);
+    padding: 10px 16px; margin: 12px 0; font-size: 14px; border-radius: 0 6px 6px 0;
+  }
+  .hl-line { display:block; background:rgba(251,191,36,.16); border-left:3px solid var(--yellow); margin:0 -16px; padding:0 16px; }
+  .hl-inline { color:var(--green); font-weight:600; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>TASK-025 — code-style-portable.md 흡수에 따른 코드 컨벤션 개정</h1>
+  <div class="sub">
+    <span class="tag must">규약 개정</span>
+    <span class="tag opt">반영 완료</span>
+    3개 파일 반영 완료 · 2026-07-27
+  </div>
+
+  <h2>1. 제보 요지</h2>
+  <div class="panel">
+    <p><code><strong>C:\Users\USER\Documents\하이웍스 받은파일\code-style-portable.md</strong></code>(개인 포터블 코드 스타일 문서) 를 기준으로, <strong>프로젝트 및 전역 코드 스타일의 네이밍 규칙 등 모든 코드 컨벤션을 최신화</strong>해 달라는 요청이다.</p>
+    <div class="note">
+      핵심 결론: 포터블 문서의 <strong>A·B 섹션 25개 항목은 이미 흡수된 상태</strong>였고, 실제 개정이 필요한 것은 <strong>충돌 2건 · 강도/범위 변경 3건 · 신규 규칙 20건</strong>이었다. 사용자 확정에 따라 <strong>모든 충돌을 포터블 문서 기준으로 덮고</strong> 신규 항목을 전부 반영했다.
+    </div>
+  </div>
+
+  <h2>2. 현재 동작 (반영 전 컨벤션 구조)</h2>
+  <div class="panel">
+    <p>이 환경의 코딩 컨벤션은 <strong>역할이 다른 3개 파일</strong>로 분산되어 있고, 서로를 참조하는 단일 진실 공급원(SSOT) 구조를 이룬다. 규칙 하나를 추가하려면 세 곳에 <strong>각각 다른 형태</strong>로 반영해야 정합성이 유지된다.</p>
+    <ol>
+      <li><code><strong>~/.claude/CLAUDE.md</strong></code> 「코딩 컨벤션」 절 — <strong>규약 원문(SSOT)</strong>. 규칙의 본문과 근거가 사는 유일한 장소</li>
+      <li><code><strong>defense_dot/CLAUDE.md</strong></code> 「C# 코딩 컨벤션」 절 — <strong>신규 코드 체크리스트</strong>. 자기 규정으로 "규칙 본문을 여기에 복제하지 않는다"를 명시하고 있어 한 줄 체크 항목으로만 표현</li>
+      <li><code><strong>~/.claude/skills/lint/SKILL.md</strong></code> — <strong>자동 판정 규칙표</strong>. A 그룹(기계적 판정 → 자동 수정) / B 그룹(맥락 판단 → 플래그 보고) 2분류</li>
+    </ol>
+    <p>이 구조 때문에 개정 작업은 "원문 수정 → 체크리스트 한 줄 추가 → lint 판정 그룹 배정" 3단계로 진행된다.</p>
+  </div>
+
+  <h2>3. 근본 원인 — 대조 결과 도출된 격차</h2>
+  <div class="panel">
+    <p>포터블 문서 155줄 전체를 전역·프로젝트 컨벤션과 1:1 대조한 결과, 격차는 <strong>3종류</strong>로 나뉘었다.</p>
+
+    <h3>(A) 이미 반영되어 손댈 필요 없는 항목 — 25건</h3>
+    <p><code>const</code> 대문자+빈 줄 · 접근지정자 명시(IDE0040) · <code>internal class</code> 내부 멤버 <code>public</code> · 한국어 <code>&lt;summary&gt;</code> · block body / <code>=&gt;</code> 메서드 금지 · switch statement 만 · <code>case</code> 후 개행 · <code>foreach</code> 중괄호 필수 · 단일 <code>if</code> 후 빈 줄 · guard clause · <code>using (…) { }</code> 블록 · Strategy 위임 · Factory 하단 배치 · <code>Console.Assert</code> + 메시지 + <code>this</code> · 파일 끝 trailing newline 없음 · System 풀패스 · UniTask · Tell Don't Ask · UniTask 취소 2연산자 · LINQ 금지 · 임시 컬렉션 3안 · 단발 캐싱 금지 · B1 임시 대응 원복 · B2 원본 조건 무비판 보존 금지 · B3 "무조건 실행" 시맨틱 보존</p>
+
+    <h3>(B) 충돌 — 2건</h3>
+    <table>
+      <tr><th>지점</th><th>전역 기존</th><th>포터블</th><th>처리</th></tr>
+      <tr>
+        <td>권한 요청</td>
+        <td>"모든 파일 작업 즉시 실행, <strong>권한 요청 절대 금지</strong>"</td>
+        <td>"<strong>금전적 비용 발생 또는 파일 손상 우려</strong>가 있을 때만 이유와 함께 확인"</td>
+        <td><span class="ok">포터블 기준으로 예외 조항 추가</span></td>
+      </tr>
+      <tr>
+        <td>주석 강도</td>
+        <td>"<strong>모든 메서드에 <code>&lt;summary&gt;</code> 필수</strong>" + "인라인 주석은 필요할 때만"</td>
+        <td>"주석은 꼭 필요할 때만, 20자 이내·최대 2줄"</td>
+        <td><span class="ok">실질 충돌 아님 — 전역 유지</span> (아래 note 참조)</td>
+      </tr>
+    </table>
+    <div class="note">
+      주석 항목은 <strong>대상이 다른 두 규칙</strong>이라 충돌이 아니다. 포터블의 "꼭 필요할 때만 20자"는 <strong>인라인 주석</strong>을 가리키고, 전역의 "<code>&lt;summary&gt;</code> 필수"는 <strong>XML 문서 주석</strong>을 가리킨다. 전역은 이미 두 대상을 분리해 각각 규정하고 있으므로(「행동 규칙」의 20자 규칙 + 「주석·문서」의 <code>&lt;summary&gt;</code> 규칙) 포터블 문구는 이미 포함된 상태다. 덮어쓰면 오히려 <code>&lt;summary&gt;</code> 필수 규칙이 사라진다.
+    </div>
+
+    <h3>(C) 강도·범위 변경 3건 + 신규 규칙 20건</h3>
+    <table>
+      <tr><th>구분</th><th>항목</th><th>변화</th></tr>
+      <tr><td>강도</td><td>GetComponent</td><td>포터블은 "금지"였으나 <strong>사용자 재확정으로 "지양" 유지</strong> + 초기화 시 <code>AddComponent</code> 도 "지양"으로 추가 (4절 참조)</td></tr>
+      <tr><td>범위</td><td>런타임 LINQ</td><td><code>.FirstOrDefault</code> · <code>.All</code> · <strong>무인자 <code>.Any()</code></strong> 추가, GC 근거 명시</td></tr>
+      <tr><td>판단축</td><td>임시 컬렉션</td><td>"호출 빈도" 단독 → <strong>1차 escape 여부 + 2차 호출 빈도</strong></td></tr>
+      <tr><td>신규</td><td>A7 비동기 마커</td><td>휘발 마커를 <strong>요청 송신이 아닌 성공 응답 시점</strong>에 설정</td></tr>
+      <tr><td>신규</td><td>C1~C4 분석·검증 규율</td><td>타입 계층 추측 금지 · 외부 데이터 추측 금지 · 이벤트 토폴로지 확인 · 테스트 환경 격리</td></tr>
+      <tr><td>신규</td><td>D1~D15 보고·승인·커밋 규율</td><td>두괄식 · 위험/발동 축 분리 · 승인 경계 3항 · Diff 표기 2항 · 커밋 메시지 3항 · 공식 문서 우선</td></tr>
+    </table>
+  </div>
+
+  <h2>4. 기획 요구사항 (사용자 확정)</h2>
+  <div class="panel">
+    <p>4개 항목을 선택지로 제시했고, 사용자는 <strong>전 항목에 대해 동일한 답</strong>을 확정했다.</p>
+    <ul>
+      <li>반영 범위 — <strong>"모든 충돌 또는 신규 작업은 언급한 파일 기준으로 최신화 해."</strong> → A·B·C·D 전 섹션 반영</li>
+      <li>GetComponent 강도 — <strong>"명시한 파일 기준으로 최신화"</strong> → 금지로 격상</li>
+      <li>임시 컬렉션 판단축 — <strong>"명시한 파일 기준으로 최신화"</strong> → escape 기준 채택</li>
+      <li>권한 규칙 충돌 — <strong>"명시한 파일 기준으로 최신화"</strong> → 금전·손상 예외 추가</li>
+    </ul>
+    <div class="note">
+      즉 <strong>판단 기준은 일관되게 "포터블 문서가 이긴다"</strong>이다. 다만 위 3-(B) 의 주석 항목처럼 <strong>충돌로 보였으나 실제로는 대상이 다른 규칙</strong>인 경우는 덮어쓰면 정보가 소실되므로 예외로 두고 이 문서에 명시했다.
+    </div>
+
+    <h3>후속 확정 — GetComponent 강도 재조정 <span class="tag opt">1차 반영 후 정정</span></h3>
+    <p>1차 반영에서 GetComponent 를 포터블 기준의 <strong>"금지"</strong> 로 격상했으나, 사용자가 <strong>"getcomponent 금지까지는 아니긴 했는데"</strong> 로 정정했고 재확인 결과 아래로 확정했다.</p>
+    <ul>
+      <li><strong>GetComponent</strong> — 개정 전 문구인 <strong>"지양"</strong> 그대로 복구. lint 도 위반이 아닌 <strong>검토 플래그</strong>로 환원</li>
+      <li><strong>초기화 과정의 AddComponent</strong> — 조항 자체는 남기되 <strong>"금지" → "지양"</strong> 으로 완화해 유지</li>
+      <li><strong>UI 제어 컴포넌트 조항</strong>(드롭다운 등을 하위 오브젝트로 추가하고 <code>[SerializeField]</code> 로 참조) — "지양" 기조와 모순이 없어 <span class="ok">그대로 유지</span></li>
+    </ul>
+    <div class="note">
+      이 정정으로 <strong>"모든 충돌은 포터블 기준"</strong> 원칙에는 <strong>예외 2건</strong>이 생겼다 — ① 주석 강도(대상이 다른 규칙) ② GetComponent 강도(사용자 재확정). 나머지 항목은 모두 포터블 기준 그대로다.
+    </div>
+  </div>
+
+  <h2>5. 설계 원칙 — 컨벤션 정렬</h2>
+  <div class="panel">
+    <p>규약 문서 개정은 코드 수정과 달리 <strong>"같은 규칙이 두 곳에 다르게 남는 것"</strong>이 최대 실패 모드다. 기존 두 문서가 이미 채택하고 있던 원칙을 그대로 따랐다.</p>
+    <table>
+      <tr><th>레퍼런스</th><th>위치</th><th>차용 포인트</th></tr>
+      <tr>
+        <td><strong>SSOT 단일 원문 원칙</strong></td>
+        <td><code><strong>defense_dot/CLAUDE.md:21</strong></code></td>
+        <td><strong>규칙 본문은 전역에만 산다</strong> — 프로젝트 문서는 체크리스트만 보유하고 본문을 복제하지 않는다. 신규 규칙도 이 규정을 깨지 않도록 한 줄 체크 항목으로만 추가</td>
+      </tr>
+      <tr>
+        <td><strong>lint A/B 2분류 원칙</strong></td>
+        <td><code><strong>lint/SKILL.md:170</strong></code></td>
+        <td><strong>기계적 판정은 자동 수정, 맥락 판단은 플래그</strong> — 신규 규칙을 넣을 때 "자동 판정 가능한가"로 그룹을 결정. 신규 <strong>초기화 AddComponent</strong> 규칙은 <strong>프리팹 배선이 필요해 자동 수정 불가</strong>하므로 GetComponent 와 같은 B 그룹에 배정</td>
+      </tr>
+    </table>
+    <div class="note">
+      <strong>결합 결론</strong>: 규칙 본문은 전역 1곳, 적용 체크는 프로젝트 1줄, 판정 방식은 lint 그룹 배정 — <strong>같은 규칙이 3개의 다른 표현으로 정확히 1번씩</strong> 존재하도록 반영했다.
+    </div>
+  </div>
+
+  <h3>레퍼런스 ① SSOT 단일 원문 원칙</h3>
+  <div class="panel">
+    <div class="file">defense_dot/CLAUDE.md · L21</div>
+    <pre><code><span class="cmt">**규약 원문은 전역 `~/.claude/CLAUDE.md` 의 「코딩 컨벤션」 절이 단일 진실 공급원(SSOT)이다.**</span>
+<span class="hl-line">이 절은 그 규약을 이 프로젝트에서 적용할 때 쓰는 <span class="hl-inline">**신규 코드 체크리스트**</span>이며,</span>
+<span class="cmt">규칙 본문을 여기에 복제하지 않는다</span></code></pre>
+    <p>이 자기 규정 때문에, 신규 규칙 6건을 프로젝트 문서에 반영할 때 <strong>근거·예외·이유는 일절 옮기지 않고</strong> "무엇을 확인했는가"만 체크 문장으로 적었다.</p>
+  </div>
+
+  <h3>레퍼런스 ② lint A/B 2분류 원칙</h3>
+  <div class="panel">
+    <div class="file">lint/SKILL.md · L170 (주의사항)</div>
+    <pre><code><span class="cmt">A 그룹(1~10) 은 규칙이 기계적으로 판정되므로 참조 추적 후 자동 수정.</span>
+<span class="hl-line">B 그룹은 <span class="hl-inline">escape 여부·프리팹 배선·API 파급</span> 등 맥락 판단이 필요하므로</span>
+<span class="cmt">자동 수정하지 않고 목록으로 보고한 뒤 사용자 판단을 받아 처리한다.</span></code></pre>
+    <p>신규 규칙 <strong>B-9(비동기 마커 시점)</strong> 은 "이 마커가 후속 1회 처리용인가"라는 의도 판단이 필요해 자동 수정이 불가능하므로 B 그룹에 배정했다.</p>
+  </div>
+
+  <h2>6. 해결 방안 — 변경 사항</h2>
+
+  <h3>(1) 전역 CLAUDE.md — Unity 참조 방식 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">~/.claude/CLAUDE.md · 「코딩 컨벤션 &gt; Unity」</div>
+    <p>GetComponent 는 <strong>강도를 올리지 않고</strong> 기존 "지양"을 유지했다. 실제 추가된 것은 <strong>AddComponent 사용 시점 제약</strong>과 <strong>UI 제어 컴포넌트 배선 지침</strong> 2줄이다.</p>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">- 참조는 [SerializeField] + 인스펙터 연결. `GetComponent` 지양 — 런타임 탐색 비용과 실패 지점을 없앤다</span>
+<span class="cmt">- `MonoBehaviour` 를 `new` 로 생성 금지 — `AddComponent&lt;T&gt;()` 또는 `Instantiate()` 사용</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">- 참조는 [SerializeField] + 인스펙터 연결. `GetComponent` 지양 — 런타임 탐색 비용과 실패 지점을 없앤다</span>
+<span class="add">- `AddComponent` 는 런타임 동적 생성이 꼭 필요할 때만 사용하고, 초기화 과정(Awake/Start/Initialize)에서는 지양 — 인스펙터 연결로 대체한다</span>
+<span class="add">- 드롭다운 등 UI 제어도 컴포넌트를 하위 오브젝트로 추가하고 [SerializeField] 로 참조한다</span>
+<span class="cmt">- `MonoBehaviour` 를 `new` 로 생성 금지 — `AddComponent&lt;T&gt;()` 또는 `Instantiate()` 사용</span></pre>
+    <div class="note">
+      포터블 원문은 <strong>"GetComponent 사용 금지"</strong> · <strong>"초기화 과정에서는 AddComponent 도 금지"</strong> 였다. 1차 반영에서 그대로 옮겼다가 사용자 정정에 따라 <strong>두 항목 모두 "지양" 수준으로 환원</strong>했다.
+    </div>
+  </div>
+
+  <h3>(2) 전역 CLAUDE.md — 성능(LINQ · 임시 컬렉션 · 캐싱) <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">~/.claude/CLAUDE.md · 「코딩 컨벤션 &gt; 성능」</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">- **런타임 predicate LINQ 금지** (`.Any(x =&gt; )`, `.Where`, `.Select` 등) — 델리게이트/이터레이터 GC 할당이 스파이크를 만든다. `foreach` + `continue` 가드로 대체한다. **Editor 코드와 저빈도 초기화 경로는 예외**</span>
+<span class="del">- 임시 컬렉션: 함수 스코프 임시 컬렉션은 `new` / 필드 캐싱 / `ListPool` **세 가지를 호출 빈도로 비교해서 고른다**. 한 곳에서만 쓰는 의존성은 필드 캐싱 없이 직접 호출한다. 필드로 보관하는 컬렉션은 일반 new 허용</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">- **런타임 predicate LINQ 금지** (`.Any(x =&gt; )`, `.Where`, `.Select`, `.FirstOrDefault`, `.All` 등) — 모델·시스템·네트워크 응답 핸들러 같은 런타임 경로에서 쓰지 않고 `foreach` + `continue` 가드로 대체한다. **무인자 `.Any()`(비었는지 확인) 도 금지** — `.Count` 비교나 직접 검사로 대체. **Editor 코드와 로딩·초기화 같은 저빈도 1회성 경로는 예외**</span>
+<span class="add">  - 이유: LINQ 의 호출당 힙 할당(클로저·이터레이터·델리게이트·박싱)이 Unity 의 비세대·비압축 Boehm GC 와 만나 stop-the-world GC 스파이크 → 프레임 히칭. 본질은 CPU 비용이 아니라 **GC 할당 압력**</span>
+<span class="add">- 임시 컬렉션: 함수 스코프 임시 컬렉션(`List&lt;T&gt;`/`HashSet&lt;T&gt;`/`Dictionary`/`StringBuilder`)은 `new` / 필드 캐싱 / `ListPool` **세 가지를 동시에 비교해서 고른다**</span>
+<span class="add">  - **1차 판단축은 escape 여부** — 함수 스코프 밖으로 escape 하지 않으면 **풀링이 최우선**. escape 하거나 비동기 흐름을 가로지르면 풀링 부적합</span>
+<span class="add">  - 2차 판단축은 호출 빈도 — escape 하지 않더라도 저빈도 1회성 경로면 `new` 로 충분한지 함께 본다</span>
+<span class="add">  - 풀 사용 시 **블록 `using` 필수**. 필드로 보관하는 컬렉션은 일반 new 허용</span>
+<span class="add">- 단발 의존성 캐싱 금지: 한 곳에서만 호출하는 의존성은 사용 지점에서 직접 호출한다. **호출이 2개 이상 메서드·분기에 흩어져 있을 때만** 캐싱을 고려한다</span></pre>
+  </div>
+
+  <h3>(3) 전역 CLAUDE.md — 비동기 마커 신규 + switch default 구체화 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">~/.claude/CLAUDE.md · 「코딩 컨벤션 &gt; 라이브러리·API / 서식」</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">- 비동기: UniTask(async/await) 만 사용. … 취소는 `SuppressCancellationThrow()` / `AttachExternalCancellation()` 으로 다룬다</span>
+<span class="del">- switch: … `default` 는 실제 값과 메시지를 담아 `ArgumentOutOfRangeException` 을 던진다</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">- 비동기: UniTask(async/await) 만 사용. … 취소는 `SuppressCancellationThrow()` / `AttachExternalCancellation()` 으로 다룬다</span>
+<span class="add">  - `SuppressCancellationThrow()` — 취소를 예외 대신 bool 로 반환, `AttachExternalCancellation(token)` — 토큰 파라미터가 없는 async 에 외부 토큰 부착</span>
+<span class="add">- 비동기 요청-응답 마커: 후속 1회 처리를 위한 휘발 마커·플래그는 요청 **송신 시점이 아니라 성공 응답 콜백(OnResponse) 시점**에 설정한다 — 요청이 거부되면 응답이 오지 않으므로 마커 잔존 위험이 구조적으로 사라진다. 동시 처리 대상이 1개면 `HashSet` 대신 단일 `int`(-1 sentinel) 또는 `bool` 로 충분하고, 생명주기 경계(`OnReset`/`OnDispose`)에서 반드시 초기화한다</span>
+<span class="add">- switch: … `default` 는 인자 이름·실제 값·메시지를 모두 담아 던진다 (`throw new ArgumentOutOfRangeException(nameof(param), param, "처리되지 않은 값입니다.");`)</span></pre>
+  </div>
+
+  <h3>(4) 전역 CLAUDE.md — 신규 절 2개 추가 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">~/.claude/CLAUDE.md · 「린트 게이트」 다음, 「금지 사항」 앞</div>
+    <p>포터블 C·D 섹션 19개 항목을 <strong>기존 절에 흩뿌리지 않고 새 절 2개로 묶었다</strong>. 기존 「행동 규칙」에 섞으면 코드 규칙과 프로세스 규칙이 뒤엉켜 어느 쪽을 고쳐야 할지 알 수 없게 되기 때문이다.</p>
+
+    <div class="lbl after">▼ AFTER (신규 절)</div>
+<pre class="after"><span class="add">## 분석·검증 규율</span>
+<span class="add">- **타입 계층은 추측 금지, 정의부로 검증** — 정의부 원문을 열어 전이 구현(transitive) 가능성을 먼저 확인. "구현하지 않는다"고 단정하지 말고 "확인하겠다"로 시작</span>
+<span class="add">- **외부 데이터 의미는 추측 금지, 실제 조회 후 결론** — 같은 value 컬럼도 타입별로 의미가 다를 수 있다. 가설이 관측과 충돌하면 즉시 멈추고 증거를 더 모은다</span>
+<span class="add">- **이벤트 통합 최적화 전 구독 토폴로지 확인** — ① 호출 주체 동일? ② 갱신 대상 데이터 동일? ③ 다르면 통합 불가</span>
+<span class="add">- **검증·테스트가 실제 작업 환경을 건드리지 않게 격리** — OS·창·입력 API 는 monkeypatch 격리, 최소화 상태일 때만 복원, GUI 검증은 offscreen</span>
+
+<span class="add">## 보고·승인·커밋 규율</span>
+<span class="add">### 커뮤니케이션 — 두괄식 · 완료 보고 간결 · "…" 생략 금지 · 위험/실제발동 축 분리 · 공식 문서 우선</span>
+<span class="add">### 승인·적용 경계 — 명시 승인 없이 코드 변경 금지 · 승인 범위 초과 방어코드 금지 · 우회 툴 생성 금지</span>
+<span class="add">### Diff 표기 — 직접 변경한 경우에만 Diff 포함 · 연속 동종 라인 사이 빈 줄 금지</span>
+<span class="add">### 커밋 메시지 — 실제 diff 와 정확히 일치 · "X 에서 Y 를 Z 처리 — 사유" 한 줄 · 한 문장 = 한 줄</span></pre>
+    <div class="note">
+      기존 「금지 사항」의 <strong>"코드 Diff 를 일반 텍스트로 출력 금지"</strong> 항목에는 상호 참조를 걸었다. 그 항목은 <strong>어떤 형식으로</strong> 출력하는지(html-report 양식)를, 새 절은 <strong>언제 넣고 어떻게 압축</strong>하는지를 규정하므로 서로 보완 관계이며 모순이 아니다.
+    </div>
+  </div>
+
+  <h3>(5) 전역 CLAUDE.md — 권한 예외 · 말투 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">~/.claude/CLAUDE.md · 「사용자 환경」 / 「행동 규칙」</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">- 사용자에게는 격식 있는 경어 사용</span>
+<span class="del">- 모든 파일 읽기/쓰기/수정 작업은 즉시 실행, 절대 권한 요청 금지 (확장자 무관, 이미지·사운드 포함)</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">- 사용자에게는 격식 있는 경어 사용 — 명령조·반말 금지. 제안은 권유형("~하시는 게 어떨까요?")으로 표현</span>
+<span class="add">- 모든 파일 읽기/쓰기/수정 작업은 즉시 실행, 절대 권한 요청 금지 (확장자 무관, 이미지·사운드 포함) — 단, **금전적 비용이 발생하거나 파일 손상 우려가 있는 작업은** 이유와 함께 먼저 확인한다</span></pre>
+    <div class="note">
+      이 편집은 <strong>1차 시도가 권한 분류기에 차단</strong>됐다. 원인은 예외 조항이 아니라 함께 넣으려던 <code>"Bash·MCP·플러그인 포함"</code> 문구 — <strong>권한 요청 금지 범위를 넓히는 방향</strong>이었기 때문으로 보인다. 해당 확장 문구를 빼고 <strong>확인을 늘리는 예외 조항만</strong> 남겨 재시도해 반영했다.
+    </div>
+  </div>
+
+  <h3>(6) 프로젝트 CLAUDE.md — 신규 코드 체크리스트 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">defense_dot/CLAUDE.md · 「C# 코딩 컨벤션 &gt; 신규 코드 체크리스트」</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="del">- [ ] switch statement 를 썼고 `default` 에서 값을 포함해 던졌다</span>
+<span class="cmt">- [ ] 메서드에 `=&gt;` 를 쓰지 않았다 (프로퍼티 accessor 는 허용)</span>
+<span class="del">- [ ] 참조를 [SerializeField] 로 연결했다 (`GetComponent` 미사용)</span>
+<span class="del">- [ ] 런타임 경로에 predicate LINQ 를 쓰지 않았다</span>
+<span class="cmt">- [ ] 파일명이 첫 타입명과 일치한다 (`.meta` 포함)</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="add">- [ ] switch statement 를 썼고 `default` 에서 `nameof(param)` · 실제 값 · 메시지 3개를 담아 `ArgumentOutOfRangeException` 을 던졌다</span>
+<span class="cmt">- [ ] 메서드에 `=&gt;` 를 쓰지 않았다 (프로퍼티 accessor 는 허용)</span>
+<span class="add">- [ ] 참조를 [SerializeField] 로 연결했다 (`GetComponent` 지양. `AddComponent` 는 런타임 동적 생성에만 쓰고 초기화 과정에서는 지양)</span>
+<span class="add">- [ ] 런타임 경로에 predicate LINQ 를 쓰지 않았다 (`.FirstOrDefault` · `.All` · 무인자 `.Any()` 포함)</span>
+<span class="add">- [ ] 함수 스코프 임시 컬렉션은 escape 여부로 골랐다 (escape 안 하면 풀링 우선, 풀은 블록 `using`)</span>
+<span class="add">- [ ] 한 곳에서만 쓰는 의존성을 필드 캐싱하지 않았다 (2개 이상 메서드·분기에 흩어질 때만 캐싱)</span>
+<span class="add">- [ ] 비동기 후속 처리 마커를 요청 송신이 아니라 **성공 응답 시점**에 설정하고 생명주기 경계에서 초기화했다</span>
+<span class="cmt">- [ ] 파일명이 첫 타입명과 일치한다 (`.meta` 포함)</span></pre>
+
+    <p>「이 프로젝트의 기존 코드 처리」 절에도 소급 적용 금지 2개 항목을 추가했다.</p>
+    <div class="lbl after">▼ AFTER (추가분)</div>
+<pre class="after"><span class="add">- **기존 파일에 코드를 추가할 때는 그 파일의 지배적 스타일을 따른다.** 접근지정자 명시(IDE0040) 등을 기존 시그니처에 소급 적용하지 않는다.</span>
+<span class="add">- **외부(리뷰·타 도구) 수정본을 적용할 때 기존 코드에 가해진 스타일 변경은 원복한다.**</span></pre>
+  </div>
+
+  <h3>(7) lint 스킬 — 판정 규칙표 <span class="tag must">수정 필요</span></h3>
+  <div class="panel">
+    <div class="file">~/.claude/skills/lint/SKILL.md · A-9 / B-1 / B-3 / B-4 / B-9</div>
+
+    <div class="lbl before">▼ BEFORE</div>
+<pre class="before"><span class="cmt">### B-1. 컬렉션 선택</span>
+<span class="del">- 함수 스코프 임시 컬렉션은 `new` / 필드 캐싱 / `ListPool` 중 **호출 빈도에 맞는 것**을 골라야 한다</span>
+<span class="cmt">### B-3. Unity 참조 방식</span>
+<span class="cmt">- `GetComponent` 사용 시 플래그 → [SerializeField] + 인스펙터 연결로 대체 가능한지 검토 (유지)</span>
+<span class="cmt">### B-4. 런타임 predicate LINQ</span>
+<span class="del">- `.Any(x =&gt; )`, `.Where`, `.Select`, `.First(x =&gt; )` 등이 런타임 경로에 있으면 플래그</span>
+<span class="cmt">(B-9 없음)</span></pre>
+
+    <div class="lbl after">▼ AFTER</div>
+<pre class="after"><span class="cmt">### B-1. 컬렉션 선택</span>
+<span class="add">- **1차 판단축은 escape 여부** — escape 하지 않으면 **풀링이 최우선**. escape 하거나 비동기 흐름을 가로지르면 풀링 부적합</span>
+<span class="add">- 2차 판단축은 호출 빈도 / 풀 사용 시 **블록 `using` 필수**</span>
+<span class="add">- **단발 의존성 캐싱 금지** — 호출이 2개 이상 메서드·분기에 흩어져 있을 때만 캐싱 고려</span>
+<span class="cmt">### B-3. Unity 참조 방식</span>
+<span class="cmt">- `GetComponent` 사용 시 플래그 → [SerializeField] + 인스펙터 연결로 대체 가능한지 검토 (강도 변경 없음)</span>
+<span class="add">- `AddComponent` 는 런타임 동적 생성이 꼭 필요할 때만 사용 — 초기화 과정(Awake/Start/Initialize)에서 쓰면 플래그</span>
+<span class="cmt">### B-4. 런타임 predicate LINQ</span>
+<span class="add">- `.FirstOrDefault`, `.All` 추가. **무인자 `.Any()` 도 위반** → `.Count` 비교로 대체</span>
+<span class="add">- 근거: 비세대·비압축 Boehm GC 의 stop-the-world 스파이크 — 본질은 **GC 할당 압력**</span>
+<span class="add">### B-9. 비동기 요청-응답 마커 설정 시점 (신규)</span>
+<span class="add">- 휘발 마커를 요청 **송신 시점**에 설정하면 플래그 → **성공 응답 콜백 시점**으로 이동</span>
+<span class="add">- 생명주기 경계에서 초기화하지 않으면 위반</span></pre>
+
+    <h3>핵심 변경 포인트</h3>
+    <ul>
+      <li><strong>A-9 (switch)</strong> — <code>nameof(param)</code>·실제 값·메시지 <strong>3개가 모두 없으면 위반</strong>으로 판정 기준을 기계화</li>
+      <li><strong>B 그룹 범위 표기</strong> — <code>B-1~B-8</code> → <code>B-1~B-9</code> 로 프로세스 다이어그램·주의사항 동기화</li>
+      <li><strong>frontmatter description</strong> — 스킬 트리거 정확도를 위해 "비동기 마커 시점" 추가</li>
+      <li><strong>주의사항 2개 항목 추가</strong> — 지배적 스타일 준수 · 외부 수정본 스타일 원복</li>
+    </ul>
+  </div>
+
+  <h2>7. 영향 범위 및 부수 효과</h2>
+  <div class="panel">
+    <table>
+      <tr><th>항목</th><th>분석</th></tr>
+      <tr>
+        <td>기존 코드베이스</td>
+        <td><span class="ok">영향 없음</span> — 프로젝트 CLAUDE.md 「기존 코드 처리」가 일괄 개작을 금지하고, 이번에 <strong>소급 적용 금지 조항이 오히려 강화</strong>됐다</td>
+      </tr>
+      <tr>
+        <td>lint 스킬 동작</td>
+        <td><span class="warn">신규 코드에서 플래그 건수 소폭 증가</span> — 무인자 <code>.Any()</code>, 초기화 시점 <code>AddComponent</code>, 요청 송신 시점 마커가 새로 플래그된다. <span class="ok">GetComponent 판정은 종전과 동일</span>(검토 플래그). 단 <strong>변경된 파일 내 코드만 검증</strong>하므로 기존 파일은 그대로</td>
+      </tr>
+      <tr>
+        <td>commit 스킬</td>
+        <td><span class="warn">커밋 메시지 형식이 3규칙으로 구속</span> — "X 에서 Y 를 Z 처리 — 사유" 한 줄 형식, 한 문장 = 한 줄. 기존 커밋 이력과 문체가 달라질 수 있다</td>
+      </tr>
+      <tr>
+        <td>세션 응답 스타일</td>
+        <td><span class="warn">D6 승인 경계가 새로 구속</span> — "가능한지 / 어떻게 하면 될까 / 검토·분석" 요청에는 코드를 수정하지 않고 제안만 한다. 기존 「행동 규칙」의 "지시가 명확하면 즉시 실행"과는 <strong>지시 유형이 달라 병존</strong>한다</td>
+      </tr>
+      <tr>
+        <td>권한 동작</td>
+        <td><span class="warn">금전 비용·파일 손상 우려 시 확인이 발생</span> — 그 외 파일·Bash·MCP 작업은 종전대로 무확인 즉시 실행</td>
+      </tr>
+      <tr>
+        <td>문서 정합성</td>
+        <td><span class="ok">SSOT 유지</span> — 규칙 본문은 전역 1곳에만, 프로젝트는 체크리스트, lint 는 판정 그룹. 복제 없음</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>8. 검증 시나리오</h2>
+  <div class="panel">
+    <p>규약 문서 개정이라 자동 테스트는 불가하다. 다음 시나리오는 <strong>다음 코드 작업 시 실동작으로 확인</strong>해야 한다.</p>
+    <table>
+      <tr><th>#</th><th>시나리오</th><th>기대 동작</th></tr>
+      <tr>
+        <td>1</td>
+        <td><strong>회귀 핵심</strong> — 기존 파일을 수정하고 <code>lint</code> 스킬 실행</td>
+        <td><span class="ok">변경한 코드만 검증되고 기존 위반은 무시</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>신규 스크립트의 <code>Awake()</code> 에서 <code>AddComponent</code> 사용</td>
+        <td><span class="ok">B-3 검토 플래그, 자동 수정은 하지 않음</span> (<code>GetComponent</code> 도 종전대로 검토 플래그)</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>신규 코드에 무인자 <code>.Any()</code> 사용</td>
+        <td><span class="ok">B-4 위반 플래그 → <code>.Count</code> 비교 권고</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>함수 안에서만 쓰는 <code>List&lt;T&gt;</code> 를 <code>new</code> 로 생성</td>
+        <td><span class="ok">escape 하지 않으므로 풀링 우선 권고 플래그</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>"이거 가능한가요?" 형태의 질문</td>
+        <td><span class="ok">코드 수정 없이 제안만 제시</span> <span class="warn">※ 기존 "즉시 실행" 규칙과 충돌하지 않는지 관찰 필요</span></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>커밋 요청 시 메시지 생성</td>
+        <td><span class="ok">"X 에서 Y 를 Z 처리 — 사유" 한 줄 형식, 문장 중간 개행 없음</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>9. 수정 파일 요약</h2>
+  <table>
+    <tr><th>파일</th><th>변경 내용</th></tr>
+    <tr>
+      <td><code><strong>~/.claude/CLAUDE.md</strong></code></td>
+      <td>말투 권유형 명시 · 권한 예외(금전·손상) 추가 · 코딩 컨벤션 기준 문서에 <code>code-style-portable.md</code> 흡수 명기 · switch default 시그니처 구체화 · <strong>초기화 AddComponent 지양 + UI 컴포넌트 배선 지침 신규</strong>(GetComponent 는 "지양" 유지) · LINQ 대상 확장 + GC 근거 · 임시 컬렉션 escape 판단축 · 단발 캐싱 임계 명문화 · 비동기 취소 2연산자 예시 + <strong>비동기 마커 시점 신규</strong> · 리팩토링 소급 금지 2항 보강 · <strong>「분석·검증 규율」 절 신규</strong> · <strong>「보고·승인·커밋 규율」 절 신규</strong> · 금지 사항 Diff 항목에 상호 참조</td>
+    </tr>
+    <tr>
+      <td><code><strong>defense_dot/CLAUDE.md</strong></code></td>
+      <td>SSOT 기준 문서에 흡수분 명기 · 체크리스트 3개 항목 갱신 + <strong>3개 항목 신규</strong>(escape 컬렉션 · 단발 캐싱 · 비동기 마커) · 기존 코드 처리에 소급 금지 2항 추가</td>
+    </tr>
+    <tr>
+      <td><code><strong>~/.claude/skills/lint/SKILL.md</strong></code></td>
+      <td>frontmatter description 갱신 · A-9 예외 시그니처 기계화 · B-1 escape 판단축 + 단발 캐싱 · <strong>B-3 초기화 AddComponent 플래그 추가</strong>(GetComponent 판정은 종전 유지) · B-4 대상 확장 + GC 근거 · <strong>B-9 비동기 마커 신규</strong> · 프로세스·주의사항 B 범위 동기화 · 지배적 스타일/외부 수정본 원복 2항 추가</td>
+    </tr>
+  </table>
+  <h2>10. 후속 — 문서 분리 및 참조 동기화</h2>
+  <div class="panel">
+    <p>개정 후 <strong>"별도 문서로 분리할 내용이 없는가, 특히 lint 로 뺄 것은 없는가"</strong> 를 검토했다. 판단 축은 <strong>상시 로드냐 조건부 로드냐</strong> 다 — 전역 CLAUDE.md 는 매 세션 전문이 컨텍스트에 올라가고(개정 후 <strong>211줄 / 20,376자</strong>), 스킬은 트리거될 때만 올라간다.</p>
+
+    <h3>lint 로 분리할 것은 없다</h3>
+    <p>lint 는 이미 컨벤션 판정을 전담한다. 전역 「코딩 컨벤션」과 lint 판정표가 같은 규칙을 담지만 이는 중복이 아니라 <strong>역할 분리</strong>다 — 전역은 <em>작성 시 참조</em>, lint 는 <em>작성 후 검증</em>. <code><strong>unity-standards/SKILL.md:59-66</strong></code> 이 이 3역할(참조 / 검증 / 평가)을 명시적으로 규정하고 있다.</p>
+
+    <h3>대신 발견한 실제 문제 — naming.md 가 전역 규약과 충돌</h3>
+    <p><code><strong>unity-standards/references/naming.md</strong></code> 는 <strong>PreToolUse 훅이 <code>.cs</code> 편집 전에 강제로 읽히는 문서</strong>인데, 내용이 전역 규약과 어긋나 있었다. 코드를 쓰기 직전에 읽는 문서가 잘못된 이름을 권장하던 상태다.</p>
+    <table>
+      <tr><th>위치</th><th>기존 기술</th><th>전역 CLAUDE.md</th><th>조치</th></tr>
+      <tr>
+        <td><code><strong>naming.md:28</strong></code></td>
+        <td><code>Const</code> → PascalCase (<code>MaxLevel = 99</code>)</td>
+        <td><code>UPPER_CASE_WITH_UNDERSCORES</code> + 다음 줄 빈 줄</td>
+        <td><span class="ok">수정 완료</span></td>
+      </tr>
+      <tr>
+        <td><code><strong>naming.md:93-94</strong></code></td>
+        <td>추천 접미사에 <code>Manager</code>·<code>Controller</code> <strong>권장</strong></td>
+        <td>두 접미사 <strong>사용 금지</strong></td>
+        <td><span class="ok">금지 + 대체 예시로 교체</span></td>
+      </tr>
+      <tr>
+        <td><code><strong>naming.md:44</strong></code></td>
+        <td>2자 약어 예시가 <code>UIManager</code></td>
+        <td>금지 접미사를 예시로 사용 중</td>
+        <td><span class="ok"><code>UIPopup</code> 으로 교체</span></td>
+      </tr>
+      <tr>
+        <td><code><strong>naming.md:122-133</strong></code></td>
+        <td>체크리스트 8항</td>
+        <td>이벤트 <code>On</code>·핸들러 <code>Handle</code>·bool 접두·UI 접두·금지 접미사 누락</td>
+        <td><span class="ok">13항으로 보강</span></td>
+      </tr>
+      <tr>
+        <td><code><strong>unity-standards/SKILL.md:20</strong></code></td>
+        <td>자동 호출 예시가 "Manager, Controller, Handler 신규 작성"</td>
+        <td>금지 접미사를 예시로 사용 중</td>
+        <td><span class="ok">Spawner·Rig·Presenter·Handler 로 교체</span></td>
+      </tr>
+    </table>
+    <div class="note">
+      이 충돌은 <strong>이번 개정이 만든 것이 아니라 과거 개정분(Manager/Controller 금지 · const 대문자화)이 미동기화로 남아 있던 것</strong>이다. <code><strong>unity-standards/SKILL.md:95</strong></code> 의 갱신 정책이 <em>"CLAUDE.md 규칙 변경 시 naming.md 동기화"</em> 를 요구하는데 지켜지지 않았다.
+    </div>
+
+    <h3>분리 결정 — 커밋 메시지 규칙만 이동 <span class="tag opt">사용자 확정</span></h3>
+    <table>
+      <tr><th>후보</th><th>판단</th><th>결과</th></tr>
+      <tr>
+        <td>커밋 메시지 3규칙</td>
+        <td>커밋 시점에만 필요하고 <code>commit</code> 스킬이 유일한 사용처</td>
+        <td><span class="ok">commit 스킬 「메시지 작성 규칙」으로 이동</span></td>
+      </tr>
+      <tr>
+        <td>Diff 압축 규칙</td>
+        <td>html-report 로 이동 가능하나 사용자가 미선택</td>
+        <td><span class="warn">전역 유지</span></td>
+      </tr>
+      <tr>
+        <td>테스트 환경 격리 규칙</td>
+        <td>Python·GUI 맥락으로 Unity 프로젝트 발동 빈도 낮으나 사용자가 미선택</td>
+        <td><span class="warn">전역 유지</span></td>
+      </tr>
+    </table>
+
+    <div class="lbl before">▼ BEFORE — 전역 CLAUDE.md 「커밋 메시지」</div>
+<pre class="before"><span class="del">### 커밋 메시지</span>
+<span class="del">- **정확성** — 메시지는 실제 diff 의 성격·범위와 정확히 일치시킨다. …</span>
+<span class="del">- **풀어 쓰되 장문 금지** — "X 에서 Y 를 Z 처리 — 사유" … (좋음/나쁨 예시 2줄)</span>
+<span class="del">- **한 문장 = 한 줄** — 본문에서 한 문장을 중간에 여러 줄로 끊지 않는다 …</span></pre>
+
+    <div class="lbl after">▼ AFTER — 전역은 참조 한 줄, 본문은 commit 스킬</div>
+<pre class="after"><span class="add">### 커밋 메시지</span>
+<span class="add">- 규칙 본문은 **`commit` 스킬의 「메시지 작성 규칙 (강제)」이 단일 진실 공급원(SSOT)** — 형식·정확성·풀어쓰기·금지 사항이 모두 그곳에 있다. 여기에 규칙을 복제하지 않는다</span>
+
+<span class="cmt"># commit/SKILL.md 「메시지 작성 규칙 (강제)」 안으로 병합</span>
+<span class="add">- Description 에 **한 문장 = 한 줄** + **본문 1~3문장** 규칙 병합 (기존 "마침표 후 개행"과 상보)</span>
+<span class="add">- **### 정확성 (강제)** 소절 신규 — 실제 diff 와 일치 · 추상 용어 회피 · 가드는 발동 지점 명시</span>
+<span class="add">- **### 풀어 쓰되 장문 금지** 소절 신규 — "X 에서 Y 를 Z 처리 — 사유" + 좋음/나쁨 예시</span></pre>
+    <div class="note">
+      기존 commit 스킬의 <strong>"문장 단위로 줄바꿈(마침표 후 개행)"</strong> 과 신규 <strong>"한 문장을 중간에 끊지 않는다"</strong> 는 서로 반대 방향의 제약이라 <strong>합치면 정확히 "한 문장 = 한 줄"</strong> 이 된다. 별도 항목으로 나열하지 않고 하나로 병합했다.
+    </div>
+
+    <h3>namespace 선언 방식 — 실측으로 확정 <span class="tag opt">해결</span></h3>
+    <p><code><strong>naming.md:78</strong></code> 이 <strong>file-scoped namespace(<code>namespace MySampleCode;</code>) 를 권장</strong>하고 있었다. C# 10 문법이라 컴파일 가능 여부가 불확실해 1차에서는 손대지 않고 판단 대기로 남겼고, 이후 <strong>추측 없이 프로젝트 실측</strong>으로 확정했다.</p>
+    <table>
+      <tr><th>확인 항목</th><th>실측 결과</th></tr>
+      <tr><td>Unity 버전</td><td><code><strong>ProjectSettings/ProjectVersion.txt</strong></code> → <strong>6000.4.8f1</strong></td></tr>
+      <tr><td>언어 버전</td><td><code><strong>DefenseDot.csproj:18</strong></code> · <code><strong>Assembly-CSharp.csproj:18</strong></code> → <code>&lt;LangVersion&gt;9.0&lt;/LangVersion&gt;</code> (전 어셈블리 동일)</td></tr>
+      <tr><td>file-scoped 요구 버전</td><td>C# <strong>10</strong> → <span class="warn">현 설정에서 컴파일 불가</span></td></tr>
+      <tr><td>프로젝트 실제 사용 방식</td><td><code><strong>Assets/Scripts</strong></code> <strong>192개 파일 전부</strong>가 중괄호 방식 (file-scoped 0건)</td></tr>
+    </table>
+    <div class="note">
+      즉 <strong>코드에는 문제가 없었고, 문서 한 줄만 현실과 어긋나 있었다.</strong> 코드는 이미 중괄호 방식으로 완전히 통일돼 있으므로 <strong>코드 변경 0건</strong>, naming.md 의 권장 문구만 실측 근거와 함께 중괄호 방식으로 수정했다.
+    </div>
+    <p>참고로 <code>Assets/csc.rsp</code> 에 <code>-langVersion:preview</code> 를 넣으면 C# 10 문법을 쓸 수 있으나, Unity 미보증 경로이고 <code>preview</code> 는 미완성 문법까지 전부 개방하므로 <strong>도입하지 않았다</strong>. Unity 가 C# 10 을 공식 지원하면 그때 재검토한다.</p>
+  </div>
+
+  <div class="note">
+    <strong>포터블 원문을 그대로 따르지 않은 항목 2건</strong>
+    <ul>
+      <li><strong>주석 강도</strong> — 포터블의 "주석은 꼭 필요할 때만 20자 이내"는 <strong>인라인 주석</strong> 규칙이며 전역 「행동 규칙」에 이미 동일 문구가 있다. 이를 「주석·문서」의 <code>&lt;summary&gt;</code> 필수 규칙 위에 덮어쓰면 XML 문서 주석 규칙이 소실되므로 <strong>전역 문구를 유지</strong>했다.</li>
+      <li><strong>GetComponent 강도</strong> — 포터블은 "금지"였으나 <strong>사용자 재확정에 따라 "지양" 유지</strong>. 함께 들어온 초기화 <code>AddComponent</code> 조항도 "지양"으로 완화해 반영했다.</li>
+    </ul>
+  </div>
+
+  <p class="foot">규약 개정 반영 완료 — 3개 파일 · 포터블 원문과 다르게 반영한 2건은 위 note 참조</p>
+
+</div>
+</body>
+</html>

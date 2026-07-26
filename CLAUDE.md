@@ -14,6 +14,40 @@ You are working on a **Unity project** used to build games or interactive experi
 ## UI / 폰트 컨벤션
 
 - **폰트**: 모든 UI 텍스트(TextMeshPro)는 **neodgm** (`Assets/Font/neodgm SDF.asset`) 을 사용한다. 새 `TextMeshProUGUI`/`TextMeshPro` 컴포넌트·프리팹은 neodgm SDF 폰트 에셋으로 설정하고, TMP 기본 폰트(TMP Settings)도 neodgm 으로 둔다. 다른 폰트(LiberationSans 등) 사용 금지.
+- **UI 타입 네이밍**: UI 관련 타입은 `UI` 접두를 붙인다 (예: `UIFusionPanel`, `UIWaveHUD`). 세션 상태는 Presenter 가 소유하며, **View 가 Presenter 를 직접 참조하지 않고** 이벤트로만 위임한다.
+
+## C# 코딩 컨벤션
+
+**규약 원문은 전역 `~/.claude/CLAUDE.md` 의 「코딩 컨벤션」 절이 단일 진실 공급원(SSOT)이다.** 이 절은 그 규약을 이 프로젝트에서 적용할 때 쓰는 **신규 코드 체크리스트**이며, 규칙 본문을 여기에 복제하지 않는다 (2026-07-21 `unity-csharp-code-style.md`, 2026-07-27 `code-style-portable.md` 흡수분 반영).
+
+### 신규 코드 체크리스트
+
+- [ ] 필드에 `_` / `m_` 접두사를 붙이지 않았다 (순수 `camelCase`)
+- [ ] 인터페이스에 `I` 접두, 이벤트에 `On` 접두, 구독 핸들러에 `Handle` 접두를 붙였다
+- [ ] `const` 를 `UPPER_CASE_WITH_UNDERSCORES` 로 썼고 선언 다음 줄을 비웠다
+- [ ] bool 에 `is` / `has` / `can` / `use` / `need` / `should` 접두를 붙였다
+- [ ] `Manager` / `Controller` / `Repository` / `Service` 대신 역할·동작이 드러나는 이름을 썼다
+- [ ] `Console.Assert` 를 썼고 메시지와 (Component 라면) `this` 를 넘겼다
+- [ ] Coroutine 대신 UniTask 를 썼고 메서드에 `Async` 접미를 붙였다
+- [ ] `using (...) { }` 블록 방식을 썼다 (`using var` 미사용)
+- [ ] switch statement 를 썼고 `default` 에서 `nameof(param)` · 실제 값 · 메시지 3개를 담아 `ArgumentOutOfRangeException` 을 던졌다
+- [ ] 메서드에 `=>` 를 쓰지 않았다 (프로퍼티 accessor 는 허용)
+- [ ] 반복문 본문이 한 줄이어도 중괄호를 썼다
+- [ ] 모든 멤버에 접근 지정자를 명시했다 (`internal class` 내부 멤버는 `public`)
+- [ ] `<summary>` 를 한국어 1줄로 달고 인자는 `<param>` 으로 설명했다
+- [ ] 참조를 `[SerializeField]` 로 연결했다 (`GetComponent` 지양. `AddComponent` 는 런타임 동적 생성에만 쓰고 초기화 과정에서는 지양)
+- [ ] 런타임 경로에 predicate LINQ 를 쓰지 않았다 (`.FirstOrDefault` · `.All` · 무인자 `.Any()` 포함)
+- [ ] 함수 스코프 임시 컬렉션은 escape 여부로 골랐다 (escape 안 하면 풀링 우선, 풀은 블록 `using`)
+- [ ] 한 곳에서만 쓰는 의존성을 필드 캐싱하지 않았다 (2개 이상 메서드·분기에 흩어질 때만 캐싱)
+- [ ] 비동기 후속 처리 마커를 요청 송신이 아니라 **성공 응답 시점**에 설정하고 생명주기 경계에서 초기화했다
+- [ ] 파일명이 첫 타입명과 일치한다 (`.meta` 포함)
+
+### 이 프로젝트의 기존 코드 처리
+
+- 규약 변경 이전 코드는 **일괄 개작하지 않는다.** 린터는 새로 짠 코드에만 적용하고, 기존 코드는 해당 파일을 실제로 수정할 때 함께 정리한다.
+- **기존 파일에 코드를 추가할 때는 그 파일의 지배적 스타일을 따른다.** 접근지정자 명시(IDE0040) 등을 기존 시그니처에 소급 적용하지 않는다.
+- **외부(리뷰·타 도구) 수정본을 적용할 때 기존 코드에 가해진 스타일 변경은 원복한다.**
+- 특히 메서드 `=>` 제거·`const` 대문자화·런타임 LINQ 제거는 회귀 위험이 있으므로 별도 TASK 로 분리해 진행한다.
 
 ## Understanding Unity Projects
 
