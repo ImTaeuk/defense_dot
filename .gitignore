@@ -120,3 +120,7 @@ InitTestScene*.unity*
 # Editor screenshots (folder)
 /[Aa]ssets/[Ss]creenshots/
 /[Aa]ssets/[Ss]creenshots.meta
+
+# Documents (reference originals excluded from this rule)
+docs/
+!/[Aa]ssets/[Rr]eference/dot-defense-main/docs/
