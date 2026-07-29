@@ -284,7 +284,7 @@ namespace DefenseDot.EditorTools
                 ShowNotification(new GUIContent("ArenaModeBootstrap 없음"));
                 return;
             }
-            FusionRecipeSet lineage = boot.FusionLineage;
+            FusionRecipeSet lineage = boot.CharacterLineage;
             if (lineage == null || lineage.recipes.Count == 0)
             {
                 ShowNotification(new GUIContent("계보/레시피 없음"));
