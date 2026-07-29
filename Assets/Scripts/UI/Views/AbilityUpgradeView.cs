@@ -26,7 +26,9 @@ namespace DefenseDot.UI.Views
             {
                 bool used = i < abilities.Count;
                 rows[i].gameObject.SetActive(used);
-                if (!used) continue;
+                if (!used)
+                    continue;
+
                 (bool isMax, int cost, bool canAfford) s = query(abilities[i]);
                 rows[i].SetData(new AbilityUpgradeRowData(abilities[i], s.isMax, s.cost, s.canAfford));
             }
@@ -38,8 +40,8 @@ namespace DefenseDot.UI.Views
             while (rows.Count < count)
             {
                 AbilityUpgradeRow row = Instantiate(rowPrefab, rowContainer);
-                row.OnUpgrade += a => OnUpgrade?.Invoke(a);
-                row.OnDismiss += a => OnDismiss?.Invoke(a);
+                row.OnUpgrade += ability => OnUpgrade?.Invoke(ability);
+                row.OnDismiss += ability => OnDismiss?.Invoke(ability);
                 rows.Add(row);
             }
         }
