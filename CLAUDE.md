@@ -20,6 +20,26 @@ You are working on a **Unity project** used to build games or interactive experi
 
 **규약 원문은 전역 `~/.claude/CLAUDE.md` 의 「코딩 컨벤션」 절이 단일 진실 공급원(SSOT)이다.** 이 절은 그 규약을 이 프로젝트에서 적용할 때 쓰는 **신규 코드 체크리스트**이며, 규칙 본문을 여기에 복제하지 않는다 (2026-07-21 `unity-csharp-code-style.md`, 2026-07-27 `code-style-portable.md` 흡수분 반영).
 
+### 적용 범위 (강제 — 판정 기준은 확장자가 아니라 소유권)
+
+컨벤션은 **우리가 유지보수 책임을 지는 코드에만** 적용한다. 외부 코드를 우리 스타일로 고치면 에셋 업데이트 때 전부 충돌하므로, 검사도 수정도 하지 않는다.
+
+| 구분 | 경로 | `.cs` 개수 | 처리 |
+|---|---|---|---|
+| 우리 코드 | `Assets/Scripts/**` (Editor 포함) | 193 | 전 항목 강제 |
+| 우리 코드 | `Assets/Tests/**` | 45 | **전 항목 강제 — 테스트라는 이유로 면제하지 않는다** |
+| 외부 에셋 | `Assets/ExternalResources/**` | 125 | 대상 외 |
+| 외부 에셋 | `Assets/Bitgem/**` | 7 | 대상 외 |
+| 참조 원본 | `Assets/Reference/**` | 0 | 대상 외 |
+| 기타 | `Assets/Plugins`, `Assets/TextMesh Pro`, `Library`, `Packages`, `Temp`, `obj`, `*.Designer.cs` 등 | — | 대상 외 |
+
+- **미등록 경로는 강제 대상이다.** 새 폴더의 `.cs` 는 자동으로 검사 대상이 되며, 제외하려면 아래 세 곳에 명시적으로 추가해야 한다. 누락 시 느슨한 쪽이 아니라 엄격한 쪽으로 넘어지도록 한 설계다.
+- 이 범위는 **세 곳에서 동시에 강제**되며, 목록을 바꿀 때는 셋을 함께 고친다:
+  1. `~/.claude/hooks/_convention_scope.py` — 훅(`unity-standards-gate`, `unity-standards-lint-remind`)이 공유하는 실행 코드판
+  2. `~/.claude/skills/lint/SKILL.md` 「적용 범위」 절 — lint 검사 대상 결정
+  3. 프로젝트 루트 `.editorconfig` — Rider/VS/dotnet format 등 IDE 레벨
+- 외부 코드를 **부득이 수정해야 하면** 그 파일의 기존 스타일을 그대로 따른다. 우리 컨벤션을 소급 적용하지 않는다.
+
 ### 신규 코드 체크리스트
 
 - [ ] 필드에 `_` / `m_` 접두사를 붙이지 않았다 (순수 `camelCase`)
