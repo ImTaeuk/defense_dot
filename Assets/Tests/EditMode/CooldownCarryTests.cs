@@ -18,7 +18,7 @@ namespace DefenseDot.Tests.EditMode
 
         private static AbilityContext MakeCtx(CombatStats stats)
         {
-            return new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null, stats);
+            return new AbilityContext(Vector3.zero, null, new AbilityModifiers(), null, stats);
         }
 
         [Test]

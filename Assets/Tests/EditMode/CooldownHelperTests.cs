@@ -23,7 +23,7 @@ namespace DefenseDot.Tests.EditMode
 
         private static AbilityContext Ctx()
         {
-            return new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null, new CombatStats());
+            return new AbilityContext(Vector3.zero, null, new AbilityModifiers(), null, new CombatStats());
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace DefenseDot.Tests.EditMode
             a.baseCooldown = 1f;
             var inst = new AbilityInstance(a, 1) { cooldownRemaining = 0f };
             var stats = new CombatStats { cooldownRate = 0.01f };
-            var ctx = new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null, stats);
+            var ctx = new AbilityContext(Vector3.zero, null, new AbilityModifiers(), null, stats);
             a.ResetForTest(inst, ctx);   // 1 * 0.01 = 0.01 → 0.05 클램프
             Assert.AreEqual(0.05f, inst.cooldownRemaining, 0.0001f);
         }

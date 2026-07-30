@@ -70,7 +70,7 @@ namespace DefenseDot.Systems.Abilities
             }
 
             IEffectSpawner effects = new PooledEffectSpawner(poolManager);
-            ctx = new AbilityContext(this, origin, finder, loadout.Modifiers, effects, stats, fireOrigin);
+            ctx = new AbilityContext(origin, finder, loadout.Modifiers, effects, stats, fireOrigin);
             runner = new AbilityRunner(loadout, ctx);
             weapon = new CoreWeapon(loadout, motion, castAnimation);
             // 장착은 예열 후로 미룸(예열 전 Spawn 방지) → WarmupStartersAsync → EquipAll

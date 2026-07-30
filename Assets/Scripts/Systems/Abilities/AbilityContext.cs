@@ -8,8 +8,6 @@ namespace DefenseDot.Systems.Abilities
     /// <summary> 능력 구동 입력 묶음(Context Object)입니다. </summary>
     public readonly struct AbilityContext
     {
-        /// <summary> 투사체 생성 등에 쓰는 호스트 MonoBehaviour. </summary>
-        public readonly MonoBehaviour Host;
         /// <summary> 발동 원점(코어 중심). 타게팅·오비탈 궤도 중심 기준. </summary>
         public readonly Vector3 Origin;
         /// <summary> 발사체·머즐 스폰용 발사점(타워 총구). null이면 Origin으로 폴백. </summary>
@@ -26,10 +24,16 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 발사 시점의 총구 월드 위치. 발사점 미배선이면 코어 중심(Origin). </summary>
         public Vector3 FirePosition => FireOrigin != null ? FireOrigin.position : Origin;
 
-        public AbilityContext(MonoBehaviour host, Vector3 origin, TargetFinder finder,
+        /// <summary> 능력 구동에 필요한 입력을 묶습니다. </summary>
+        /// <param name="origin">발동 원점(코어 중심)</param>
+        /// <param name="finder">적 질의 수단</param>
+        /// <param name="modifiers">패시브 합산 보정</param>
+        /// <param name="effects">효과 엔티티 스포너</param>
+        /// <param name="stats">전투 능력치</param>
+        /// <param name="fireOrigin">발사체·머즐 스폰용 총구(없으면 origin 폴백)</param>
+        public AbilityContext(Vector3 origin, TargetFinder finder,
             AbilityModifiers modifiers, IEffectSpawner effects, CombatStats stats, Transform fireOrigin = null)
         {
-            Host = host;
             Origin = origin;
             FireOrigin = fireOrigin;
             Finder = finder;

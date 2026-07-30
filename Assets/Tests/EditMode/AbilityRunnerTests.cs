@@ -21,7 +21,7 @@ namespace DefenseDot.Tests.EditMode
         }
 
         private static AbilityContext Ctx()
-            => new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null, new CombatStats());
+            => new AbilityContext(Vector3.zero, null, new AbilityModifiers(), null, new CombatStats());
 
         [Test]
         public void EquipAll_CallsOnEquipForLifecycle()
@@ -155,7 +155,7 @@ namespace DefenseDot.Tests.EditMode
             registry.Register(actor);
 
             TargetFinder finder = new TargetFinder(registry);
-            return new AbilityContext(null, Vector3.zero, finder, new AbilityModifiers(), null, new CombatStats());
+            return new AbilityContext(Vector3.zero, finder, new AbilityModifiers(), null, new CombatStats());
         }
 
         [Test]

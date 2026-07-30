@@ -39,7 +39,7 @@ namespace DefenseDot.Tests.EditMode
         }
         private static AbilityContext Ctx()
         {
-            return new AbilityContext(null, Vector3.zero, null, new AbilityModifiers(), null, new CombatStats());
+            return new AbilityContext(Vector3.zero, null, new AbilityModifiers(), null, new CombatStats());
         }
 
         private readonly List<GameObject> created = new List<GameObject>();
@@ -76,7 +76,7 @@ namespace DefenseDot.Tests.EditMode
             TargetFinder finder = new TargetFinder(registry);
             CombatStats stats = new CombatStats();
             stats.attackSpeed = attackSpeed;
-            return new AbilityContext(null, Vector3.zero, finder, new AbilityModifiers(), null, stats);
+            return new AbilityContext(Vector3.zero, finder, new AbilityModifiers(), null, stats);
         }
 
         [Test]
