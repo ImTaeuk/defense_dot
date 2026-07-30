@@ -1,24 +1,22 @@
-// 코어 능력 구동 — 로드아웃·러너·무기 보유. 기본 공격은 무기가, 그 외 자율 능력은 러너가 구동
+// 타워 능력 구동 — 로드아웃·러너·무기 보유. 기본 공격은 무기가, 그 외 자율 능력은 러너가 구동
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using DefenseDot.Core;
 using DefenseDot.Core.Pooling;
-using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Abilities.Effects;
 using DefenseDot.Systems.Combat;
 
 namespace DefenseDot.Systems.Abilities
 {
-    /// <summary> Arena 코어의 능력 로드아웃과 무기를 구동하는 컴포넌트입니다. </summary>
-    public sealed class CoreAbilitySystem : MonoBehaviour, IAbilityCommandTarget
+    /// <summary> Arena 타워의 능력 로드아웃과 무기를 구동합니다. 소유자가 Tick으로 진행시킵니다. </summary>
+    public sealed class TowerAbilitySystem : IAbilityCommandTarget
     {
         private AbilityLoadout loadout;      // 장착 능력 슬롯(액티브/패시브)
         private AbilityRunner runner;        // 자율 능력 프레임 구동·장착 훅
         private CoreWeapon weapon;           // 기본 공격 구동(공격속도로 애니 재생)
-        private GameFlowModel flow;          // 진행 단계(발동 게이트)
         private AbilityContext ctx;          // 공용 컨텍스트(모든 능력 공유)
         private IAttackMotion motion;        // 공격 모션 재생 대상
         private PoolManager pool;            // 스타터 예열용
@@ -53,11 +51,10 @@ namespace DefenseDot.Systems.Abilities
         }
 
         /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. fireOrigin은 발사체·머즐 스폰용 총구(없으면 origin 폴백). </summary>
-        public void Setup(TargetFinder finder, Vector3 origin, GameFlowModel gameFlow,
+        public void Setup(TargetFinder finder, Vector3 origin,
             ICombatState combatState, IReadOnlyList<AbilityData> starters, PoolManager poolManager,
             Transform fireOrigin = null)
         {
-            flow = gameFlow;
             pool = poolManager;
             loadout = new AbilityLoadout();
             loadout.Modifiers.combatState = combatState;
@@ -143,16 +140,16 @@ namespace DefenseDot.Systems.Abilities
             weapon?.FireAll(ctx);
         }
 
-        private void Update()
+        /// <summary> 능력과 무기를 한 프레임 진행시킵니다. </summary>
+        /// <param name="deltaTime">경과 시간</param>
+        public void Tick(float deltaTime)
         {
-            if (flow == null || !flow.IsPlaying) return;
-
-            float dt = Time.deltaTime;
-            runner?.Tick(dt);
-            weapon?.Tick(ctx, dt);
+            runner?.Tick(deltaTime);
+            weapon?.Tick(ctx, deltaTime);
         }
 
-        private void OnDestroy()
+        /// <summary> 무기를 떼어 정리합니다. </summary>
+        public void Dispose()
         {
             weapon?.Detach();
         }

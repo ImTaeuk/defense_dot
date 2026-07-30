@@ -29,6 +29,12 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 이 모드의 타워 배치 컨트롤러입니다. 없으면 null (빌드 모달 미생성). </summary>
         public virtual TowerPlacementController PlacementController => null;
 
+        /// <summary> 이 모드가 소유한 시스템을 한 프레임 진행시킵니다. </summary>
+        /// <param name="deltaTime">경과 시간</param>
+        public virtual void Tick(float deltaTime)
+        {
+        }
+
         /// <summary>
         /// 모드 연출을 바인딩합니다. 카메라 중심 주입 → 모드별 포스트FX 프리셋 활성화
         /// → DoF 연동 시작. (자원 미설정 모드는 해당 단계 무시)

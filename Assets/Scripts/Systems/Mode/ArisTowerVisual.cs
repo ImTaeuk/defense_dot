@@ -30,7 +30,7 @@ namespace DefenseDot.Systems.Mode
         private static readonly int DeathHash = Animator.StringToHash("Death");
         private static readonly int VictoryHash = Animator.StringToHash("Victory");
 
-        private CoreAbilitySystem core;
+        private TowerAbilitySystem abilitySystem;
         private TargetFinder finder;
         private GameFlowModel flow;
         private CoreModel coreHp;
@@ -41,11 +41,11 @@ namespace DefenseDot.Systems.Mode
         private ITargetable castTarget;   // 발사 대상(조준 유지용)
 
         /// <summary> 합성 루트가 의존성을 주입하고 이벤트를 연결합니다. </summary>
-        public void Setup(CoreAbilitySystem coreSystem, TargetFinder targetFinder,
+        public void Setup(TowerAbilitySystem towerAbility, TargetFinder targetFinder,
             GameFlowModel gameFlow, CoreModel coreModel)
         {
             Unsubscribe();
-            core = coreSystem;
+            abilitySystem = towerAbility;
             finder = targetFinder;
             flow = gameFlow;
             coreHp = coreModel;
@@ -119,7 +119,7 @@ namespace DefenseDot.Systems.Mode
                 d.y = 0f;
                 if (d.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(d.normalized, Vector3.up);
             }
-            if (core != null) core.NotifyFireFrame();
+            if (abilitySystem != null) abilitySystem.NotifyFireFrame();
         }
 
         private void HandleHealthChanged(DefenseDot.Domain.Models.HealthState state)

@@ -265,13 +265,13 @@ namespace DefenseDot.EditorTools
         private void SetAttackSpeed(float attacksPerSecond)
         {
             ArenaModeBootstrap boot = FindFirstObjectByType<ArenaModeBootstrap>();
-            if (boot == null || boot.CoreAbility == null)
+            if (boot == null || boot.TowerAbility == null)
             {
-                ShowNotification(new GUIContent("CoreAbility 없음"));
+                ShowNotification(new GUIContent("TowerAbility 없음"));
                 return;
             }
 
-            boot.CoreAbility.SetBaseAttackSpeed(attacksPerSecond);
+            boot.TowerAbility.SetBaseAttackSpeed(attacksPerSecond);
             ShowNotification(new GUIContent($"공격속도 {attacksPerSecond:0.##}회/s"));
         }
 
@@ -290,10 +290,10 @@ namespace DefenseDot.EditorTools
                 ShowNotification(new GUIContent("계보/레시피 없음"));
                 return;
             }
-            IAbilityCommandTarget core = boot.CoreAbility;
+            IAbilityCommandTarget core = boot.TowerAbility;
             if (core == null)
             {
-                ShowNotification(new GUIContent("CoreAbility 없음"));
+                ShowNotification(new GUIContent("TowerAbility 없음"));
                 return;
             }
 

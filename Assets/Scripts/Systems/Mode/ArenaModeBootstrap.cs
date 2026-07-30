@@ -18,20 +18,17 @@ namespace DefenseDot.Systems.Mode
     {
         [SerializeField] private ArenaView arenaView;
 
-        /// <summary> 중앙에 생성할 타워 데이터입니다. (추후 선택 UI 주입점) </summary>
-        [SerializeField] private TowerData centerTowerData;
-
         /// <summary> 플레이할 캐릭터(기본 공격·모션·공격속도·전용 계보 소유). </summary>
         [SerializeField] private CharacterData characterData;
 
         /// <summary> 활성 공통 계보 세트(버전 갈아끼기 지점). </summary>
         [SerializeField] private DefenseDot.Systems.Cards.FusionRecipeSet universalLineage;
 
-        /// <summary> 코어 스타터 능력(샷·오비탈 등). 카드 획득(A3) 전 기본 장착. </summary>
+        /// <summary> 타워 스타터 능력(샷·오비탈 등). 카드 획득(A3) 전 기본 장착. </summary>
         [SerializeField] private List<AbilityData> starterAbilities = new List<AbilityData>();
 
-        /// <summary> 코어 비주얼로 쓸 Aris 타워 프리팹(애니메이션·연출 포함). </summary>
-        [SerializeField] private GameObject arisTowerPrefab;
+        /// <summary> 타워 비주얼로 쓸 Aris 타워 프리팹(애니메이션·연출 포함). </summary>
+        [SerializeField] private ArisTowerVisual arisTowerPrefab;
 
         [Header("카드 시스템 (A3)")]
         /// <summary> 카드 선택 허브 설정(정지·곡선·티어). </summary>
@@ -40,7 +37,7 @@ namespace DefenseDot.Systems.Mode
         /// <summary> "신규 능력" 카드 후보 풀. </summary>
         [SerializeField] private DefenseDot.Systems.Cards.AbilityPool abilityPool;
 
-        private CoreAbilitySystem coreAbility;
+        private TowerAbilitySystem towerAbility;
 
         /// <summary> 카드 허브 설정. </summary>
         public DefenseDot.Systems.Cards.ArenaCardConfig CardConfig => cardConfig;
@@ -48,8 +45,8 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 신규 카드 능력 풀. </summary>
         public DefenseDot.Systems.Cards.AbilityPool AbilityPool => abilityPool;
 
-        /// <summary> 코어 능력 시스템(카드 명령 대상). CreateMode 이후 non-null. </summary>
-        public CoreAbilitySystem CoreAbility => coreAbility;
+        /// <summary> 타워 능력 시스템(카드 명령 대상). CreateMode 이후 non-null. </summary>
+        public TowerAbilitySystem TowerAbility => towerAbility;
 
         /// <summary> 캐릭터 전용 계보입니다(없으면 null). </summary>
         public DefenseDot.Systems.Cards.FusionRecipeSet CharacterLineage =>
@@ -78,70 +75,75 @@ namespace DefenseDot.Systems.Mode
             float height = config != null ? config.enemyHeight : 0.8f;
             if (arenaView != null) arenaView.Bind(arenaModel);
             BindPresentation(ctx);
-            SpawnCenterTower(ctx, config);
+            SetupTower(ctx);
             return new ArenaMode(arenaModel, ctx.CoreCenter, height);
         }
 
-        /// <summary> 아레나 중앙에 타워 1개를 생성하고 의존성을 주입합니다. 사거리는 맵 전체 반경으로 설정합니다. </summary>
-        private void SpawnCenterTower(ModeContext ctx, ArenaConfig config)
+        /// <summary> 타워 능력 시스템을 한 프레임 진행시킵니다. </summary>
+        /// <param name="deltaTime">경과 시간</param>
+        public override void Tick(float deltaTime)
         {
-            if (centerTowerData == null || centerTowerData.prefab == null || ctx.TargetFinder == null) return;
+            towerAbility?.Tick(deltaTime);
+        }
 
-            TowerData data = Instantiate(centerTowerData);              // 런타임 복제 → 원본 불변
-            if (config != null) data.attackRange = config.arenaRadius;  // 맵 전체 반경
-            GameObject go = Instantiate(data.prefab);
-            go.name = "ArenaCenterTower";
-            TowerActor tower = go.GetComponent<TowerActor>();
-            if (tower == null) tower = go.AddComponent<TowerActor>();
-            go.transform.position = ctx.CoreCenter;
-            tower.Initialize(data);
-            tower.SetTargetFinder(ctx.TargetFinder);
+        /// <summary> 타워 능력 시스템을 만들고 Aris 연출·의존성을 연결합니다. </summary>
+        /// <param name="ctx">코어 중심·타겟 탐색기·풀을 담은 모드 컨텍스트</param>
+        private void SetupTower(ModeContext ctx)
+        {
+            if (characterData == null || ctx.TargetFinder == null)
+                return;
 
-            // 코어: 디버그 단일공격 제거 + 능력 시스템 부착
-            TowerBehaviorTree debugBt = go.GetComponent<TowerBehaviorTree>();
-            if (debugBt != null) Destroy(debugBt);
-            coreAbility = go.AddComponent<CoreAbilitySystem>();
+            towerAbility = new TowerAbilitySystem();
 
             // Aris 비주얼을 먼저 생성해 발사점(총구)을 확보 → 능력 시스템에 주입
-            ArisTowerVisual arisVisual = ReplaceWithArisVisual(go, ctx);
+            ArisTowerVisual arisVisual = SpawnArisVisual(ctx);
             Transform fireOrigin = arisVisual != null ? arisVisual.FirePoint : null;
 
             // 모션·캐스트 애니메이션·기본 공격 속도를 먼저 주입해야 무기가 올바른 값으로 생성된다
-            if (arisVisual != null) coreAbility.SetAttackMotion(arisVisual);
-            coreAbility.SetCastAnimation(characterData != null ? characterData.CastAnimation : null);
-            coreAbility.SetBaseAttackSpeed(characterData != null ? characterData.BaseAttackSpeed : data.attackSpeed);
+            if (arisVisual != null)
+                towerAbility.SetAttackMotion(arisVisual);
+
+            towerAbility.SetCastAnimation(characterData.CastAnimation);
+            towerAbility.SetBaseAttackSpeed(characterData.BaseAttackSpeed);
 
             // 캐릭터 기본 공격을 스타터 맨 앞에 합성(중복은 로드아웃 Contains가 방어)
             List<AbilityData> starters = new List<AbilityData>();
-            if (characterData != null && characterData.BasicAttack != null)
+            if (characterData.BasicAttack != null)
                 starters.Add(characterData.BasicAttack);
+
             starters.AddRange(starterAbilities);
 
-            coreAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.Flow, ctx.CombatState, starters, ctx.Pooling, fireOrigin);
-            StartCoreAbilities(coreAbility).Forget();   // 예열 → 장착 순서 조율
+            towerAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.CombatState, starters, ctx.Pooling, fireOrigin);
+            StartTowerAbilities(towerAbility).Forget();   // 예열 → 장착 순서 조율
 
             // 총구 확보 후 비주얼에 능력 시스템 연동
-            if (arisVisual != null) arisVisual.Setup(coreAbility, ctx.TargetFinder, ctx.Flow, ctx.Core);
+            if (arisVisual != null)
+                arisVisual.Setup(towerAbility, ctx.TargetFinder, ctx.Flow, ctx.Core);
         }
 
-        /// <summary> 코어의 2D 스프라이트를 숨기고 Aris 3D 연출 타워를 코어 위치에 배치해 비주얼을 반환합니다. </summary>
-        private ArisTowerVisual ReplaceWithArisVisual(GameObject coreTower, ModeContext ctx)
+        /// <summary> Aris 3D 연출 타워를 코어 위치에 생성해 비주얼을 반환합니다. </summary>
+        /// <param name="ctx">코어 중심 좌표를 담은 모드 컨텍스트</param>
+        private ArisTowerVisual SpawnArisVisual(ModeContext ctx)
         {
-            if (arisTowerPrefab == null) return null;
+            if (arisTowerPrefab == null)
+                return null;
 
-            SpriteRenderer[] sprites = coreTower.GetComponentsInChildren<SpriteRenderer>(true);
-            for (int i = 0; i < sprites.Length; i++) sprites[i].enabled = false;
-
-            GameObject aris = Instantiate(arisTowerPrefab, ctx.CoreCenter, Quaternion.identity);
+            ArisTowerVisual aris = Instantiate(arisTowerPrefab, ctx.CoreCenter, Quaternion.identity);
             aris.name = "Aris_CoreTower";
-            return aris.GetComponent<ArisTowerVisual>();
+            return aris;
         }
 
-        /// <summary> 코어 능력을 예열한 뒤 장착합니다(예열→장착 순서 조율). </summary>
-        private static async UniTaskVoid StartCoreAbilities(CoreAbilitySystem core)
+        /// <summary> 타워 능력 시스템을 정리합니다. </summary>
+        private void OnDestroy()
         {
-            await core.WarmupStartersAsync();   // 예열(실패는 값으로 스킵, 예외 없음)
-            core.EquipAll();                    // 장착(예열 성패 무관하게 실행)
+            towerAbility?.Dispose();
+        }
+
+        /// <summary> 타워 능력을 예열한 뒤 장착합니다(예열→장착 순서 조율). </summary>
+        private static async UniTaskVoid StartTowerAbilities(TowerAbilitySystem tower)
+        {
+            await tower.WarmupStartersAsync();   // 예열(실패는 값으로 스킵, 예외 없음)
+            tower.EquipAll();                    // 장착(예열 성패 무관하게 실행)
         }
     }
 }
