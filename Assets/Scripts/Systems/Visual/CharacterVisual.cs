@@ -1,4 +1,4 @@
-// Aris 코어 타워 연출 — 공격 애니 오버라이드·속도 동기화(IAttackMotion) + 코어 상태·적 방향 연동
+// 캐릭터 타워 연출 — 공격 애니 오버라이드·속도 동기화(IAttackMotion) + 코어 상태·적 방향 연동
 using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Domain;
@@ -6,13 +6,13 @@ using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Abilities;
 
-namespace DefenseDot.Systems.Mode
+namespace DefenseDot.Systems.Visual
 {
     /// <summary>
-    /// Aris 코어 타워의 연출 컴포넌트입니다. 공격 모션을 AnimatorOverrideController로 갈아끼우고
+    /// 캐릭터 타워의 연출 컴포넌트입니다. 공격 모션을 AnimatorOverrideController로 갈아끼우고
     /// 발사 주기에 맞춰 재생 속도를 맞추며(IAttackMotion), 코어 HP·게임 단계·적 방향을 Animator·회전에 연동합니다.
     /// </summary>
-    public sealed class ArisTowerVisual : MonoBehaviour, IAttackMotion
+    public sealed class CharacterVisual : MonoBehaviour, IAttackMotion
     {
         [SerializeField] private Animator animator;
         [SerializeField] private Transform firePoint;   // 발사체·머즐 스폰 위치(레일건 총구 본)
@@ -20,10 +20,14 @@ namespace DefenseDot.Systems.Mode
         [SerializeField] private float targetRange = 30f;
         [SerializeField] private float lowHpRatio = 0.3f;
 
+        /// <summary> 교체 대상이 되는 원본 공격 클립. 에디터가 컨트롤러의 Attack 상태에서 자동으로 채운다. </summary>
+        [SerializeField] private AnimationClip baseAttackClip;
+
         /// <summary> 발사체·머즐 VFX가 나올 총구 Transform(합성 루트가 능력 시스템에 배선). </summary>
         public Transform FirePoint => firePoint;
 
-        private const string AttackClipKey = "Aris_Original_Normal_Attack_Ing";
+        private const string ATTACK_STATE_NAME = "Attack";
+
         private static readonly int AttackHash = Animator.StringToHash("Attack");
         private static readonly int AttackSpeedHash = Animator.StringToHash("AttackSpeed");
         private static readonly int LowHpHash = Animator.StringToHash("LowHP");
@@ -34,7 +38,7 @@ namespace DefenseDot.Systems.Mode
         private TargetFinder finder;
         private GameFlowModel flow;
         private CoreModel coreHp;
-        private Camera viewCamera;
+        private UnityEngine.Camera viewCamera;
         private System.IDisposable healthSub;
         private AnimatorOverrideController overrideController;
         private bool locked;              // 파괴/승리 시 회전·공격 잠금
@@ -50,7 +54,7 @@ namespace DefenseDot.Systems.Mode
             flow = gameFlow;
             coreHp = coreModel;
             if (animator == null) animator = GetComponentInChildren<Animator>();
-            viewCamera = Camera.main;
+            viewCamera = UnityEngine.Camera.main;
 
             // 시전 클립 교체용 오버라이드 컨트롤러 준비
             if (animator != null && animator.runtimeAnimatorController != null)
@@ -103,7 +107,9 @@ namespace DefenseDot.Systems.Mode
             if (locked || animator == null) return;
 
             castTarget = target;
-            if (clip != null && overrideController != null) overrideController[AttackClipKey] = clip;
+            if (clip != null && overrideController != null && baseAttackClip != null)
+                overrideController[baseAttackClip] = clip;
+
             animator.SetFloat(AttackSpeedHash, Mathf.Max(0.01f, speed));
             animator.SetTrigger(AttackHash);
         }
@@ -146,6 +152,47 @@ namespace DefenseDot.Systems.Mode
         {
             Unsubscribe();
         }
+
+#if UNITY_EDITOR
+        /// <summary> 컨트롤러의 Attack 상태에 꽂힌 원본 클립을 에디터에서 자동으로 채웁니다. </summary>
+        private void OnValidate()
+        {
+            if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+
+            AnimationClip found = FindBaseAttackClip();
+            if (found == null || found == baseAttackClip)
+                return;
+
+            baseAttackClip = found;
+            UnityEditor.EditorUtility.SetDirty(this);
+        }
+
+        /// <summary> 애니메이터 컨트롤러에서 Attack 상태의 클립을 찾습니다. 없으면 null. </summary>
+        private AnimationClip FindBaseAttackClip()
+        {
+            if (animator == null)
+                return null;
+
+            UnityEditor.Animations.AnimatorController controller =
+                animator.runtimeAnimatorController as UnityEditor.Animations.AnimatorController;
+            if (controller == null)
+                return null;
+
+            foreach (UnityEditor.Animations.AnimatorControllerLayer layer in controller.layers)
+            {
+                foreach (UnityEditor.Animations.ChildAnimatorState child in layer.stateMachine.states)
+                {
+                    if (child.state.name != ATTACK_STATE_NAME)
+                        continue;
+
+                    return child.state.motion as AnimationClip;
+                }
+            }
+
+            return null;
+        }
+#endif
 
         private void Unsubscribe()
         {

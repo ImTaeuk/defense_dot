@@ -107,6 +107,7 @@ MonoBehaviour:
   rotateSpeed: 8
   targetRange: 30
   lowHpRatio: 0.3
+  baseAttackClip: {fileID: 3909502781215170492, guid: dabd8bf0da79cab4db2fe47c37878e1d, type: 3}
 --- !u!4 &3195298304445603462 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 919091174657755738, guid: dabd8bf0da79cab4db2fe47c37878e1d, type: 3}

@@ -7,6 +7,7 @@ using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Arena;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Abilities;
+using DefenseDot.Systems.Visual;
 
 namespace DefenseDot.Systems.Mode
 {
@@ -27,8 +28,8 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 타워 스타터 능력(샷·오비탈 등). 카드 획득(A3) 전 기본 장착. </summary>
         [SerializeField] private List<AbilityData> starterAbilities = new List<AbilityData>();
 
-        /// <summary> 타워 비주얼로 쓸 Aris 타워 프리팹(애니메이션·연출 포함). </summary>
-        [SerializeField] private ArisTowerVisual arisTowerPrefab;
+        /// <summary> 타워 비주얼로 쓸 캐릭터 프리팹(애니메이션·연출 포함). </summary>
+        [SerializeField] private CharacterVisual characterVisualPrefab;
 
         [Header("카드 시스템 (A3)")]
         /// <summary> 카드 선택 허브 설정(정지·곡선·티어). </summary>
@@ -86,7 +87,7 @@ namespace DefenseDot.Systems.Mode
             towerAbility?.Tick(deltaTime);
         }
 
-        /// <summary> 타워 능력 시스템을 만들고 Aris 연출·의존성을 연결합니다. </summary>
+        /// <summary> 타워 능력 시스템을 만들고 캐릭터 연출·의존성을 연결합니다. </summary>
         /// <param name="ctx">코어 중심·타겟 탐색기·풀을 담은 모드 컨텍스트</param>
         private void SetupTower(ModeContext ctx)
         {
@@ -95,13 +96,13 @@ namespace DefenseDot.Systems.Mode
 
             towerAbility = new TowerAbilitySystem();
 
-            // Aris 비주얼을 먼저 생성해 발사점(총구)을 확보 → 능력 시스템에 주입
-            ArisTowerVisual arisVisual = SpawnArisVisual(ctx);
-            Transform fireOrigin = arisVisual != null ? arisVisual.FirePoint : null;
+            // 캐릭터 비주얼을 먼저 생성해 발사점(총구)을 확보 → 능력 시스템에 주입
+            CharacterVisual characterVisual = SpawnCharacterVisual(ctx);
+            Transform fireOrigin = characterVisual != null ? characterVisual.FirePoint : null;
 
             // 모션·캐스트 애니메이션·기본 공격 속도를 먼저 주입해야 무기가 올바른 값으로 생성된다
-            if (arisVisual != null)
-                towerAbility.SetAttackMotion(arisVisual);
+            if (characterVisual != null)
+                towerAbility.SetAttackMotion(characterVisual);
 
             towerAbility.SetCastAnimation(characterData.CastAnimation);
             towerAbility.SetBaseAttackSpeed(characterData.BaseAttackSpeed);
@@ -117,20 +118,18 @@ namespace DefenseDot.Systems.Mode
             StartTowerAbilities(towerAbility).Forget();   // 예열 → 장착 순서 조율
 
             // 총구 확보 후 비주얼에 능력 시스템 연동
-            if (arisVisual != null)
-                arisVisual.Setup(towerAbility, ctx.TargetFinder, ctx.Flow, ctx.Core);
+            if (characterVisual != null)
+                characterVisual.Setup(towerAbility, ctx.TargetFinder, ctx.Flow, ctx.Core);
         }
 
-        /// <summary> Aris 3D 연출 타워를 코어 위치에 생성해 비주얼을 반환합니다. </summary>
+        /// <summary> 캐릭터 3D 연출 타워를 코어 위치에 생성해 비주얼을 반환합니다. </summary>
         /// <param name="ctx">코어 중심 좌표를 담은 모드 컨텍스트</param>
-        private ArisTowerVisual SpawnArisVisual(ModeContext ctx)
+        private CharacterVisual SpawnCharacterVisual(ModeContext ctx)
         {
-            if (arisTowerPrefab == null)
+            if (characterVisualPrefab == null)
                 return null;
 
-            ArisTowerVisual aris = Instantiate(arisTowerPrefab, ctx.CoreCenter, Quaternion.identity);
-            aris.name = "Aris_CoreTower";
-            return aris;
+            return Instantiate(characterVisualPrefab, ctx.CoreCenter, Quaternion.identity);
         }
 
         /// <summary> 타워 능력 시스템을 정리합니다. </summary>
