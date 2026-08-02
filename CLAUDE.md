@@ -11,6 +11,38 @@ You are working on a **Unity project** used to build games or interactive experi
 - **상태 판단은 문서 기술이 아니라 코드·git 실제 상태로 확인한다** (문서의 "미커밋" 등 옛 기술을 그대로 믿어 오판한 이력 있음).
 - 마스터의 짝 HTML(`TASKS-master-index.html`)은 브라우저 열람용 — 내용 갱신 시 MD·HTML 둘 다 반영.
 
+## 비동기 리소스 로드 — 초기 로드 편입 검토 (강제 절차)
+
+**비동기 리소스 로드를 새로 쓰거나 기존 것을 건드릴 때마다, 그것이 초기 로드에 들어가야 하는지 판단해 사용자에게 추천한다.** 판단을 생략하고 넘어가지 않는다.
+
+대상이 되는 호출: `AssetLoader.LoadAsync` · `PoolManager.WarmupAsync` · `Addressables.*Async` · 그 밖에 에셋을 런타임에 읽어오는 모든 비동기 경로.
+
+### 판단 기준 — 두 질문에 모두 「예」면 초기 로드 대상
+
+| # | 질문 | 「아니오」면 |
+|---|---|---|
+| 1 | **무엇을 로드할지 씬 진입 시점에 확정할 수 있는가?** | 초기 로드 불가 — 대상이 정해지는 시점에 로드한다 |
+| 2 | **로드가 끝나기 전에 게임이 그 리소스를 쓸 수 있는가?** | 편입 불필요 — 지금 자리에 두어도 안전하다 |
+
+### 실제 사례 (이 기준의 근거)
+
+| 사례 | 1번 | 2번 | 판정 |
+|---|---|---|---|
+| 타워 시작 능력 예열 (`TowerAbilitySystem.WarmupStartersAsync`) | 예 — 스타터 능력이 씬 진입 시 확정 | 예 — 예열 전에 첫 발사가 일어날 수 있었다 | **초기 로드 편입** (`ISceneWarmup` 등록) |
+| 카드 획득 시 예열 (`CardApplier.cs:15,23`) | **아니오** — 어떤 카드를 뽑을지 미리 알 수 없다 | — | 현행 유지 |
+
+타워 예열은 `.Forget()` 으로 던져져 있어 **예열(실측 99~268ms) 중에 웨이브가 시작**됐다. 이 절차는 같은 형태가 다시 생기는 것을 막기 위한 것이다.
+
+### 편입 방법
+
+`ISceneWarmup` 을 구현하고 `SceneLoadManager.Instance.RegisterWarmup(this)` 로 **자기를 등록**한다. 로더는 무엇을 기다릴지 알지 못하며, 등록된 것을 전부 마칠 때까지 게임 시작을 미룬다. 로더가 없는 씬(단독 Play)에서도 동작하도록 `Instance == null` 대칭 가드를 둔다 — 선례: `ArenaModeBootstrap.cs`.
+
+### 추천 형식
+
+판단 결과를 **사용자에게 제시하고 승인을 받는다.** 임의로 편입하지 않는다.
+
+> 「이 로드는 초기 로드 대상으로 보입니다 — ①진입 시 대상이 확정되고 ②완료 전에 사용될 수 있습니다. `ISceneWarmup` 으로 편입할까요?」
+
 ## UI / 폰트 컨벤션
 
 - **폰트**: 모든 UI 텍스트(TextMeshPro)는 **neodgm** (`Assets/Font/neodgm SDF.asset`) 을 사용한다. 새 `TextMeshProUGUI`/`TextMeshPro` 컴포넌트·프리팹은 neodgm SDF 폰트 에셋으로 설정하고, TMP 기본 폰트(TMP Settings)도 neodgm 으로 둔다. 다른 폰트(LiberationSans 등) 사용 금지.
@@ -46,7 +78,7 @@ You are working on a **Unity project** used to build games or interactive experi
 - [ ] 인터페이스에 `I` 접두, 이벤트에 `On` 접두, 구독 핸들러에 `Handle` 접두를 붙였다
 - [ ] `const` 를 `UPPER_CASE_WITH_UNDERSCORES` 로 썼고 선언 다음 줄을 비웠다
 - [ ] bool 에 `is` / `has` / `can` / `use` / `need` / `should` 접두를 붙였다
-- [ ] `Manager` / `Controller` / `Repository` / `Service` 대신 역할·동작이 드러나는 이름을 썼다
+- [ ] `Controller` / `Repository` / `Service` 대신 역할·동작이 드러나는 이름을 썼다 (`Manager` 는 허용 — 단 책임 구분을 명확히)
 - [ ] `Console.Assert` 를 썼고 메시지와 (Component 라면) `this` 를 넘겼다
 - [ ] Coroutine 대신 UniTask 를 썼고 메서드에 `Async` 접미를 붙였다
 - [ ] `using (...) { }` 블록 방식을 썼다 (`using var` 미사용)
