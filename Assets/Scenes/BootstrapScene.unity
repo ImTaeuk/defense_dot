@@ -556,7 +556,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Loading.BootstrapEntry
   sceneLoad: {fileID: 972872199}
-  firstSceneName: ArenaScene
+  firstScene: 0
 --- !u!114 &972872199
 MonoBehaviour:
   m_ObjectHideFlags: 0

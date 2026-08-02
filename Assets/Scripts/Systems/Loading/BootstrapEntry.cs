@@ -14,8 +14,8 @@ namespace DefenseDot.Systems.Loading
         /// <summary> 씬 전환과 준비 대기를 맡는 로더. 같은 계층에 배치해 인스펙터로 잇는다. </summary>
         [SerializeField] private SceneLoadManager sceneLoad;
 
-        /// <summary> 부팅 후 처음 열 씬 이름입니다. 인스펙터에서 지정합니다. </summary>
-        [SerializeField] private string firstSceneName;
+        /// <summary> 부팅 후 처음 열 씬입니다. 인스펙터 목록에서 고릅니다. </summary>
+        [SerializeField] private SceneId firstScene = SceneId.Arena;
 
         /// <summary> 이 계층을 씬 전환에서 살아남게 합니다. </summary>
         private void Awake()
@@ -33,7 +33,7 @@ namespace DefenseDot.Systems.Loading
             if (!IsValid())
                 return;
 
-            sceneLoad.LoadSceneAsync(firstSceneName, destroyCancellationToken).Forget();
+            sceneLoad.LoadSceneAsync(firstScene, destroyCancellationToken).Forget();
         }
 
         /// <summary> 로드를 개시할 수 있는 배선인지 검사합니다. </summary>
@@ -42,12 +42,6 @@ namespace DefenseDot.Systems.Loading
             if (sceneLoad == null)
             {
                 Debug.LogError("[BootstrapEntry] SceneLoadManager가 할당되지 않았습니다.", this);
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(firstSceneName))
-            {
-                Debug.LogError("[BootstrapEntry] 첫 씬 이름이 비어 있습니다.", this);
                 return false;
             }
 

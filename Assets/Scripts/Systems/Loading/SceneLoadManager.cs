@@ -20,6 +20,9 @@ namespace DefenseDot.Systems.Loading
             void OnLoadingStateChanged();
         }
 
+        /// <summary> AsyncOperation.progress가 활성화를 기다리며 멈추는 지점. </summary>
+        private const float ACTIVATION_PROGRESS = 0.9f;
+
         /// <summary> 로딩 진행 단계입니다. </summary>
         public enum LoadingState
         {
@@ -113,9 +116,9 @@ namespace DefenseDot.Systems.Loading
         }
 
         /// <summary> 씬을 전환하고 로드 진행률을 알립니다. 이 호출이 한 세션의 시작입니다. </summary>
-        /// <param name="sceneName">전환할 씬 이름</param>
+        /// <param name="scene">전환할 씬</param>
         /// <param name="cancellationToken">중단할 때 쓰는 토큰</param>
-        public async UniTask LoadSceneAsync(string sceneName, System.Threading.CancellationToken cancellationToken)
+        public async UniTask LoadSceneAsync(SceneId scene, System.Threading.CancellationToken cancellationToken)
         {
             // 1. 세션 리셋 — 이전 세션의 잔여 등록·진행률을 버린다
             warmups.Clear();
@@ -125,10 +128,11 @@ namespace DefenseDot.Systems.Loading
             SetState(LoadingState.LoadingScene);
 
             // 2. 로드 진행 추적 — 완료 프레임에 새 씬이 스스로 준비 작업을 등록한다
-            AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
+            AsyncOperation operation = SceneManager.LoadSceneAsync(ToSceneName(scene), LoadSceneMode.Single);
             while (operation != null && !operation.isDone)
             {
-                sceneProgress = operation.progress;
+                // progress는 활성화 대기 지점인 0.9에서 멈추므로 0~1로 편다
+                sceneProgress = Mathf.Clamp01(operation.progress / ACTIVATION_PROGRESS);
                 NotifyObservers();
 
                 bool canceled = await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken)
@@ -139,6 +143,23 @@ namespace DefenseDot.Systems.Loading
 
             sceneProgress = 1f;
             NotifyObservers();
+        }
+
+        /// <summary> 씬 값을 빌드 설정에 등록된 씬 이름으로 옮깁니다. </summary>
+        /// <param name="scene">옮길 씬 값</param>
+        private static string ToSceneName(SceneId scene)
+        {
+            switch (scene)
+            {
+                case SceneId.Arena:
+                    return "ArenaScene";
+
+                case SceneId.Grid:
+                    return "GridScene";
+
+                default:
+                    throw new System.ArgumentOutOfRangeException(nameof(scene), scene, "처리되지 않은 값입니다.");
+            }
         }
 
         /// <summary> 등록된 준비 작업을 전부 수행합니다. 이 호출이 등록 마감이며 목록을 비웁니다. </summary>
