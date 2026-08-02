@@ -4,7 +4,6 @@ using DefenseDot.Data;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Cards;
 using DefenseDot.Systems.Abilities;
-using DefenseDot.Systems.Economy;
 using DefenseDot.Core.Pooling;
 
 namespace DefenseDot.Domain
@@ -40,8 +39,6 @@ namespace DefenseDot.Domain
         public IAbilityCommandTarget CoreTarget { get; }
         /// <summary> 공용 풀링 매니저입니다. </summary>
         public PoolManager Pooling { get; }
-        /// <summary> 능력 강화/삭제 서비스입니다. </summary>
-        public AbilityUpgradeService AbilityUpgrades { get; }
         /// <summary> 합성의 단일 원천 시스템입니다(계보 데이터 소유). </summary>
         public FusionSystem Fusion { get; }
 
@@ -50,13 +47,12 @@ namespace DefenseDot.Domain
             RoundTimerModel timer, GameFlowModel flow, LevelModel level, int enemyCapacity,
             TowerRoster roster, TowerPlacementController placement, ArenaCardConfig cardConfig,
             AbilityPool abilityPool, IAbilityCommandTarget coreTarget, PoolManager pooling,
-            AbilityUpgradeService abilityUpgrades, FusionSystem fusion)
+            FusionSystem fusion)
         {
             Economy = economy; Core = core; Wave = wave; Score = score; Timer = timer;
             Flow = flow; Level = level; EnemyCapacity = enemyCapacity; Roster = roster;
             Placement = placement; CardConfig = cardConfig; AbilityPool = abilityPool;
-            CoreTarget = coreTarget; Pooling = pooling; AbilityUpgrades = abilityUpgrades;
-            Fusion = fusion;
+            CoreTarget = coreTarget; Pooling = pooling; Fusion = fusion;
         }
     }
 }

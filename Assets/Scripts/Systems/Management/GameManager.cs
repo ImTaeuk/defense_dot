@@ -23,7 +23,6 @@ namespace DefenseDot.Systems.Management
         [Header("Startup")]
         [SerializeField] private ModeBootstrap modeBootstrap;
         [SerializeField] private int startGold = 300;
-        [SerializeField] private AbilityUpgradeConfig abilityUpgradeConfig;
 
         [Header("Scene References")]
         [SerializeField] private EnemySpawner spawner;
@@ -124,7 +123,6 @@ namespace DefenseDot.Systems.Management
             if (uiRoot != null)
             {
                 DefenseDot.Systems.Abilities.IAbilityCommandTarget coreTarget = arenaBoot != null ? arenaBoot.TowerAbility : null;
-                var abilityUpgrades = new AbilityUpgradeService(coreTarget, Economy, abilityUpgradeConfig);
                 DefenseDot.Systems.Cards.FusionRecipeSet universal = arenaBoot != null ? arenaBoot.UniversalLineage : null;
                 DefenseDot.Systems.Cards.FusionRecipeSet character = arenaBoot != null ? arenaBoot.CharacterLineage : null;
                 var fusion = new DefenseDot.Systems.Cards.FusionSystem(
@@ -133,7 +131,7 @@ namespace DefenseDot.Systems.Management
                     Economy, Core, Wave, Score, RoundTimer, Flow, Level,
                     modeBootstrap.EnemyDisplayCapacity, towerRoster,
                     modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget, poolManager,
-                    abilityUpgrades, fusion);
+                    fusion);
                 uiRoot.Inject(ctx);
             }
 

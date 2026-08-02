@@ -1,8 +1,9 @@
+// 골드 강화 비용 곡선 — AbilityUpgradeService 와 함께 현재 쓰이지 않는다 (그 파일 상단 주석 참고)
 using UnityEngine;
 
 namespace DefenseDot.Systems.Economy
 {
-    /// <summary> 아레나 모드 전역 능력 강화 비용 곡선 파라미터입니다. (능력 무관) </summary>
+    /// <summary> 능력 강화 비용 곡선 파라미터입니다(능력 무관). 현재 사용처 없음. </summary>
     [CreateAssetMenu(fileName = "AbilityUpgradeConfig", menuName = "DefenseDot/Ability Upgrade Config")]
     public sealed class AbilityUpgradeConfig : ScriptableObject
     {

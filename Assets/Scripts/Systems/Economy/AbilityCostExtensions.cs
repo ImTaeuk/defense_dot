@@ -1,9 +1,10 @@
+// 골드 강화 비용 계산 — AbilityUpgradeService 와 함께 현재 쓰이지 않는다 (그 파일 상단 주석 참고)
 using UnityEngine;
 using DefenseDot.Systems.Abilities;
 
 namespace DefenseDot.Systems.Economy
 {
-    /// <summary> 능력 인스턴스의 강화 비용·환불액을 계산하는 확장 메서드입니다. (경제 정책, opt-in) </summary>
+    /// <summary> 능력 인스턴스의 강화 비용·환불액을 계산하는 확장 메서드입니다. 현재 사용처 없음. </summary>
     public static class AbilityCostExtensions
     {
         /// <summary> 다음 레벨로의 강화 비용입니다. </summary>
