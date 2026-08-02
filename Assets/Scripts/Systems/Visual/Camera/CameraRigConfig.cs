@@ -27,5 +27,14 @@ namespace DefenseDot.Systems.Visual.Camera
         public float followLerp = 0f;
         /// <summary> 런타임 pitch 조절 클램프 범위 </summary>
         public Vector2 pitchRange = new Vector2(10f, 60f);
+
+        /// <summary> 카메라 위치·회전을 이 설정으로 배치할지 여부. false면 카메라를 움직이지 않는다 </summary>
+        public bool usePose = true;
+        /// <summary> 이 카메라가 그릴 레이어. Nothing이면 3D를 그리지 않는다 </summary>
+        public LayerMask cullingMask = ~0;
+        /// <summary> 화면을 지우는 방식 </summary>
+        public CameraClearFlags clearFlags = CameraClearFlags.Skybox;
+        /// <summary> clearFlags가 SolidColor일 때 채울 배경색 </summary>
+        public Color backgroundColor = Color.black;
     }
 }

@@ -484,6 +484,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c53eb340d45d3008e58e2e8ca5ce4b38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Views.GameResultView
+  depth: 0
+  initType: 0
   panel: {fileID: 536794809}
   messageText: {fileID: 1331485987}
   restartButton: {fileID: 1462355462}
@@ -1773,159 +1775,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!1 &330585543
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 330585546}
-  - component: {fileID: 330585545}
-  - component: {fileID: 330585544}
-  - component: {fileID: 330585547}
-  - component: {fileID: 330585548}
-  m_Layer: 0
-  m_Name: Main Camera
-  m_TagString: MainCamera
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!81 &330585544
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
---- !u!20 &330585545
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.7, g: 0.85, b: 0.95, a: 1}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_Iso: 200
-  m_ShutterSpeed: 0.005
-  m_Aperture: 16
-  m_FocusDistance: 10
-  m_FocalLength: 50
-  m_BladeCount: 5
-  m_Curvature: {x: 2, y: 11}
-  m_BarrelClipping: 0.25
-  m_Anamorphism: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 45
-  orthographic: 0
-  orthographic size: 7.778175
-  m_Depth: -1
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
---- !u!4 &330585546
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0.3754156, y: 0, z: 0, w: 0.92685664}
-  m_LocalPosition: {x: 0, y: 12.874387, z: -13.2853365}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &330585547
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_RenderShadows: 1
-  m_RequiresDepthTextureOption: 2
-  m_RequiresOpaqueTextureOption: 2
-  m_CameraType: 0
-  m_Cameras: []
-  m_RendererIndex: -1
-  m_VolumeLayerMask:
-    serializedVersion: 2
-    m_Bits: 1
-  m_VolumeTrigger: {fileID: 0}
-  m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 1
-  m_Antialiasing: 0
-  m_AntialiasingQuality: 2
-  m_StopNaN: 0
-  m_Dithering: 0
-  m_ClearDepth: 1
-  m_AllowXRRendering: 1
-  m_AllowHDROutput: 1
-  m_UseScreenCoordOverride: 0
-  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
-  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
-  m_RequiresDepthTexture: 0
-  m_RequiresColorTexture: 0
-  m_TaaSettings:
-    m_Quality: 3
-    m_FrameInfluence: 0.1
-    m_JitterScale: 1
-    m_MipBias: 0
-    m_VarianceClampScale: 0.9
-    m_ContrastAdaptiveSharpening: 0
-  m_Version: 2
---- !u!114 &330585548
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 330585543}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 862fbcd44adb24b40abe81b4b6d5dc3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Camera.CenterFocusCameraRig
-  targetCamera: {fileID: 330585545}
-  target: {fileID: 275214904}
-  config: {fileID: 11400000, guid: 9ebf7c6ef01c78744916c82e99314775, type: 2}
 --- !u!1 &336406656
 GameObject:
   m_ObjectHideFlags: 0
@@ -3468,17 +3317,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7963117960748406322, guid: b7d8bef1bbb55e34a8f8f7e32f861c92, type: 3}
   m_PrefabInstance: {fileID: 526713893}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &526713895 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8315785165094939329, guid: b7d8bef1bbb55e34a8f8f7e32f861c92, type: 3}
-  m_PrefabInstance: {fileID: 526713893}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23b8695253031e740bab171938336919, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Views.HUDView
 --- !u!1 &536794809
 GameObject:
   m_ObjectHideFlags: 0
@@ -4501,9 +4339,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f6050cfb9f5da59212e3e2a1a8360b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.Views.TowerBuildModalView
+  depth: 0
+  initType: 0
   panel: {fileID: 1141012413}
   buttonContainer: {fileID: 813587467}
-  buttonPrefab: {fileID: 8826190898815745947, guid: d1a17f9a30264f542b69dd4b34a9c0eb, type: 3}
+  buttonPrefab: {fileID: 0}
 --- !u!1 &684409890
 GameObject:
   m_ObjectHideFlags: 0
@@ -4566,10 +4406,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Management.GameManager
   modeBootstrap: {fileID: 684409897}
   startGold: 300
-  coreMaxHp: 2
+  abilityUpgradeConfig: {fileID: 0}
   spawner: {fileID: 684409893}
   coreController: {fileID: 684409892}
   uiRoot: {fileID: 1863633888}
+  towerRoster: {fileID: 0}
 --- !u!4 &684409895
 Transform:
   m_ObjectHideFlags: 0
@@ -4599,7 +4440,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Tower.TowerPlacementController
   mapData: {fileID: 11400000, guid: 0c8886fe1bf3b5b4b82f8d7b905a440a, type: 2}
-  targetCamera: {fileID: 330585545}
+  targetCamera: {fileID: 0}
   container: {fileID: 1696723607}
   highlight: {fileID: 324733792}
   inputActions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
@@ -4615,7 +4456,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d2f711e15bd5684bb6247f86b230cd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.GridDefenseModeBootstrap
-  cameraRig: {fileID: 330585548}
+  cameraConfig: {fileID: 11400000, guid: 9ebf7c6ef01c78744916c82e99314775, type: 2}
+  previewCenter: {fileID: 275214904}
   globalVolume: {fileID: 832575518}
   postFxProfile: {fileID: 11400000, guid: 4677671fe43006d41972bb5d435086ed, type: 2}
   postFxBinder: {fileID: 684409898}
@@ -4623,6 +4465,7 @@ MonoBehaviour:
   placement: {fileID: 684409896}
   mapRoot: {fileID: 275214904}
   enemyDisplayCapacity: 80
+  coreHp: 40
 --- !u!114 &684409898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11552,10 +11395,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b688f0cde3d3ab43bc4d283b48f4e61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.UI.InGame.UIRoot
-  hudView: {fileID: 526713895}
-  buildModalView: {fileID: 661829159}
-  towerRoster: {fileID: 11400000, guid: 448a4473a4661454daf7a2c8bcd8aef9, type: 2}
-  gameResultView: {fileID: 117322414}
+  views: []
+  hudLayer: {fileID: 0}
+  fixedLayer: {fileID: 0}
+  popupLayer: {fileID: 0}
+  systemLayer: {fileID: 0}
 --- !u!1 &1886414583
 GameObject:
   m_ObjectHideFlags: 0
@@ -13622,7 +13466,6 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 275214904}

@@ -7,7 +7,7 @@ using DefenseDot.Systems.Visual.Camera;
 namespace DefenseDot.Systems.Visual.PostFx
 {
     /// <summary>
-    /// 카메라 리그의 거리(Distance)를 폴링하여 글로벌 Volume의 피사계 심도
+    /// 전역 카메라의 거리(Distance)를 폴링하여 글로벌 Volume의 피사계 심도
     /// focusDistance를 갱신합니다. 초점면을 카메라-중심 거리에 정합(틸트시프트 근사).
     /// 런타임 인스턴스 프로파일(volume.profile)에만 기록해 원본 에셋 오염을 막습니다.
     /// </summary>
@@ -16,18 +16,17 @@ namespace DefenseDot.Systems.Visual.PostFx
         /// <summary> focusDistance 하한(MinFloatParameter 양수 보장). </summary>
         public const float MinFocusDistance = 0.1f;
 
-        private CenterFocusCameraRig boundRig;
         private Volume boundVolume;
         private DepthOfField cachedDof;
 
         /// <summary>
-        /// 리그와 글로벌 Volume을 주입합니다. 직전 인스턴스 사본을 무효화하여
+        /// 글로벌 Volume을 주입합니다. 직전 인스턴스 사본을 무효화하여
         /// 현재 sharedProfile(모드별 프리셋)로부터 재클론한 뒤, 피사계 심도 컴포넌트를
         /// 캐시합니다. (DoF 없으면 갱신 비활성)
         /// </summary>
-        public void Bind(CenterFocusCameraRig rig, Volume volume)
+        /// <param name="volume">모드별 프리셋이 걸린 글로벌 Volume</param>
+        public void Bind(Volume volume)
         {
-            boundRig = rig;
             boundVolume = volume;
             cachedDof = null;
 
@@ -48,11 +47,11 @@ namespace DefenseDot.Systems.Visual.PostFx
             ApplyFocus();
         }
 
-        /// <summary> 현재 리그 거리로 DoF focusDistance를 즉시 갱신합니다. </summary>
+        /// <summary> 현재 카메라 거리로 DoF focusDistance를 즉시 갱신합니다. </summary>
         private void ApplyFocus()
         {
-            if (boundRig == null || cachedDof == null) return;
-            cachedDof.focusDistance.value = ResolveFocusDistance(boundRig.Distance);
+            if (cachedDof == null || CameraSystem.Instance == null) return;
+            cachedDof.focusDistance.value = ResolveFocusDistance(CameraSystem.Instance.Distance);
         }
 
         /// <summary>

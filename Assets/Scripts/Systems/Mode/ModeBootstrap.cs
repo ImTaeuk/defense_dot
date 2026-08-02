@@ -11,8 +11,11 @@ namespace DefenseDot.Systems.Mode
     /// </summary>
     public abstract class ModeBootstrap : MonoBehaviour
     {
+        /// <summary> 이 모드가 쓸 카메라 설정. 전역 CameraSystem에 넘긴다. </summary>
         [Header("Presentation")]
-        [SerializeField] protected CenterFocusCameraRig cameraRig;
+        [SerializeField] protected CameraRigConfig cameraConfig;
+        /// <summary> 에디터 카메라 프리뷰가 바라볼 중심. 런타임에는 쓰이지 않는다. </summary>
+        [SerializeField] protected Transform previewCenter;
         [SerializeField] protected UnityEngine.Rendering.Volume globalVolume;
         [SerializeField] protected UnityEngine.Rendering.VolumeProfile postFxProfile;
         [SerializeField] protected DefenseDot.Systems.Visual.PostFx.PostFxBinder postFxBinder;
@@ -41,8 +44,9 @@ namespace DefenseDot.Systems.Mode
         /// </summary>
         protected void BindPresentation(in ModeContext ctx)
         {
-            // 1) 카메라 바인딩 (config는 리그가 단독 소유, 중심은 모드별 산출)
-            if (cameraRig != null) cameraRig.Bind(GetCameraCenter(ctx));
+            // 1) 카메라 바인딩 (config는 씬이 소유, 중심은 모드별 산출)
+            if (CameraSystem.Instance != null)
+                CameraSystem.Instance.Bind(cameraConfig, GetCameraCenter(ctx));
 
             // 2) 모드별 프리셋 참조 교체 (읽기전용 — sharedProfile 비파괴)
             if (globalVolume != null && postFxProfile != null)
@@ -54,7 +58,7 @@ namespace DefenseDot.Systems.Mode
             //    (프리셋 누락 시 stale 프로파일에 바인딩되는 것을 방지)
             if (globalVolume != null && postFxProfile != null && postFxBinder != null)
             {
-                postFxBinder.Bind(cameraRig, globalVolume);
+                postFxBinder.Bind(globalVolume);
             }
         }
 

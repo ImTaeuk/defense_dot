@@ -21,3 +21,9 @@ MonoBehaviour:
   orthoSize: 15
   followLerp: 7.41
   pitchRange: {x: 10, y: 60}
+  usePose: 1
+  cullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  clearFlags: 2
+  backgroundColor: {r: 0.7, g: 0.85, b: 0.95, a: 1}
