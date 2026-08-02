@@ -11,18 +11,11 @@ namespace DefenseDot.UI.Views
     /// </summary>
     public sealed class ArenaHudView : UIView
     {
-        [SerializeField] private GoldWidget goldWidget;
         [SerializeField] private ScoreWidget scoreWidget;
         [SerializeField] private RoundWidget roundWidget;
         [SerializeField] private TimeWidget timeWidget;
         [SerializeField] private EnemyWidget enemyWidget;
         [SerializeField] private LevelProgressWidget levelWidget;
-
-        /// <summary> 골드 위젯을 갱신합니다. </summary>
-        public void ApplyGold(int gold)
-        {
-            if (goldWidget != null) goldWidget.SetData(gold);
-        }
 
         /// <summary> 점수 위젯을 갱신합니다. </summary>
         public void ApplyScore(int score)

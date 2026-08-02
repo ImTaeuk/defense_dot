@@ -7,12 +7,11 @@ using DefenseDot.Domain.Models;
 namespace DefenseDot.UI.Presenters
 {
     /// <summary>
-    /// 아레나 HUD 프레젠터입니다. Economy/Score/Wave/RoundTimer RP를
-    /// 라운드·시간·골드·점수·적 위젯에 Bind합니다.
+    /// 아레나 HUD 프레젠터입니다. Score/Wave/RoundTimer/Level RP를
+    /// 라운드·시간·점수·적·레벨 위젯에 Bind합니다.
     /// </summary>
     public sealed class ArenaHudPresenter : UIPresenter<ArenaHudView>
     {
-        private readonly EconomyModel economy;
         private readonly ScoreModel score;
         private readonly WaveModel wave;
         private readonly RoundTimerModel timer;
@@ -22,7 +21,6 @@ namespace DefenseDot.UI.Presenters
         /// <summary> GameContext 에서 필요한 모델을 추출해 주입받습니다. </summary>
         public ArenaHudPresenter(ArenaHudView view, GameContext ctx) : base(view)
         {
-            economy = ctx.Economy;
             score = ctx.Score;
             wave = ctx.Wave;
             timer = ctx.Timer;
@@ -33,7 +31,6 @@ namespace DefenseDot.UI.Presenters
         /// <summary> 도메인 RP를 위젯에 바인딩합니다. </summary>
         protected override void OnInitialize()
         {
-            Bind(economy.Gold, view.ApplyGold);
             Bind(score.Score, view.ApplyScore);
             Bind(wave.Progress, view.ApplyRound);
             Bind(timer.Time, view.ApplyTime);
