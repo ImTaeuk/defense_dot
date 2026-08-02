@@ -1,9 +1,11 @@
 // 합성 루트 — 도메인 모델 생성·주입과 승패 판정 총괄
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using DefenseDot.Domain;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Enemy;
 using DefenseDot.Systems.Economy;
+using DefenseDot.Systems.Loading;
 using DefenseDot.Systems.Mode;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Data;
@@ -16,7 +18,7 @@ namespace DefenseDot.Systems.Management
     /// 게임 전역을 총괄하는 합성 루트(Composition Root)입니다.
     /// 모든 도메인 모델을 생성·보유하고 하위 시스템에 주입하며, 승패를 판정합니다.
     /// </summary>
-    public class GameManager : MonoBehaviour, DefenseDot.Core.ICombatState
+    public class GameManager : MonoBehaviour, DefenseDot.Core.ICombatState, SceneLoadManager.ILoadingObserver
     {
         [Header("Startup")]
         [SerializeField] private ModeBootstrap modeBootstrap;
@@ -135,7 +137,35 @@ namespace DefenseDot.Systems.Management
                 uiRoot.Inject(ctx);
             }
 
-            // 게임 시작
+            // 로딩 개시 — 준비가 끝나면 OnLoadingStateChanged가 게임을 시작한다
+            if (SceneLoadManager.Instance == null)
+            {
+                BeginPlay();   // 로더 없는 씬 단독 실행
+                return;
+            }
+
+            // 개시자는 자기 개시 전 상태를 볼 필요가 없다(이전 세션의 Complete를 읽는 사고 방지)
+            SceneLoadManager.Instance.RegisterObserver(this, shouldNotifyImmediately: false);
+            SceneLoadManager.Instance.WarmupAllAsync(destroyCancellationToken).Forget();
+        }
+
+        /// <summary> 로딩이 끝났을 때 게임을 시작합니다. </summary>
+        public void OnLoadingStateChanged()
+        {
+            if (SceneLoadManager.Instance == null)
+                return;
+
+            if (SceneLoadManager.Instance.State != SceneLoadManager.LoadingState.Complete)
+                return;
+
+            BeginPlay();
+        }
+
+        /// <summary> 플레이 단계로 전이하고 웨이브를 개시합니다. </summary>
+        private void BeginPlay()
+        {
+            if (Flow.IsPlaying) return;   // 완료 통보가 두 번 와도 웨이브는 한 번만
+
             Flow.SetPhase(GamePhase.Playing);
             if (spawner != null) spawner.BeginWaves();
         }
@@ -191,6 +221,7 @@ namespace DefenseDot.Systems.Management
 
         private void OnDestroy()
         {
+            if (SceneLoadManager.Instance != null) SceneLoadManager.Instance.UnregisterObserver(this);
             economyController?.Dispose();
             poolManager?.Dispose();
             if (Core != null) Core.OnCoreDestroyed -= HandleCoreDestroyed;

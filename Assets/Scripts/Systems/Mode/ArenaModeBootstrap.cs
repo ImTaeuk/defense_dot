@@ -7,15 +7,16 @@ using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Arena;
 using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Abilities;
+using DefenseDot.Systems.Loading;
 using DefenseDot.Systems.Visual;
 
 namespace DefenseDot.Systems.Mode
 {
     /// <summary>
     /// 아레나 모드 합성 루트입니다. ArenaView가 소유한 config로 ArenaModel을 만들어
-    /// 바인딩한 뒤 ArenaMode를 생성합니다.
+    /// 바인딩한 뒤 ArenaMode를 생성하고, 타워 능력 준비를 로딩에 등록합니다.
     /// </summary>
-    public class ArenaModeBootstrap : ModeBootstrap
+    public class ArenaModeBootstrap : ModeBootstrap, ISceneWarmup
     {
         [SerializeField] private ArenaView arenaView;
 
@@ -115,7 +116,12 @@ namespace DefenseDot.Systems.Mode
             starters.AddRange(starterAbilities);
 
             towerAbility.Setup(ctx.TargetFinder, ctx.CoreCenter, ctx.CombatState, starters, ctx.Pooling, fireOrigin);
-            StartTowerAbilities(towerAbility).Forget();   // 예열 → 장착 순서 조율
+
+            // 예열은 로딩이 기다린다. 로더 없는 씬 단독 실행이면 스스로 수행
+            if (SceneLoadManager.Instance != null)
+                SceneLoadManager.Instance.RegisterWarmup(this);
+            else
+                WarmupAsync(destroyCancellationToken).Forget();
 
             // 총구 확보 후 비주얼에 능력 시스템 연동
             if (characterVisual != null)
@@ -138,11 +144,20 @@ namespace DefenseDot.Systems.Mode
             towerAbility?.Dispose();
         }
 
-        /// <summary> 타워 능력을 예열한 뒤 장착합니다(예열→장착 순서 조율). </summary>
-        private static async UniTaskVoid StartTowerAbilities(TowerAbilitySystem tower)
+        /// <summary> 타워 능력을 사용 가능한 상태로 만듭니다(예열 후 장착). </summary>
+        /// <param name="cancellationToken">씬 파괴 등으로 중단할 때 쓰는 토큰</param>
+        public async UniTask WarmupAsync(System.Threading.CancellationToken cancellationToken)
         {
-            await tower.WarmupStartersAsync();   // 예열(실패는 값으로 스킵, 예외 없음)
-            tower.EquipAll();                    // 장착(예열 성패 무관하게 실행)
+            if (towerAbility == null)
+                return;
+
+            bool canceled = await towerAbility.WarmupStartersAsync()
+                .AttachExternalCancellation(cancellationToken)
+                .SuppressCancellationThrow();
+            if (canceled)
+                return;
+
+            towerAbility.EquipAll();   // 예열 성패 무관하게 장착
         }
     }
 }
