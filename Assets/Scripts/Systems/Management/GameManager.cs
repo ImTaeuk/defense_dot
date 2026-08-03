@@ -21,7 +21,7 @@ namespace DefenseDot.Systems.Management
     public class GameManager : MonoBehaviour, DefenseDot.Core.ICombatState, SceneLoadManager.ILoadingObserver
     {
         [Header("Startup")]
-        [SerializeField] private ModeBootstrap modeBootstrap;
+        [SerializeField] private ModeSystem modeSystem;
         [SerializeField] private int startGold = 300;
 
         [Header("Scene References")]
@@ -62,7 +62,7 @@ namespace DefenseDot.Systems.Management
         // 하위 시스템 (합성 루트가 생성·주입)
         private EnemyRegistry registry;
         private TargetFinder targetFinder;
-        private EconomySystem economySystem;
+        private EconomyEventBinder economyEventBinder;
         private DefenseDot.Core.Pooling.PoolSystem poolSystem;
         private bool ownsPoolSystem;   // 로더 없는 단독 실행에서 직접 만들었으면 직접 정리한다
 
@@ -83,7 +83,7 @@ namespace DefenseDot.Systems.Management
             RoundTimer = new RoundTimerModel();
 
             Economy.Initialize(startGold);
-            Core.Configure(modeBootstrap != null ? modeBootstrap.CoreMaxHp : 40f);
+            Core.Configure(modeSystem != null ? modeSystem.CoreMaxHp : 40f);
         }
 
         private void Start()
@@ -94,8 +94,8 @@ namespace DefenseDot.Systems.Management
             // 하위 시스템 생성·배선
             registry = new EnemyRegistry();
             targetFinder = new TargetFinder(registry);
-            economySystem = new EconomySystem(Economy, Combat);
-            economySystem.Initialize();
+            economyEventBinder = new EconomyEventBinder(Economy, Combat);
+            economyEventBinder.Initialize();
 
             // 풀은 전역이 보유한다. 로더 없는 씬 단독 실행에서만 임시로 만든다
             if (DefenseDot.Core.Pooling.PoolManager.Instance != null)
@@ -118,7 +118,7 @@ namespace DefenseDot.Systems.Management
             Wave.OnWaveCleared += HandleVictory;
 
             // 레벨·카드 시스템 (Arena 전용) — CombatModel 처치 → LevelModel 레벨업
-            var arenaBoot = modeBootstrap as ArenaModeBootstrap;
+            var arenaBoot = modeSystem as ArenaModeSystem;
             DefenseDot.Systems.Cards.ArenaCardConfig cardConfig = arenaBoot != null ? arenaBoot.CardConfig : null;
             DefenseDot.Systems.Cards.AbilityPool abilityPool = arenaBoot != null ? arenaBoot.AbilityPool : null;
             System.Func<int, int> curve;
@@ -137,8 +137,8 @@ namespace DefenseDot.Systems.Management
                     new[] { universal, character });   // null 세트는 FusionSystem이 건너뜀
                 var ctx = new DefenseDot.Domain.GameContext(
                     Economy, Core, Wave, Score, RoundTimer, Flow, Level,
-                    modeBootstrap.EnemyDisplayCapacity, towerRoster,
-                    modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget, poolSystem,
+                    modeSystem.EnemyDisplayCapacity, towerRoster,
+                    modeSystem.PlacementController, cardConfig, abilityPool, coreTarget, poolSystem,
                     fusion);
                 uiRoot.Inject(ctx);
             }
@@ -178,15 +178,15 @@ namespace DefenseDot.Systems.Management
 
         private IGameMode CreateMode()
         {
-            if (modeBootstrap == null)
+            if (modeSystem == null)
             {
-                Debug.LogError("[GameManager] ModeBootstrap이 할당되지 않았습니다.");
+                Debug.LogError("[GameManager] ModeSystem이 할당되지 않았습니다.");
                 return null;
             }
             Vector3 origin = spawner != null ? spawner.transform.position : transform.position;
             Vector3 center = coreController != null ? coreController.CorePosition : transform.position;
             var ctx = new ModeContext(Core, Economy, targetFinder, origin, center, Flow, this, poolSystem);
-            return modeBootstrap.CreateMode(ctx);
+            return modeSystem.CreateMode(ctx);
         }
 
         private void Update()
@@ -197,7 +197,7 @@ namespace DefenseDot.Systems.Management
             spawner.TickRound(Time.deltaTime);
 
             // 모드가 소유한 시스템 진행
-            modeBootstrap.Tick(Time.deltaTime);
+            modeSystem.Tick(Time.deltaTime);
 
             // 아레나: 코어 HP를 수용 헤드룸(한계−생존수)으로 표시
             if (mode.TryGetCapacityHp(spawner.ActiveEnemyCount, out float capacityHp)) Core.SetCurrent(capacityHp);
@@ -228,7 +228,7 @@ namespace DefenseDot.Systems.Management
         private void OnDestroy()
         {
             if (SceneLoadManager.Instance != null) SceneLoadManager.Instance.UnregisterObserver(this);
-            economySystem?.Dispose();
+            economyEventBinder?.Dispose();
             // 전역이 보유한 것은 전역이 정리한다
             if (ownsPoolSystem)
                 poolSystem?.Dispose();

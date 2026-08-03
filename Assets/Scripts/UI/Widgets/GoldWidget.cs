@@ -4,7 +4,7 @@
 // 걷어낸 뒤로) 화면에 뜻 없는 숫자만 남았고, 점수는 ScoreModel 이 라운드 가중치·시간
 // 보너스까지 계산해 따로 표시하므로 역할이 겹쳤다.
 //
-// 골드 획득 로직(EconomySystem)과 EconomyModel 은 그대로 살아 있다 — 그리드 모드가
+// 골드 획득 로직(EconomyEventBinder)과 EconomyModel 은 그대로 살아 있다 — 그리드 모드가
 // 타워 건설비로 쓰고, 메타층(가챠·강화소 등)을 도입하면 소비처가 생긴다.
 // 그때 이 위젯을 HUD 에 다시 붙이면 된다.
 using UnityEngine;

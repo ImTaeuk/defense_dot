@@ -4359,6 +4359,7 @@ GameObject:
   - component: {fileID: 684409898}
   - component: {fileID: 684409897}
   - component: {fileID: 684409896}
+  - component: {fileID: 684409899}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -4404,9 +4405,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 37988c851a4ab1f41a386241de83357f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Management.GameManager
-  modeBootstrap: {fileID: 684409897}
+  modeSystem: {fileID: 684409897}
   startGold: 300
-  abilityUpgradeConfig: {fileID: 0}
   spawner: {fileID: 684409893}
   coreController: {fileID: 684409892}
   uiRoot: {fileID: 1863633888}
@@ -4455,12 +4455,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3d2f711e15bd5684bb6247f86b230cd9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.GridDefenseModeBootstrap
-  cameraConfig: {fileID: 11400000, guid: 9ebf7c6ef01c78744916c82e99314775, type: 2}
-  previewCenter: {fileID: 275214904}
-  globalVolume: {fileID: 832575518}
-  postFxProfile: {fileID: 11400000, guid: 4677671fe43006d41972bb5d435086ed, type: 2}
-  postFxBinder: {fileID: 684409898}
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.GridDefenseModeSystem
+  presentation: {fileID: 684409899}
   mapData: {fileID: 11400000, guid: 0c8886fe1bf3b5b4b82f8d7b905a440a, type: 2}
   placement: {fileID: 684409896}
   mapRoot: {fileID: 275214904}
@@ -4478,6 +4474,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5687c6d462c0264fa4a4ae6427643f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.PostFx.PostFxBinder
+--- !u!114 &684409899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 684409890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dacb0688aaed0a94a8733e2ddbc15215, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.ModePresentationBinder
+  cameraConfig: {fileID: 11400000, guid: 9ebf7c6ef01c78744916c82e99314775, type: 2}
+  previewCenter: {fileID: 275214904}
+  globalVolume: {fileID: 832575518}
+  postFxProfile: {fileID: 11400000, guid: 4677671fe43006d41972bb5d435086ed, type: 2}
+  postFxBinder: {fileID: 684409898}
 --- !u!1 &752116133
 GameObject:
   m_ObjectHideFlags: 0

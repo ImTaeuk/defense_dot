@@ -264,7 +264,7 @@ namespace DefenseDot.EditorTools
         /// <param name="attacksPerSecond">초당 공격 횟수</param>
         private void SetAttackSpeed(float attacksPerSecond)
         {
-            ArenaModeBootstrap boot = FindFirstObjectByType<ArenaModeBootstrap>();
+            ArenaModeSystem boot = FindFirstObjectByType<ArenaModeSystem>();
             if (boot == null || boot.TowerAbility == null)
             {
                 ShowNotification(new GUIContent("TowerAbility 없음"));
@@ -278,10 +278,10 @@ namespace DefenseDot.EditorTools
         /// <summary> 계보 첫 레시피의 재료 2개를 코어에 확보하고 MAX 레벨로 올립니다. </summary>
         private void MaxFusionMaterials()
         {
-            ArenaModeBootstrap boot = FindFirstObjectByType<ArenaModeBootstrap>();
+            ArenaModeSystem boot = FindFirstObjectByType<ArenaModeSystem>();
             if (boot == null)
             {
-                ShowNotification(new GUIContent("ArenaModeBootstrap 없음"));
+                ShowNotification(new GUIContent("ArenaModeSystem 없음"));
                 return;
             }
             FusionRecipeSet lineage = boot.CharacterLineage;

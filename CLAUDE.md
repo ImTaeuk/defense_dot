@@ -82,7 +82,7 @@ You are working on a **Unity project** used to build games or interactive experi
 - [ ] 인터페이스에 `I` 접두, 이벤트에 `On` 접두, 구독 핸들러에 `Handle` 접두를 붙였다
 - [ ] `const` 를 `UPPER_CASE_WITH_UNDERSCORES` 로 썼고 선언 다음 줄을 비웠다
 - [ ] bool 에 `is` / `has` / `can` / `use` / `need` / `should` 접두를 붙였다
-- [ ] 접미사 3단 위계를 따랐다 — **전역이면 `Manager`**, **GameObject 하나를 제어하면 `Controller`**, **씬 수명 기능 묶음이면 `System`** (`Repository` · `Service` · `DAO` · `DTO` 등 웹 계층 용어는 금지)
+- [ ] 접미사 체계를 따랐다 — ①자기 데이터 소유면 `Model` ②남의 것을 모아 전달하면 `Context` ③관계를 세우기만 하면 `Binder` ④로직이 있으면 수명·대상으로 `Manager`(전역) / `Controller`(GameObject 하나) / `System`(씬 수명 묶음). `Bootstrap` 은 **첫 씬 전용**이며, `Repository` · `Service` · `DAO` · `DTO` 등 웹 계층 용어는 금지
 - [ ] `Console.Assert` 를 썼고 메시지와 (Component 라면) `this` 를 넘겼다
 - [ ] Coroutine 대신 UniTask 를 썼고 메서드에 `Async` 접미를 붙였다
 - [ ] `using (...) { }` 블록 방식을 썼다 (`using var` 미사용)
