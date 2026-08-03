@@ -6,9 +6,16 @@ namespace DefenseDot.Systems.Abilities
     /// <summary> 패시브들이 누적하는 합산 보정값입니다. (필드는 패시브 추가에 따라 확장) </summary>
     public sealed class AbilityModifiers
     {
-        /// <summary> 가산 공격력 보너스. </summary>
+        // ─── 아래 두 필드는 아직 쓰는 패시브가 없다 (미사용이 정상) ───
+        // 능력 콘텐츠를 계속 늘려갈 예정이라 가산형 보정 자리를 미리 뚫어둔 것이다.
+        // 현재 패시브 4종(맹공·토벌·쇄도·각성)은 전부 아래 ConditionalMultiplier 쪽
+        // 조건부 배수를 쓰므로 이 두 값은 항상 0이며, 그래도 아무도 손해 보지 않는다.
+        // 가산 공격력·쿨다운 감소형 패시브를 만들 때 PassiveAbilityData.ApplyModifiers
+        // 에서 여기에 누적하면 소비처(DamageSource·ActiveAbilityData)가 이미 배선돼 있다.
+
+        /// <summary> 가산 공격력 보너스. 현재 생산자 없음(위 주석 참고). </summary>
         public float damageBonus;
-        /// <summary> 쿨다운 감소(초). </summary>
+        /// <summary> 쿨다운 감소(초). 현재 생산자 없음(위 주석 참고). </summary>
         public float cooldownReduction;
 
         // 순수 패시브 누적 레벨 (RecalculateModifiers 에서 재계산)
