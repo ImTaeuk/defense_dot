@@ -27,14 +27,21 @@ namespace DefenseDot.Tests.EditMode
             spawned.Clear();
         }
 
-        private static PoolSystem NewManager() => new PoolSystem(new AssetLoader());
+        private PoolSystem NewManager()
+        {
+            var root = new GameObject("poolRoot");
+            spawned.Add(root);
+            return new PoolSystem(new AssetLoader(), root.transform);
+        }
 
         private Pool NewPool()
         {
             var prefab = new GameObject("prefab");
             prefab.AddComponent<TestPooled>();
             spawned.Add(prefab);
-            return new Pool(prefab);
+            var container = new GameObject("container");
+            spawned.Add(container);
+            return new Pool(prefab, container.transform);
         }
 
         // 꺼내 장부에 등록

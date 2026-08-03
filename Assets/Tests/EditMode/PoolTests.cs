@@ -33,10 +33,18 @@ namespace DefenseDot.Tests.EditMode
             return prefab;
         }
 
+        /// <summary> 쉬는 인스턴스를 담을 보관 자리를 만듭니다. </summary>
+        private Transform NewContainer()
+        {
+            var container = new GameObject("container");
+            spawned.Add(container);
+            return container.transform;
+        }
+
         [Test]
         public void Get_ThenReturn_ThenGet_ReusesSameInstance()
         {
-            var pool = new Pool(NewPrefab());
+            var pool = new Pool(NewPrefab(), NewContainer());
             GameObject a = pool.Get(); spawned.Add(a);
             pool.Return(a);
             GameObject b = pool.Get();
@@ -46,7 +54,7 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Get_EmptyPool_InstantiatesEachTime()
         {
-            var pool = new Pool(NewPrefab());
+            var pool = new Pool(NewPrefab(), NewContainer());
             GameObject a = pool.Get(); spawned.Add(a);
             GameObject b = pool.Get(); spawned.Add(b);
             Assert.AreNotSame(a, b, "빈 풀은 매번 새 인스턴스");
@@ -55,7 +63,7 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Get_ActivatesAndSpawns_ReturnDeactivatesAndDespawns()
         {
-            var pool = new Pool(NewPrefab());
+            var pool = new Pool(NewPrefab(), NewContainer());
             GameObject go = pool.Get(); spawned.Add(go);
             TestPooled fx = go.GetComponent<TestPooled>();
 
@@ -71,7 +79,7 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Clear_EmptiesQueue_NextGetInstantiatesNew()
         {
-            var pool = new Pool(NewPrefab());
+            var pool = new Pool(NewPrefab(), NewContainer());
             GameObject a = pool.Get(); spawned.Add(a);
             pool.Return(a);
             pool.Clear();

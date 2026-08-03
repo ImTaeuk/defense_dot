@@ -64,6 +64,7 @@ namespace DefenseDot.Systems.Management
         private TargetFinder targetFinder;
         private EconomySystem economySystem;
         private DefenseDot.Core.Pooling.PoolSystem poolSystem;
+        private bool ownsPoolSystem;   // 로더 없는 단독 실행에서 직접 만들었으면 직접 정리한다
 
         // DEBUG: 치트 도구 접근용 — 실제 타워 등장 시스템 구현 시 삭제
         /// <summary>적 타겟 탐색기입니다. Start 이후 non-null. (DEBUG)</summary>
@@ -96,9 +97,16 @@ namespace DefenseDot.Systems.Management
             economySystem = new EconomySystem(Economy, Combat);
             economySystem.Initialize();
 
-            // 능력 배선 전 풀 생성
-            var assetLoader = new DefenseDot.Systems.Assets.AssetLoader();
-            poolSystem = new DefenseDot.Core.Pooling.PoolSystem(assetLoader);
+            // 풀은 전역이 보유한다. 로더 없는 씬 단독 실행에서만 임시로 만든다
+            if (DefenseDot.Core.Pooling.PoolManager.Instance != null)
+            {
+                poolSystem = DefenseDot.Core.Pooling.PoolManager.Instance.System;
+            }
+            else
+            {
+                poolSystem = new DefenseDot.Core.Pooling.PoolSystem(new DefenseDot.Systems.Assets.AssetLoader(), transform);
+                ownsPoolSystem = true;
+            }
 
             mode = CreateMode();
 
@@ -221,7 +229,9 @@ namespace DefenseDot.Systems.Management
         {
             if (SceneLoadManager.Instance != null) SceneLoadManager.Instance.UnregisterObserver(this);
             economySystem?.Dispose();
-            poolSystem?.Dispose();
+            // 전역이 보유한 것은 전역이 정리한다
+            if (ownsPoolSystem)
+                poolSystem?.Dispose();
             if (Core != null) Core.OnCoreDestroyed -= HandleCoreDestroyed;
             if (Wave != null) Wave.OnWaveCleared -= HandleVictory;
             if (Combat != null) Combat.OnEnemyKilled -= HandleEnemyKilledForLevel;
