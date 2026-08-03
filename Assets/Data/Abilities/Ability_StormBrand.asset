@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.Definitions.SubProjectileAbilityData
   id: stormBrand
   displayName: "\uD3ED\uD48D \uB099\uC778"
-  icon: {fileID: 21300000, guid: 06477646001e37846b3955d3eb5da599, type: 3}
+  icon: {fileID: 21300000, guid: d2831d60ba2ee224ea45c2962dbb17f6, type: 3}
   rarity: 0
   maxLevel: 5
   baseCost: 30

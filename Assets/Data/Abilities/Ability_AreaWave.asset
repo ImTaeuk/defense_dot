@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.Definitions.MainAreaWaveAbilityData
   id: areawave
   displayName: "\uB178\uBC14"
-  icon: {fileID: 21300000, guid: 1e3a7397cf2d5964ba22a9fc81156875, type: 3}
+  icon: {fileID: 21300000, guid: 311103c72b1b4c043a22ed9fc8dea90e, type: 3}
   rarity: 0
   maxLevel: 5
   baseCost: 55

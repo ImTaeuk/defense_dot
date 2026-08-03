@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Abilities.Definitions.OrbitalAbilityData
   id: tornado
   displayName: "\uD68C\uC624\uB9AC"
-  icon: {fileID: 21300000, guid: 0cba706253a3f5940a0013f5e2ae2039, type: 3}
+  icon: {fileID: 21300000, guid: 20cdf85bf5dd9a34fa16f670088736a7, type: 3}
   rarity: 0
   maxLevel: 5
   baseCost: 60
