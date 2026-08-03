@@ -15,7 +15,7 @@ namespace DefenseDot.Core.Pooling
 
     /// <summary>
     /// 풀이 재사용하는 객체의 계약입니다. 재사용 시 자기 상태를 초기화하고,
-    /// Dispose() 는 파괴가 아니라 "풀로 반납"을 뜻합니다(반납 실제 동작은 PoolManager 가 주입).
+    /// Dispose() 는 파괴가 아니라 "풀로 반납"을 뜻합니다(반납 실제 동작은 PoolSystem 가 주입).
     /// 풀은 대상을 항상 켜고/끄므로 IActivatable 을 포함합니다(둘 다 구현 강제).
     /// </summary>
     public interface IPoolableObject : IActivatable, System.IDisposable
@@ -27,7 +27,7 @@ namespace DefenseDot.Core.Pooling
     }
 
     /// <summary>
-    /// PoolManager 가 객체에 "반납하는 법"(Dispose 시 어느 풀로 돌아갈지)을 주입하기 위한 내부 계약입니다.
+    /// PoolSystem 가 객체에 "반납하는 법"(Dispose 시 어느 풀로 돌아갈지)을 주입하기 위한 내부 계약입니다.
     /// 덕분에 객체는 자기가 어느 풀 소속인지 몰라도 됩니다.
     /// </summary>
     internal interface IReturnBindable

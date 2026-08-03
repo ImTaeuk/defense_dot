@@ -19,7 +19,7 @@ namespace DefenseDot.Systems.Abilities
         private CoreWeapon weapon;           // 기본 공격 구동(공격속도로 애니 재생)
         private AbilityContext ctx;          // 공용 컨텍스트(모든 능력 공유)
         private IAttackMotion motion;        // 공격 모션 재생 대상
-        private PoolManager pool;            // 스타터 예열용
+        private PoolSystem pool;            // 스타터 예열용
         private float baseAttackSpeed = 1f;  // 타워 기본 공격 속도(초당 횟수)
         private AnimationClip castAnimation;   // 캐릭터 기본 공격 모션(무기 생성 전에 주입)
         private readonly CombatStats stats = new CombatStats();   // 전투 능력치(ctx로 주입)
@@ -52,10 +52,10 @@ namespace DefenseDot.Systems.Abilities
 
         /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. fireOrigin은 발사체·머즐 스폰용 총구(없으면 origin 폴백). </summary>
         public void Setup(TargetFinder finder, Vector3 origin,
-            ICombatState combatState, IReadOnlyList<AbilityData> starters, PoolManager poolManager,
+            ICombatState combatState, IReadOnlyList<AbilityData> starters, PoolSystem poolSystem,
             Transform fireOrigin = null)
         {
-            pool = poolManager;
+            pool = poolSystem;
             loadout = new AbilityLoadout();
             loadout.Modifiers.combatState = combatState;
             if (starters != null)
@@ -66,7 +66,7 @@ namespace DefenseDot.Systems.Abilities
                 }
             }
 
-            IEffectSpawner effects = new PooledEffectSpawner(poolManager);
+            IEffectSpawner effects = new PooledEffectSpawner(poolSystem);
             ctx = new AbilityContext(origin, finder, loadout.Modifiers, effects, stats, fireOrigin);
             runner = new AbilityRunner(loadout, ctx);
             weapon = new CoreWeapon(loadout, motion, castAnimation);

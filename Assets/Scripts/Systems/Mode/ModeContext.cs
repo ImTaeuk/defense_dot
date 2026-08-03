@@ -27,9 +27,9 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 실시간 전투 상태 (조건부 데미지: 라운드·생존 적 수) </summary>
         public readonly ICombatState CombatState;
         /// <summary> 공용 오브젝트 풀 (이펙트 스폰용) </summary>
-        public readonly PoolManager Pooling;
+        public readonly PoolSystem Pooling;
 
-        public ModeContext(CoreModel core, EconomyModel economy, TargetFinder targetFinder, Vector3 spawnOrigin, Vector3 coreCenter, GameFlowModel flow, ICombatState combatState, PoolManager pooling)
+        public ModeContext(CoreModel core, EconomyModel economy, TargetFinder targetFinder, Vector3 spawnOrigin, Vector3 coreCenter, GameFlowModel flow, ICombatState combatState, PoolSystem pooling)
         {
             Core = core;
             Economy = economy;

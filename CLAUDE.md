@@ -19,7 +19,7 @@ You are working on a **Unity project** used to build games or interactive experi
 
 **비동기 리소스 로드를 새로 쓰거나 기존 것을 건드릴 때마다, 그것이 초기 로드에 들어가야 하는지 판단해 사용자에게 추천한다.** 판단을 생략하고 넘어가지 않는다.
 
-대상이 되는 호출: `AssetLoader.LoadAsync` · `PoolManager.WarmupAsync` · `Addressables.*Async` · 그 밖에 에셋을 런타임에 읽어오는 모든 비동기 경로.
+대상이 되는 호출: `AssetLoader.LoadAsync` · `PoolSystem.WarmupAsync` · `Addressables.*Async` · 그 밖에 에셋을 런타임에 읽어오는 모든 비동기 경로.
 
 ### 판단 기준 — 두 질문에 모두 「예」면 초기 로드 대상
 
@@ -82,7 +82,7 @@ You are working on a **Unity project** used to build games or interactive experi
 - [ ] 인터페이스에 `I` 접두, 이벤트에 `On` 접두, 구독 핸들러에 `Handle` 접두를 붙였다
 - [ ] `const` 를 `UPPER_CASE_WITH_UNDERSCORES` 로 썼고 선언 다음 줄을 비웠다
 - [ ] bool 에 `is` / `has` / `can` / `use` / `need` / `should` 접두를 붙였다
-- [ ] `Controller` / `Repository` / `Service` 대신 역할·동작이 드러나는 이름을 썼다 (`Manager` 는 허용 — 단 책임 구분을 명확히)
+- [ ] 접미사 3단 위계를 따랐다 — **전역이면 `Manager`**, **GameObject 하나를 제어하면 `Controller`**, **씬 수명 기능 묶음이면 `System`** (`Repository` · `Service` · `DAO` · `DTO` 등 웹 계층 용어는 금지)
 - [ ] `Console.Assert` 를 썼고 메시지와 (Component 라면) `this` 를 넘겼다
 - [ ] Coroutine 대신 UniTask 를 썼고 메서드에 `Async` 접미를 붙였다
 - [ ] `using (...) { }` 블록 방식을 썼다 (`using var` 미사용)

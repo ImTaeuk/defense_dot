@@ -19,7 +19,7 @@ namespace DefenseDot.UI.Presenters
         private readonly ArenaCardConfig config;
         private readonly AbilityPool pool;
         private readonly GameFlowModel flow;
-        private readonly PoolManager pooling;
+        private readonly PoolSystem pooling;
         private readonly FusionSystem fusion;
         private readonly CardGenerator generator = new CardGenerator();
         private List<Card> current;

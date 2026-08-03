@@ -7,10 +7,10 @@ using DefenseDot.Systems.Assets;
 namespace DefenseDot.Tests.EditMode
 {
     /// <summary>
-    /// PoolManager 테스트 — 자가/외부 반납·소유 연쇄·뿌리 절단·이중반납 가드·재부모를 방어한다.
+    /// PoolSystem 테스트 — 자가/외부 반납·소유 연쇄·뿌리 절단·이중반납 가드·재부모를 방어한다.
     /// Addressables 없이 런타임 프리팹 Pool + 내부 Retain seam 으로 검증한다.
     /// </summary>
-    public class PoolManagerTests
+    public class PoolSystemTests
     {
         private sealed class TestPooled : PooledBehaviour
         {
@@ -27,7 +27,7 @@ namespace DefenseDot.Tests.EditMode
             spawned.Clear();
         }
 
-        private static PoolManager NewManager() => new PoolManager(new AssetLoader());
+        private static PoolSystem NewManager() => new PoolSystem(new AssetLoader());
 
         private Pool NewPool()
         {
@@ -38,7 +38,7 @@ namespace DefenseDot.Tests.EditMode
         }
 
         // 꺼내 장부에 등록
-        private TestPooled Lend(PoolManager m, Pool pool, object owner = null)
+        private TestPooled Lend(PoolSystem m, Pool pool, object owner = null)
         {
             GameObject go = pool.Get();
             spawned.Add(go);
@@ -50,7 +50,7 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Dispose_OnObject_ReturnsToPool()
         {
-            PoolManager m = NewManager();
+            PoolSystem m = NewManager();
             Pool pool = NewPool();
             TestPooled a = Lend(m, pool);
 
@@ -62,7 +62,7 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Return_Twice_DoesNotDoubleDespawn()
         {
-            PoolManager m = NewManager();
+            PoolSystem m = NewManager();
             Pool pool = NewPool();
             TestPooled a = Lend(m, pool);
 
@@ -75,7 +75,7 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Return_Parent_CascadesToChildren()
         {
-            PoolManager m = NewManager();
+            PoolSystem m = NewManager();
             Pool pool = NewPool();
             TestPooled parent = Lend(m, pool);
             TestPooled child = Lend(m, pool, owner: parent);
@@ -88,7 +88,7 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Dispose_Manager_ReclaimsAll()
         {
-            PoolManager m = NewManager();
+            PoolSystem m = NewManager();
             Pool pool = NewPool();
             TestPooled a = Lend(m, pool);
             TestPooled b = Lend(m, pool);
@@ -104,7 +104,7 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Reparent_OldParentReturn_Ignores_NewParentReturn_Reclaims()
         {
-            PoolManager m = NewManager();
+            PoolSystem m = NewManager();
             Pool pool = NewPool();
             TestPooled parent1 = Lend(m, pool);
             TestPooled parent2 = Lend(m, pool);

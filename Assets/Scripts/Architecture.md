@@ -46,10 +46,10 @@
   HP를 0 미만으로 떨어뜨리지 않음). Anemic Domain Model(데이터만 있는 모델)을 피한다.
 - event는 `[field: System.NonSerialized]`로 직렬화에서 제외 → 상태 필드만 JSON 저장 가능.
 
-### 2.2 Service / Controller — 로직(SRP)
+### 2.2 System / Controller — 로직(SRP)
 | 클래스 | 위치 | 책임(단일) |
 |---|---|---|
-| `EconomyController` (POCO) | `Systems/Economy/` | `CombatModel.OnEnemyKilled` 구독 → 골드 가산 |
+| `EconomySystem` (POCO) | `Systems/Economy/` | `CombatModel.OnEnemyKilled` 구독 → 골드 가산 |
 | `CoreController` (MB) | `Systems/Core/` | 코어 GameObject ↔ `CoreModel` 연결, 월드 위치 제공 |
 | `EnemySpawner` (MB) | `Systems/Enemy/` | 웨이브 소환·풀링, 처치/도달 분기, `WaveModel` 갱신 |
 | `EnemyRegistry` (POCO) | `Systems/Enemy/` | 활성 적 목록(타겟 탐색·패배 판정용) |
@@ -107,7 +107,7 @@ IMovementStrategy (Systems/Enemy)
 ```
 MonsterActor 사망 → EnemySpawner.HandleEnemyKilled
    → CombatModel.RegisterKill(reward)        [사건 발행]
-   → EconomyController.HandleEnemyKilled      [구독]
+   → EconomySystem.HandleEnemyKilled      [구독]
    → EconomyModel.AddGold(reward)             [상태 변경]
    → EconomyModel.OnGoldChanged               [통지]
    → HUDPresenter.HandleGoldChanged → HUDView [화면]

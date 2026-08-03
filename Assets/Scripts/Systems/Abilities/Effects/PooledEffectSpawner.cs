@@ -4,12 +4,12 @@ using DefenseDot.Core.Pooling;
 
 namespace DefenseDot.Systems.Abilities.Effects
 {
-    /// <summary> PoolManager를 감싸 효과 엔티티·일회성 VFX를 풀링으로 제공합니다. </summary>
+    /// <summary> PoolSystem를 감싸 효과 엔티티·일회성 VFX를 풀링으로 제공합니다. </summary>
     public sealed class PooledEffectSpawner : IEffectSpawner
     {
-        private readonly PoolManager pool;
+        private readonly PoolSystem pool;
 
-        public PooledEffectSpawner(PoolManager poolManager) { pool = poolManager; }
+        public PooledEffectSpawner(PoolSystem poolSystem) { pool = poolSystem; }
 
         /// <summary> 효과 엔티티를 꺼내 스포너를 배선합니다. 실패 시 null. </summary>
         public T Spawn<T>(AssetReferenceGameObject asset) where T : AbilityEffect

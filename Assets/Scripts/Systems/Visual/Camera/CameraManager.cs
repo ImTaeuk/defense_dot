@@ -8,7 +8,7 @@ namespace DefenseDot.Systems.Visual.Camera
     /// 게임 전체가 쓰는 카메라 하나를 보유하고, 씬별 Config로 배치와 렌더 설정을 적용합니다.
     /// 무엇을 바라볼지는 결정하지 않으며, 씬 전환도 맡지 않습니다.
     /// </summary>
-    public sealed class CameraSystem : Singleton<CameraSystem>
+    public sealed class CameraManager : Singleton<CameraManager>
     {
         /// <summary> 이 시스템이 제어하는 카메라. 같은 오브젝트에 두고 인스펙터로 잇는다. </summary>
         [SerializeField] private UnityEngine.Camera targetCamera;

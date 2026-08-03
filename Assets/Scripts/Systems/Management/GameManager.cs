@@ -59,11 +59,11 @@ namespace DefenseDot.Systems.Management
         /// <summary>생존 적 수. 조건부 데미지(쇄도)용.</summary>
         public int AliveEnemyCount => spawner != null ? spawner.ActiveEnemyCount : 0;
 
-        // 서비스 (합성 루트가 생성·주입)
+        // 하위 시스템 (합성 루트가 생성·주입)
         private EnemyRegistry registry;
         private TargetFinder targetFinder;
-        private EconomyController economyController;
-        private DefenseDot.Core.Pooling.PoolManager poolManager;
+        private EconomySystem economySystem;
+        private DefenseDot.Core.Pooling.PoolSystem poolSystem;
 
         // DEBUG: 치트 도구 접근용 — 실제 타워 등장 시스템 구현 시 삭제
         /// <summary>적 타겟 탐색기입니다. Start 이후 non-null. (DEBUG)</summary>
@@ -90,15 +90,15 @@ namespace DefenseDot.Systems.Management
             // 코어 GameObject ↔ CoreModel 연결 (외부 의존이므로 Start에서)
             if (coreController != null) coreController.Bind(Core);
 
-            // 서비스 생성·배선
+            // 하위 시스템 생성·배선
             registry = new EnemyRegistry();
             targetFinder = new TargetFinder(registry);
-            economyController = new EconomyController(Economy, Combat);
-            economyController.Initialize();
+            economySystem = new EconomySystem(Economy, Combat);
+            economySystem.Initialize();
 
             // 능력 배선 전 풀 생성
             var assetLoader = new DefenseDot.Systems.Assets.AssetLoader();
-            poolManager = new DefenseDot.Core.Pooling.PoolManager(assetLoader);
+            poolSystem = new DefenseDot.Core.Pooling.PoolSystem(assetLoader);
 
             mode = CreateMode();
 
@@ -130,7 +130,7 @@ namespace DefenseDot.Systems.Management
                 var ctx = new DefenseDot.Domain.GameContext(
                     Economy, Core, Wave, Score, RoundTimer, Flow, Level,
                     modeBootstrap.EnemyDisplayCapacity, towerRoster,
-                    modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget, poolManager,
+                    modeBootstrap.PlacementController, cardConfig, abilityPool, coreTarget, poolSystem,
                     fusion);
                 uiRoot.Inject(ctx);
             }
@@ -177,7 +177,7 @@ namespace DefenseDot.Systems.Management
             }
             Vector3 origin = spawner != null ? spawner.transform.position : transform.position;
             Vector3 center = coreController != null ? coreController.CorePosition : transform.position;
-            var ctx = new ModeContext(Core, Economy, targetFinder, origin, center, Flow, this, poolManager);
+            var ctx = new ModeContext(Core, Economy, targetFinder, origin, center, Flow, this, poolSystem);
             return modeBootstrap.CreateMode(ctx);
         }
 
@@ -220,8 +220,8 @@ namespace DefenseDot.Systems.Management
         private void OnDestroy()
         {
             if (SceneLoadManager.Instance != null) SceneLoadManager.Instance.UnregisterObserver(this);
-            economyController?.Dispose();
-            poolManager?.Dispose();
+            economySystem?.Dispose();
+            poolSystem?.Dispose();
             if (Core != null) Core.OnCoreDestroyed -= HandleCoreDestroyed;
             if (Wave != null) Wave.OnWaveCleared -= HandleVictory;
             if (Combat != null) Combat.OnEnemyKilled -= HandleEnemyKilledForLevel;

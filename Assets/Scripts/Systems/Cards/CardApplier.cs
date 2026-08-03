@@ -8,7 +8,7 @@ namespace DefenseDot.Systems.Cards
     public static class CardApplier
     {
         /// <summary> 카드 선택을 반영합니다. 신규/합성은 이펙트를 예열한 뒤 적용하고, 레벨 카드는 목표 레벨까지 올립니다. </summary>
-        public static async UniTask ApplyAsync(IAbilityCommandTarget core, Card card, PoolManager pool, FusionSystem fusion = null)
+        public static async UniTask ApplyAsync(IAbilityCommandTarget core, Card card, PoolSystem pool, FusionSystem fusion = null)
         {
             if (card.applyType == CardApplyType.New)
             {

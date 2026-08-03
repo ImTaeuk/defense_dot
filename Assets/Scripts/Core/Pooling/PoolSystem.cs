@@ -11,7 +11,7 @@ namespace DefenseDot.Core.Pooling
     /// 대여 장부·소유 연쇄·뿌리 절단으로 누수 없이 정리합니다. GameContext 가 보유합니다.
     /// 타이밍은 도메인이(구체 타입이 끝나는 지점에서 Dispose), 메커니즘·안전망은 이 조율자가 맡습니다.
     /// </summary>
-    public sealed class PoolManager : System.IDisposable
+    public sealed class PoolSystem : System.IDisposable
     {
         private readonly AssetLoader assetLoader;
         private readonly Dictionary<object, Pool> pools = new Dictionary<object, Pool>();      // RuntimeKey → 풀
@@ -22,7 +22,7 @@ namespace DefenseDot.Core.Pooling
         private readonly Dictionary<IPoolableObject, IPoolableObject> parentOf                 // 자식 → 현재 부모
             = new Dictionary<IPoolableObject, IPoolableObject>();
 
-        public PoolManager(AssetLoader assetLoader)
+        public PoolSystem(AssetLoader assetLoader)
         {
             this.assetLoader = assetLoader;
         }

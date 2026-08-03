@@ -4,14 +4,14 @@ using DefenseDot.Systems.Visual.Camera;
 
 namespace DefenseDot.Tests.EditMode
 {
-    public class CameraSystemTests
+    public class CameraManagerTests
     {
         [Test]
         public void Bind_PositionsCameraBehindCenter()
         {
-            var go = new GameObject("CameraSystem");
+            var go = new GameObject("CameraManager");
             var cam = go.AddComponent<Camera>();
-            var system = go.AddComponent<CameraSystem>();
+            var system = go.AddComponent<CameraManager>();
             SetTargetCamera(system, cam);
 
             var config = ScriptableObject.CreateInstance<CameraRigConfig>();
@@ -33,9 +33,9 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void PitchSetter_ClampsToConfigRange()
         {
-            var go = new GameObject("CameraSystem");
+            var go = new GameObject("CameraManager");
             var cam = go.AddComponent<Camera>();
-            var system = go.AddComponent<CameraSystem>();
+            var system = go.AddComponent<CameraManager>();
             SetTargetCamera(system, cam);
 
             var config = ScriptableObject.CreateInstance<CameraRigConfig>();
@@ -54,9 +54,9 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Bind_AppliesRenderSettings()
         {
-            var go = new GameObject("CameraSystem");
+            var go = new GameObject("CameraManager");
             var cam = go.AddComponent<Camera>();
-            var system = go.AddComponent<CameraSystem>();
+            var system = go.AddComponent<CameraManager>();
             SetTargetCamera(system, cam);
 
             var config = ScriptableObject.CreateInstance<CameraRigConfig>();
@@ -77,9 +77,9 @@ namespace DefenseDot.Tests.EditMode
         [Test]
         public void Bind_SkipsPoseWhenUsePoseIsFalse()
         {
-            var go = new GameObject("CameraSystem");
+            var go = new GameObject("CameraManager");
             var cam = go.AddComponent<Camera>();
-            var system = go.AddComponent<CameraSystem>();
+            var system = go.AddComponent<CameraManager>();
             SetTargetCamera(system, cam);
             cam.transform.position = new Vector3(7f, 8f, 9f);
 
@@ -100,7 +100,7 @@ namespace DefenseDot.Tests.EditMode
         /// <summary> private [SerializeField] targetCamera를 배선합니다. </summary>
         /// <param name="system">배선할 대상</param>
         /// <param name="camera">연결할 카메라</param>
-        private static void SetTargetCamera(CameraSystem system, Camera camera)
+        private static void SetTargetCamera(CameraManager system, Camera camera)
         {
             var so = new UnityEditor.SerializedObject(system);
             so.FindProperty("targetCamera").objectReferenceValue = camera;

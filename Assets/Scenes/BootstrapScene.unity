@@ -419,7 +419,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 862fbcd44adb24b40abe81b4b6d5dc3f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Camera.CameraSystem
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Camera.CameraManager
   targetCamera: {fileID: 860711656}
   defaultConfig: {fileID: 11400000, guid: 77ade406d3e438b469d31714ab15faa7, type: 2}
 --- !u!114 &860711654

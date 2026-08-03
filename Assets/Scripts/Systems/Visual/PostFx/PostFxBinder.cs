@@ -50,8 +50,8 @@ namespace DefenseDot.Systems.Visual.PostFx
         /// <summary> 현재 카메라 거리로 DoF focusDistance를 즉시 갱신합니다. </summary>
         private void ApplyFocus()
         {
-            if (cachedDof == null || CameraSystem.Instance == null) return;
-            cachedDof.focusDistance.value = ResolveFocusDistance(CameraSystem.Instance.Distance);
+            if (cachedDof == null || CameraManager.Instance == null) return;
+            cachedDof.focusDistance.value = ResolveFocusDistance(CameraManager.Instance.Distance);
         }
 
         /// <summary>
