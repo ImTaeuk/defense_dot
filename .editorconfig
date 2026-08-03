@@ -1,0 +1,180 @@
+# ============================================================
+# defense_dot 코딩 컨벤션 — IDE 레벨 강제
+#
+# 규약 원문(SSOT)은 ~/.claude/CLAUDE.md 의 「코딩 컨벤션」 절이다.
+# 이 파일은 그중 .editorconfig 로 기계 판정이 가능한 항목만 옮긴 것이며,
+# 적용 범위는 ~/.claude/hooks/_convention_scope.py 와 동일하게 유지한다.
+#
+# 여기서 표현할 수 없어 lint 스킬이 담당하는 항목:
+#   - bool 접두(is/has/can/use/need/should) — 다중 접두를 표현 불가
+#   - UI 타입 UI 접두, 이벤트 On 접두, 구독 핸들러 Handle 접두
+#   - Manager/Controller/Repository/Service 접미 금지
+#   - 반복문 본문 한 줄이어도 중괄호 필수 (if 와 규칙이 달라 분리 불가)
+#   - <summary> 필수, 한국어 주석, 런타임 LINQ 금지, Console.Assert
+#   - 파일 끝 trailing newline 없음
+#     → 기존 파일 99%가 개행을 갖고 있어 여기서 강제하면 전 파일에 diff 가 난다.
+#       신규 코드만 구분해 적용할 수 있는 lint 스킬(A-10) 이 담당한다.
+# ============================================================
+
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{json,yml,yaml,asmdef}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+# ============================================================
+# C# 기본 규칙 — 우리 코드(Assets/Scripts, Assets/Tests)에 적용된다.
+# 외부 코드는 파일 하단 섹션에서 전부 해제한다.
+# 테스트 코드도 프로덕션과 동일한 규칙을 적용한다(면제 없음).
+# ============================================================
+[*.cs]
+end_of_line = crlf
+
+# ── 서식: Allman 중괄호 ──────────────────────────────
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_between_query_expression_clauses = true
+
+# ── 서식: 들여쓰기 ──────────────────────────────────
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_block_contents = true
+
+# ── 서식: 한 줄에 몰아쓰기 금지 ──────────────────────
+csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = true
+
+# ── using 배치 ─────────────────────────────────────
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+# ── 접근 제한자 항상 명시 (IDE0040) ──────────────────
+dotnet_style_require_accessibility_modifiers = always:error
+
+# ── expression-bodied: 메서드 금지, 프로퍼티는 허용 ───
+csharp_style_expression_bodied_methods = false:error
+csharp_style_expression_bodied_constructors = false:error
+csharp_style_expression_bodied_operators = false:error
+csharp_style_expression_bodied_local_functions = false:error
+csharp_style_expression_bodied_properties = when_on_single_line:silent
+csharp_style_expression_bodied_indexers = when_on_single_line:silent
+csharp_style_expression_bodied_accessors = when_on_single_line:silent
+
+# ── switch statement 만 사용 (switch expression 금지) ─
+csharp_style_prefer_switch_expression = false:error
+csharp_style_prefer_pattern_matching = false:silent
+
+# ── using 은 블록 방식만 (using var 금지) ─────────────
+csharp_prefer_simple_using_statement = false:error
+
+# ── 중괄호: 여러 줄이면 필수 (한 줄 if 는 생략 허용) ──
+csharp_prefer_braces = when_multiline:warning
+
+# ── 진단 심각도 ─────────────────────────────────────
+dotnet_diagnostic.IDE0040.severity = error    # 접근 제한자 누락
+dotnet_diagnostic.IDE0022.severity = error    # 메서드 expression body
+dotnet_diagnostic.IDE0063.severity = error    # using var
+dotnet_diagnostic.IDE0066.severity = error    # switch expression
+dotnet_diagnostic.IDE1006.severity = error    # 네이밍 규칙 위반
+dotnet_diagnostic.IDE0011.severity = warning  # 중괄호
+
+# ============================================================
+# 네이밍 규칙
+# Roslyn 은 위에서부터 순서대로 평가하고 처음 매칭된 규칙을 적용한다.
+# 따라서 구체적인 규칙(const, async)을 일반 규칙보다 먼저 둔다.
+# ============================================================
+
+# ── 1) 인터페이스: I 접두 + PascalCase ────────────────
+dotnet_naming_rule.interface_i_prefix.severity = error
+dotnet_naming_rule.interface_i_prefix.symbols = symbol_interface
+dotnet_naming_rule.interface_i_prefix.style = style_i_prefix_pascal
+dotnet_naming_symbols.symbol_interface.applicable_kinds = interface
+dotnet_naming_symbols.symbol_interface.applicable_accessibilities = *
+dotnet_naming_style.style_i_prefix_pascal.required_prefix = I
+dotnet_naming_style.style_i_prefix_pascal.capitalization = pascal_case
+
+# ── 2) const: UPPER_CASE_WITH_UNDERSCORES ────────────
+dotnet_naming_rule.const_all_upper.severity = error
+dotnet_naming_rule.const_all_upper.symbols = symbol_const
+dotnet_naming_rule.const_all_upper.style = style_all_upper_snake
+dotnet_naming_symbols.symbol_const.applicable_kinds = field
+dotnet_naming_symbols.symbol_const.applicable_accessibilities = *
+dotnet_naming_symbols.symbol_const.required_modifiers = const
+dotnet_naming_style.style_all_upper_snake.capitalization = all_upper
+dotnet_naming_style.style_all_upper_snake.word_separator = _
+
+# ── 3) 비동기 메서드: Async 접미 ──────────────────────
+dotnet_naming_rule.async_method_suffix.severity = error
+dotnet_naming_rule.async_method_suffix.symbols = symbol_async_method
+dotnet_naming_rule.async_method_suffix.style = style_async_suffix_pascal
+dotnet_naming_symbols.symbol_async_method.applicable_kinds = method
+dotnet_naming_symbols.symbol_async_method.applicable_accessibilities = *
+dotnet_naming_symbols.symbol_async_method.required_modifiers = async
+dotnet_naming_style.style_async_suffix_pascal.required_suffix = Async
+dotnet_naming_style.style_async_suffix_pascal.capitalization = pascal_case
+
+# ── 4) 타입: PascalCase ──────────────────────────────
+dotnet_naming_rule.type_pascal.severity = error
+dotnet_naming_rule.type_pascal.symbols = symbol_type
+dotnet_naming_rule.type_pascal.style = style_pascal
+dotnet_naming_symbols.symbol_type.applicable_kinds = class, struct, enum, delegate
+dotnet_naming_symbols.symbol_type.applicable_accessibilities = *
+dotnet_naming_style.style_pascal.capitalization = pascal_case
+
+# ── 5) 메서드·프로퍼티·이벤트: PascalCase ─────────────
+dotnet_naming_rule.member_pascal.severity = error
+dotnet_naming_rule.member_pascal.symbols = symbol_member
+dotnet_naming_rule.member_pascal.style = style_pascal
+dotnet_naming_symbols.symbol_member.applicable_kinds = method, property, event
+dotnet_naming_symbols.symbol_member.applicable_accessibilities = *
+
+# ── 6) private·protected 필드: 순수 camelCase (m_·_ 금지) ─
+dotnet_naming_rule.private_field_camel.severity = error
+dotnet_naming_rule.private_field_camel.symbols = symbol_private_field
+dotnet_naming_rule.private_field_camel.style = style_camel
+dotnet_naming_symbols.symbol_private_field.applicable_kinds = field
+dotnet_naming_symbols.symbol_private_field.applicable_accessibilities = private, protected, private_protected, protected_internal
+dotnet_naming_style.style_camel.capitalization = camel_case
+
+# ── 7) 지역변수·파라미터: camelCase ───────────────────
+dotnet_naming_rule.local_camel.severity = error
+dotnet_naming_rule.local_camel.symbols = symbol_local
+dotnet_naming_rule.local_camel.style = style_camel
+dotnet_naming_symbols.symbol_local.applicable_kinds = parameter, local
+dotnet_naming_symbols.symbol_local.applicable_accessibilities = *
+
+# ============================================================
+# 외부 코드 — 컨벤션 적용 대상이 아니다.
+# 우리 스타일로 고치면 에셋 업데이트 때 전부 충돌한다.
+# 이 목록은 ~/.claude/hooks/_convention_scope.py 와 함께 갱신한다.
+# ============================================================
+[{Assets/ExternalResources,Assets/Bitgem,Assets/Reference,Assets/Plugins,Assets/Standard Assets,Assets/ThirdParty}/**.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.IDE0040.severity = none
+dotnet_diagnostic.IDE0022.severity = none
+dotnet_diagnostic.IDE0063.severity = none
+dotnet_diagnostic.IDE0066.severity = none
+dotnet_diagnostic.IDE1006.severity = none
+dotnet_diagnostic.IDE0011.severity = none
+
+[Assets/TextMesh Pro/**.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+
+# 자동 생성 파일
+[*.{Designer,g,generated}.cs]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
