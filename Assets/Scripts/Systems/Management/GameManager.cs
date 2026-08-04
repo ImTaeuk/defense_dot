@@ -117,31 +117,19 @@ namespace DefenseDot.Systems.Management
             Core.OnCoreDestroyed += HandleCoreDestroyed;
             Wave.OnWaveCleared += HandleVictory;
 
-            // 레벨·카드 시스템 (Arena 전용) — CombatModel 처치 → LevelModel 레벨업
-            var arenaBoot = modeSystem as ArenaModeSystem;
-            DefenseDot.Systems.Cards.ArenaCardConfig cardConfig = arenaBoot != null ? arenaBoot.CardConfig : null;
-            DefenseDot.Systems.Cards.AbilityPool abilityPool = arenaBoot != null ? arenaBoot.AbilityPool : null;
-            System.Func<int, int> curve;
-            if (cardConfig != null) curve = cardConfig.KillsToNextLevel;
-            else curve = lv => Mathf.Max(3, 8 + lv * 4);
-            Level = new LevelModel(curve);
+            // 모드 전용 자원 수집 — 무엇이 필요한지는 모드가 안다
+            var builder = new DefenseDot.Domain.GameContextBuilder(
+                Economy, Core, Wave, Score, RoundTimer, Flow,
+                modeSystem != null ? modeSystem.EnemyDisplayCapacity : 0, towerRoster, poolSystem);
+            if (modeSystem != null) modeSystem.FillContext(builder);
+
+            // 레벨 곡선은 모드가 채운 카드 설정이 갖는다 — CombatModel 처치 → LevelModel 레벨업
+            Level = new LevelModel(builder.CardConfig);
+            builder.Level = Level;
             Combat.OnEnemyKilled += HandleEnemyKilledForLevel;
 
             // UI 연결 (UI 합성 루트에 GameContext 주입)
-            if (uiRoot != null)
-            {
-                DefenseDot.Systems.Abilities.IAbilityCommandTarget coreTarget = arenaBoot != null ? arenaBoot.TowerAbility : null;
-                DefenseDot.Systems.Cards.FusionRecipeSet universal = arenaBoot != null ? arenaBoot.UniversalLineage : null;
-                DefenseDot.Systems.Cards.FusionRecipeSet character = arenaBoot != null ? arenaBoot.CharacterLineage : null;
-                var fusion = new DefenseDot.Systems.Cards.FusionSystem(
-                    new[] { universal, character });   // null 세트는 FusionSystem이 건너뜀
-                var ctx = new DefenseDot.Domain.GameContext(
-                    Economy, Core, Wave, Score, RoundTimer, Flow, Level,
-                    modeSystem.EnemyDisplayCapacity, towerRoster,
-                    modeSystem.PlacementController, cardConfig, abilityPool, coreTarget, poolSystem,
-                    fusion);
-                uiRoot.Inject(ctx);
-            }
+            if (uiRoot != null) uiRoot.Inject(builder.Build());
 
             // 로딩 개시 — 준비가 끝나면 OnLoadingStateChanged가 게임을 시작한다
             if (SceneLoadManager.Instance == null)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using DefenseDot.Data;
+using DefenseDot.Domain;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Arena;
 using DefenseDot.Systems.Tower;
@@ -41,21 +42,12 @@ namespace DefenseDot.Systems.Mode
 
         private TowerAbilitySystem towerAbility;
 
-        /// <summary> 카드 허브 설정. </summary>
-        public DefenseDot.Systems.Cards.ArenaCardConfig CardConfig => cardConfig;
-
-        /// <summary> 신규 카드 능력 풀. </summary>
-        public DefenseDot.Systems.Cards.AbilityPool AbilityPool => abilityPool;
-
-        /// <summary> 타워 능력 시스템(카드 명령 대상). CreateMode 이후 non-null. </summary>
+        /// <summary> 타워 능력 시스템. 현재 소비처는 에디터 치트 도구뿐입니다. </summary>
         public TowerAbilitySystem TowerAbility => towerAbility;
 
-        /// <summary> 캐릭터 전용 계보입니다(없으면 null). </summary>
+        /// <summary> 캐릭터 전용 계보입니다(없으면 null). 치트 도구와 FillContext 가 씁니다. </summary>
         public DefenseDot.Systems.Cards.FusionRecipeSet CharacterLineage =>
             characterData != null ? characterData.CharacterLineage : null;
-
-        /// <summary> 활성 공통 계보 세트입니다(없으면 null). </summary>
-        public DefenseDot.Systems.Cards.FusionRecipeSet UniversalLineage => universalLineage;
 
         /// <summary> 아레나 모드의 적 수 표시 한계(수용 한계)입니다. </summary>
         public override int EnemyDisplayCapacity =>
@@ -79,6 +71,19 @@ namespace DefenseDot.Systems.Mode
             BindVisual(ctx);
             SetupTower(ctx);
             return new ArenaMode(arenaModel, ctx.CoreCenter, height);
+        }
+
+        /// <summary> 카드 허브 설정·능력 풀·계보 합성·능력 명령 대상을 채웁니다. </summary>
+        /// <param name="builder">조립 중인 UI 컨텍스트</param>
+        public override void FillContext(GameContextBuilder builder)
+        {
+            builder.CardConfig = cardConfig;
+            builder.AbilityPool = abilityPool;
+            builder.CoreTarget = towerAbility;
+
+            // 계보를 소유한 쪽이 합성 시스템을 만든다. null 세트는 FusionSystem 이 건너뛴다
+            builder.Fusion = new DefenseDot.Systems.Cards.FusionSystem(
+                new[] { universalLineage, CharacterLineage });
         }
 
         /// <summary> 타워 능력 시스템을 한 프레임 진행시킵니다. </summary>

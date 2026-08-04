@@ -6,11 +6,28 @@ namespace DefenseDot.Systems.Cards
     /// <summary> 레벨업 시 보유/슬롯/풀을 보고 카드 N장을 생성. </summary>
     public sealed class CardGenerator
     {
-        private readonly System.Func<float> rng;
+        /// <summary> 모든 뽑기를 대체할 고정값. useFixedRoll 이 참일 때만 쓴다. </summary>
+        private readonly float fixedRoll;
 
-        public CardGenerator(System.Func<float> rng = null)
+        private readonly bool useFixedRoll;
+
+        /// <summary> 실제 난수로 뽑습니다. </summary>
+        public CardGenerator()
         {
-            this.rng = rng ?? (() => UnityEngine.Random.value);
+        }
+
+        /// <summary> 모든 뽑기를 고정값으로 대체합니다. (테스트용) </summary>
+        /// <param name="fixedRoll">0~1 사이 고정값</param>
+        public CardGenerator(float fixedRoll)
+        {
+            this.fixedRoll = fixedRoll;
+            useFixedRoll = true;
+        }
+
+        /// <summary> 난수를 하나 뽑습니다. </summary>
+        private float Roll()
+        {
+            return useFixedRoll ? fixedRoll : UnityEngine.Random.value;
         }
 
         /// <summary> 보유/슬롯/풀/합성을 보고 카드 N장을 생성합니다. 가용 합성이 있으면 우선 제시. </summary>
@@ -49,7 +66,7 @@ namespace DefenseDot.Systems.Cards
                 bool canLv = levelPool.Count > 0;
                 if (!canNew && !canLv) break;
 
-                bool pickNew = canNew && (!canLv || rng() < newChance);
+                bool pickNew = canNew && (!canLv || Roll() < newChance);
                 int bonusLevels = RollBonusLevels(config);
                 CardTier tier = bonusLevels >= 2 ? CardTier.SuperLucky
                     : bonusLevels == 1 ? CardTier.Lucky
@@ -78,7 +95,7 @@ namespace DefenseDot.Systems.Cards
         private int RollBonusLevels(ArenaCardConfig config)
         {
             if (!config.enableLucky) return 0;
-            float roll = rng();
+            float roll = Roll();
             if (roll < config.superLuckyChance) return 2;
             if (roll < config.superLuckyChance + config.luckyChance) return 1;
             return 0;
@@ -86,7 +103,7 @@ namespace DefenseDot.Systems.Cards
 
         private int Index(int count)
         {
-            int idx = (int)(rng() * count);
+            int idx = (int)(Roll() * count);
             return idx >= count ? count - 1 : idx;
         }
 

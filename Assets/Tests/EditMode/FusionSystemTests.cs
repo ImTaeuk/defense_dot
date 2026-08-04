@@ -144,7 +144,7 @@ namespace DefenseDot.Tests.EditMode
             config.newCardChanceEarly = 1f;
             config.newCardChanceLate = 1f;
 
-            List<Card> choices = new CardGenerator(() => 0f).Generate(core.Loadout, pool, config, 1, svc);
+            List<Card> choices = new CardGenerator(0f).Generate(core.Loadout, pool, config, 1, svc);
 
             foreach (Card c in choices)
                 Assert.AreNotSame(a, c.data, "합성으로 소진된 재료는 카드로 재등장하면 안 됨");

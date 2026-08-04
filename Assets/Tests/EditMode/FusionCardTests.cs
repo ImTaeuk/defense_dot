@@ -37,7 +37,7 @@ namespace DefenseDot.Tests.EditMode
             ArenaCardConfig config = ScriptableObject.CreateInstance<ArenaCardConfig>();
             config.choiceCount = 3;
 
-            var choices = new CardGenerator(() => 0.5f).Generate(lo, null, config, 1, Fusion(a, b, r));
+            var choices = new CardGenerator(0.5f).Generate(lo, null, config, 1, Fusion(a, b, r));
 
             bool hasFusion = false;
             foreach (var c in choices)
@@ -61,7 +61,7 @@ namespace DefenseDot.Tests.EditMode
             ArenaCardConfig config = ScriptableObject.CreateInstance<ArenaCardConfig>();
             config.choiceCount = 3;
 
-            var choices = new CardGenerator(() => 0.0f).Generate(lo, pool, config, 1, Fusion(a, b, r));
+            var choices = new CardGenerator(0.0f).Generate(lo, pool, config, 1, Fusion(a, b, r));
 
             foreach (var c in choices)
                 Assert.IsFalse(c.applyType == CardApplyType.New && c.data == r, "합성 결과는 일반 New 카드로 제시되면 안 됨");

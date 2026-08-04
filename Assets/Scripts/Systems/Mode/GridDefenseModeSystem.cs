@@ -1,6 +1,7 @@
 // 그리드 디펜스 모드 부트스트랩 — MapData·타워 배치 소유, GridDefenseMode 생성
 using UnityEngine;
 using DefenseDot.Data;
+using DefenseDot.Domain;
 using DefenseDot.Systems.Tower;
 
 namespace DefenseDot.Systems.Mode
@@ -23,8 +24,12 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 그리드 모드의 코어(본진) 최대 HP입니다. </summary>
         public override float CoreMaxHp => coreHp;
 
-        /// <summary> 그리드 모드의 타워 배치 컨트롤러입니다. </summary>
-        public override TowerPlacementController PlacementController => placement;
+        /// <summary> 타워 배치 컨트롤러를 채웁니다. </summary>
+        /// <param name="builder">조립 중인 UI 컨텍스트</param>
+        public override void FillContext(GameContextBuilder builder)
+        {
+            builder.Placement = placement;
+        }
 
         /// <summary> 카메라 중심을 맵의 기하 중심으로 계산합니다. (맵 원점이 좌하단이라 보정) </summary>
         protected override Vector3 GetCameraCenter(in ModeContext ctx)

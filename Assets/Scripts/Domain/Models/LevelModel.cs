@@ -1,9 +1,20 @@
+using DefenseDot.Systems.Cards;
+
 namespace DefenseDot.Domain.Models
 {
     /// <summary> 플레이어 레벨·처치 누적·레벨업 통지를 소유하는 모델. </summary>
     public sealed class LevelModel : BaseModel
     {
-        private readonly System.Func<int, int> curve;
+        /// <summary> 카드 설정이 없을 때 쓰는 기본 곡선. ArenaCardConfig 의 기본값과 같게 유지한다. </summary>
+        private const int DEFAULT_CURVE_BASE = 8;
+
+        private const int DEFAULT_CURVE_PER_LEVEL = 4;
+
+        private const int MIN_KILLS = 3;
+
+        /// <summary> 레벨 곡선을 가진 카드 설정. 없으면 기본 곡선으로 계산한다. </summary>
+        private readonly ArenaCardConfig config;
+
         private readonly ReactiveProperty<LevelProgress> progress;
 
         public int Level { get; private set; } = 1;
@@ -16,10 +27,12 @@ namespace DefenseDot.Domain.Models
 
         public event System.Action OnLevelUp;
 
-        public LevelModel(System.Func<int, int> curve)
+        /// <summary> 레벨 곡선을 가진 카드 설정을 받습니다. null 이면 기본 곡선을 씁니다. </summary>
+        /// <param name="config">곡선 계수를 가진 카드 설정</param>
+        public LevelModel(ArenaCardConfig config)
         {
-            this.curve = curve;
-            KillsToNextLevel = curve(Level);
+            this.config = config;
+            KillsToNextLevel = KillsFor(Level);
             progress = new ReactiveProperty<LevelProgress>(Snapshot());
         }
 
@@ -32,7 +45,7 @@ namespace DefenseDot.Domain.Models
             {
                 Kills -= KillsToNextLevel;
                 Level++;
-                KillsToNextLevel = curve(Level);
+                KillsToNextLevel = KillsFor(Level);
                 PendingLevelUps++;
                 leveled = true;
             }
@@ -46,6 +59,16 @@ namespace DefenseDot.Domain.Models
             if (PendingLevelUps <= 0) return false;
             PendingLevelUps--;
             return true;
+        }
+
+        /// <summary> 해당 레벨에서 다음 레벨까지 필요한 처치 수입니다. </summary>
+        /// <param name="level">기준 레벨</param>
+        private int KillsFor(int level)
+        {
+            if (config != null)
+                return config.KillsToNextLevel(level);
+
+            return System.Math.Max(MIN_KILLS, DEFAULT_CURVE_BASE + level * DEFAULT_CURVE_PER_LEVEL);
         }
 
         private LevelProgress Snapshot() => new LevelProgress(Level, Kills, KillsToNextLevel);
