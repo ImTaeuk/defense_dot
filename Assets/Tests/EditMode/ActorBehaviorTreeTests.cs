@@ -17,12 +17,29 @@ namespace DefenseDot.Tests.EditMode
             public event System.Action<ActorState> StateChanged;
         }
 
+        /// <summary> 액터를 Moving 으로 바꾸는 테스트용 노드. </summary>
+        private sealed class SetMovingAction : ActionNode
+        {
+            private readonly IActor actor;
+
+            public SetMovingAction(IActor actor)
+            {
+                this.actor = actor;
+            }
+
+            public override NodeStatus Evaluate(Blackboard blackboard)
+            {
+                actor.SetState(ActorState.Moving);
+                return NodeStatus.Running;
+            }
+        }
+
         /// <summary> primary가 Moving을 쓰는 최소 파생 트리. </summary>
         private sealed class TestBehaviorTree : ActorBehaviorTree
         {
             protected override BTNode BuildPrimary()
             {
-                return BT.Action(bb => { actor.SetState(ActorState.Moving); return NodeStatus.Running; });
+                return new SetMovingAction(actor);
             }
         }
 

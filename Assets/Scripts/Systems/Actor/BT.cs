@@ -8,11 +8,5 @@ namespace DefenseDot.Systems.Actor
 
         /// <summary> 자식을 순서대로 평가하는 Selector를 만듭니다. </summary>
         public static BTNode Selector(params BTNode[] children) { return new Selector(children); }
-
-        /// <summary> 술어 조건 리프를 만듭니다. </summary>
-        public static BTNode Condition(System.Func<Blackboard, bool> predicate) { return new ConditionLeaf(predicate); }
-
-        /// <summary> 동작 리프를 만듭니다. </summary>
-        public static BTNode Action(System.Func<Blackboard, NodeStatus> action) { return new ActionLeaf(action); }
     }
 }

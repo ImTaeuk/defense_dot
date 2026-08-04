@@ -46,16 +46,9 @@ namespace DefenseDot.Systems.Actor
         {
             return BT.Selector(
                 BT.Sequence(
-                    BT.Condition(bb => bb.stunTimer > 0f),
-                    BT.Action(TickStun)),
+                    new IsStunnedCondition(),
+                    new TickStunAction(actor)),
                 BuildPrimary());
-        }
-
-        private NodeStatus TickStun(Blackboard bb)
-        {
-            bb.stunTimer -= Time.deltaTime;       // 외부가 기록한 기절 소비
-            actor.SetState(ActorState.Stunned);
-            return NodeStatus.Running;            // primary 차단
         }
 
         /// <summary> 액터별 주 행동을 조립합니다. (오버라이드 지점) </summary>
