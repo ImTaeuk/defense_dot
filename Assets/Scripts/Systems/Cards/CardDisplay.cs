@@ -14,7 +14,7 @@ namespace DefenseDot.Systems.Cards
     }
 
     /// <summary> Card → 표시용 데이터 변환(순수). </summary>
-    public static class CardPresentation
+    public static class CardDisplayBuilder
     {
         public static CardDisplay Build(in Card c)
         {

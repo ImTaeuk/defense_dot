@@ -6,13 +6,13 @@ namespace DefenseDot.Systems.Mode
 {
     /// <summary>
     /// 씬이 어떤 모드인지 정하고 그 모드를 만들어 돌리는 베이스입니다.
-    /// 연출 배선은 ModePresentationBinder 에 맡기고, 무엇을 비출지(중심)만 정해 넘깁니다.
+    /// 연출 배선은 ModeVisualBinder 에 맡기고, 무엇을 비출지(중심)만 정해 넘깁니다.
     /// (인터페이스 대신 추상 MonoBehaviour — 인스펙터 직렬화)
     /// </summary>
     public abstract class ModeSystem : MonoBehaviour
     {
         /// <summary> 이 씬의 연출 배선. 없으면 연출 없이 진행한다. </summary>
-        [SerializeField] private ModePresentationBinder presentation;
+        [SerializeField] private ModeVisualBinder visual;
 
         /// <summary> 공통 입력을 받아 이 씬의 모드를 생성합니다. </summary>
         public abstract IGameMode CreateMode(ModeContext ctx);
@@ -34,12 +34,12 @@ namespace DefenseDot.Systems.Mode
 
         /// <summary> 연출 배선을 요청합니다. 중심만 이쪽이 정하고 나머지는 바인더가 맡습니다. </summary>
         /// <param name="ctx">코어 중심 등을 담은 모드 컨텍스트</param>
-        protected void BindPresentation(in ModeContext ctx)
+        protected void BindVisual(in ModeContext ctx)
         {
-            if (presentation == null)
+            if (visual == null)
                 return;
 
-            presentation.Bind(GetCameraCenter(ctx));
+            visual.Bind(GetCameraCenter(ctx));
         }
 
         /// <summary> 카메라가 바라볼 중심을 반환합니다. 기본은 코어 중심(모드별 재정의 가능). </summary>

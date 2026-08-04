@@ -11,12 +11,12 @@
 `unity-standards/architecture.md §5`의 권장 의존성 방향을 그대로 구현한다.
 
 ```
-[Presentation] ──직접호출──▶ [Systems] ──직접호출──▶ [Domain]
-   Presenter/View        Binder/Controller/System      Model (POCO, SSOT)
-       ▲───────────── 이벤트(Observer, 역방향 통신) ─────────────┘
+[UI] ──직접호출──▶ [Systems] ──직접호출──▶ [Domain]
+ Presenter/View     Binder/Controller/System    Model (POCO, SSOT)
+    ▲──────────── 이벤트(Observer, 역방향 통신) ───────────┘
 
-               Composition Root = GameManager
-        (모든 Model·Service 생성·주입, 상향 의존 차단)
+            Composition Root = GameManager
+     (모든 Model·하위 시스템 생성·주입, 상향 의존 차단)
 ```
 
 - **직접 호출은 상위→하위 단방향만** 허용한다.
@@ -63,7 +63,7 @@
 | `MonsterActor` | `IMovableActor`, `ITargetable`, `IPoolable` | 전략 기반 이동, 처치/도달 통지, 풀링 |
 | `TowerActor` | `ICombatActor`, `IPoolable` | 타겟 탐색·공격 |
 
-### 2.4 Presentation — 화면 갱신
+### 2.4 UI — 화면 갱신
 | 클래스 | 구독 대상 |
 |---|---|
 | `HUDPresenter` | `EconomyModel`/`CoreModel`/`WaveModel` |
@@ -117,7 +117,7 @@ MonsterActor 사망 → EnemySpawner.HandleEnemyKilled
 
 ### 4.2 합성 루트 생명주기 (GameManager)
 - `Awake`: 도메인 Model 5개 생성(외부 의존 없는 최하위 먼저).
-- `Start`: Service 생성·주입, 모드 결정, 승패 구독, HUD 연결, `spawner.BeginWaves()`.
+- `Start`: 하위 시스템 생성·주입, 모드 결정, 승패 구독, HUD 연결, `spawner.BeginWaves()`.
 - `Update`: 아레나 수용 한계 패배 폴링.
 - `OnDestroy`: 구독 해제(`Dispose`) — Lapsed Listener 방지.
 

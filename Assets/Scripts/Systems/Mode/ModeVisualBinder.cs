@@ -9,7 +9,7 @@ namespace DefenseDot.Systems.Mode
     /// 씬이 가진 연출 자원(카메라 설정·포스트FX 프리셋)을 전역 카메라와 볼륨에 잇습니다.
     /// 무엇을 비출지(중심)는 모드가 정해 넘기며, 이 타입은 판단하지 않습니다.
     /// </summary>
-    public sealed class ModePresentationBinder : MonoBehaviour
+    public sealed class ModeVisualBinder : MonoBehaviour
     {
         /// <summary> 이 씬이 쓸 카메라 설정. 전역 CameraManager 에 넘긴다. </summary>
         [Header("Camera")]

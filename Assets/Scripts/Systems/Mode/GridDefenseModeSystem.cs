@@ -39,7 +39,7 @@ namespace DefenseDot.Systems.Mode
         public override IGameMode CreateMode(ModeContext ctx)
         {
             if (placement != null) placement.Bind(ctx.TargetFinder);
-            BindPresentation(ctx);
+            BindVisual(ctx);
             return new GridDefenseMode(ctx.Core, mapData, ctx.SpawnOrigin);
         }
     }

@@ -4456,7 +4456,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d2f711e15bd5684bb6247f86b230cd9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.GridDefenseModeSystem
-  presentation: {fileID: 684409899}
+  visual: {fileID: 684409899}
   mapData: {fileID: 11400000, guid: 0c8886fe1bf3b5b4b82f8d7b905a440a, type: 2}
   placement: {fileID: 684409896}
   mapRoot: {fileID: 275214904}
@@ -4485,7 +4485,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dacb0688aaed0a94a8733e2ddbc15215, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.ModePresentationBinder
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.ModeVisualBinder
   cameraConfig: {fileID: 11400000, guid: 9ebf7c6ef01c78744916c82e99314775, type: 2}
   previewCenter: {fileID: 275214904}
   globalVolume: {fileID: 832575518}

@@ -1,4 +1,4 @@
-// ModePresentationBinder 인스펙터에 카메라 각도 프리뷰 버튼을 붙인다
+// ModeVisualBinder 인스펙터에 카메라 각도 프리뷰 버튼을 붙인다
 using UnityEngine;
 using UnityEditor;
 using DefenseDot.Systems.Mode;
@@ -7,11 +7,11 @@ using DefenseDot.Systems.Visual.Camera;
 namespace DefenseDot.EditorTools
 {
     /// <summary>
-    /// ModePresentationBinder 인스펙터에 카메라 각도 미리보기 버튼을 추가합니다.
+    /// ModeVisualBinder 인스펙터에 카메라 각도 미리보기 버튼을 추가합니다.
     /// 씬을 편집할 때 그 씬이 열려 있으므로, Config 소유 주체가 프리뷰의 주체가 됩니다.
     /// </summary>
-    [CustomEditor(typeof(ModePresentationBinder), true)]
-    public class ModePresentationBinderEditor : UnityEditor.Editor
+    [CustomEditor(typeof(ModeVisualBinder), true)]
+    public class ModeVisualBinderEditor : UnityEditor.Editor
     {
         private const string PREVIEW_BUTTON_LABEL = "카메라 각도 미리보기";
 
@@ -34,14 +34,14 @@ namespace DefenseDot.EditorTools
             var config = configProperty != null ? configProperty.objectReferenceValue as CameraRigConfig : null;
             if (config == null)
             {
-                Debug.LogError("[ModePresentationBinderEditor] cameraConfig가 할당되지 않았습니다.", target);
+                Debug.LogError("[ModeVisualBinderEditor] cameraConfig가 할당되지 않았습니다.", target);
                 return;
             }
 
             SceneView view = SceneView.lastActiveSceneView;
             if (view == null)
             {
-                Debug.LogError("[ModePresentationBinderEditor] 활성 씬 뷰가 없습니다.", target);
+                Debug.LogError("[ModeVisualBinderEditor] 활성 씬 뷰가 없습니다.", target);
                 return;
             }
 

@@ -50,7 +50,7 @@ namespace DefenseDot.UI.Views
                 bool used = i < choices.Count;
                 if (slots[i] != null) slots[i].SetActiveSlot(used);
                 if (!used) continue;
-                CardDisplay disp = CardPresentation.Build(choices[i]);
+                CardDisplay disp = CardDisplayBuilder.Build(choices[i]);
                 slots[i].SetData(disp);
                 if (config != null && config.tierSet != null)
                     slots[i].SetTierStyle(config.tierSet.Get(disp.tier));
