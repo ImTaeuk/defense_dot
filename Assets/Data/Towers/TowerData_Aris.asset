@@ -9,10 +9,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3af913cadff4463418f757ba4dcb7d76, type: 3}
-  m_Name: Character_Aris
-  m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.CharacterData
+  m_Script: {fileID: 11500000, guid: 08741d6bb7d02b748b02e7a96df653b3, type: 3}
+  m_Name: TowerData_Aris
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.TowerData
+  towerName: Aris
   basicAttack: {fileID: 11400000, guid: d7292e215a9d97e4cb6163bdbe06f306, type: 2}
   castAnimation: {fileID: 7400000, guid: b67b5b6acf7081e42b9a4e70ad535d22, type: 2}
-  baseAttackSpeed: 1
-  characterLineage: {fileID: 11400000, guid: c8446830ed7bc104b88ded33e03504bc, type: 2}
+  attackSpeed: 1
+  attackRange: 0
+  fusionLineage: {fileID: 11400000, guid: c8446830ed7bc104b88ded33e03504bc, type: 2}
+  cost: 0
+  prefab: {fileID: 0}
+  attackDamage: 0
+  aoeRadius: 3

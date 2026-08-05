@@ -21,11 +21,14 @@ namespace DefenseDot.Systems.Mode
     {
         [SerializeField] private ArenaView arenaView;
 
-        /// <summary> 플레이할 캐릭터(기본 공격·모션·공격속도·전용 계보 소유). </summary>
-        [SerializeField] private CharacterData characterData;
+        /// <summary> 플레이할 타워(기본 공격·모션·공격속도·전용 계보 소유). </summary>
+        [SerializeField] private TowerData towerData;
 
         /// <summary> 활성 공통 계보 세트(버전 갈아끼기 지점). </summary>
         [SerializeField] private DefenseDot.Systems.Cards.FusionRecipeSet universalLineage;
+
+        /// <summary> 이 판에 쓸 타워 전용 계보. 계보는 획득 규칙이라 타워가 아니라 아레나가 소유한다. </summary>
+        [SerializeField] private DefenseDot.Systems.Cards.FusionRecipeSet characterLineage;
 
         /// <summary> 타워 스타터 능력(샷·오비탈 등). 카드 획득(A3) 전 기본 장착. </summary>
         [SerializeField] private List<AbilityData> starterAbilities = new List<AbilityData>();
@@ -45,9 +48,8 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 타워 능력 시스템. 현재 소비처는 에디터 치트 도구뿐입니다. </summary>
         public TowerAbilitySystem TowerAbility => towerAbility;
 
-        /// <summary> 캐릭터 전용 계보입니다(없으면 null). 치트 도구와 FillContext 가 씁니다. </summary>
-        public DefenseDot.Systems.Cards.FusionRecipeSet CharacterLineage =>
-            characterData != null ? characterData.CharacterLineage : null;
+        /// <summary> 이 판의 타워 전용 계보입니다(없으면 null). 치트 도구와 FillContext 가 씁니다. </summary>
+        public DefenseDot.Systems.Cards.FusionRecipeSet CharacterLineage => characterLineage;
 
         /// <summary> 아레나 모드의 적 수 표시 한계(수용 한계)입니다. </summary>
         public override int EnemyDisplayCapacity =>
@@ -97,7 +99,7 @@ namespace DefenseDot.Systems.Mode
         /// <param name="ctx">코어 중심·타겟 탐색기·풀을 담은 모드 컨텍스트</param>
         private void SetupTower(ModeContext ctx)
         {
-            if (characterData == null || ctx.TargetFinder == null)
+            if (towerData == null || ctx.TargetFinder == null)
                 return;
 
             towerAbility = new TowerAbilitySystem();
@@ -110,13 +112,13 @@ namespace DefenseDot.Systems.Mode
             if (characterVisual != null)
                 towerAbility.SetAttackMotion(characterVisual);
 
-            towerAbility.SetCastAnimation(characterData.CastAnimation);
-            towerAbility.SetBaseAttackSpeed(characterData.BaseAttackSpeed);
+            towerAbility.SetCastAnimation(towerData.castAnimation);
+            towerAbility.SetBaseAttackSpeed(towerData.attackSpeed);
 
-            // 캐릭터 기본 공격을 스타터 맨 앞에 합성(중복은 로드아웃 Contains가 방어)
+            // 타워 기본 공격을 스타터 맨 앞에 합성(중복은 로드아웃 Contains가 방어)
             List<AbilityData> starters = new List<AbilityData>();
-            if (characterData.BasicAttack != null)
-                starters.Add(characterData.BasicAttack);
+            if (towerData.basicAttack != null)
+                starters.Add(towerData.basicAttack);
 
             starters.AddRange(starterAbilities);
 
