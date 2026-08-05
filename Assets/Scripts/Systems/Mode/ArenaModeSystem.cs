@@ -33,9 +33,6 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 타워 스타터 능력(샷·오비탈 등). 카드 획득(A3) 전 기본 장착. </summary>
         [SerializeField] private List<AbilityData> starterAbilities = new List<AbilityData>();
 
-        /// <summary> 타워 비주얼로 쓸 캐릭터 프리팹(애니메이션·연출 포함). </summary>
-        [SerializeField] private CharacterVisual characterVisualPrefab;
-
         [Header("카드 시스템 (A3)")]
         /// <summary> 카드 선택 허브 설정(정지·곡선·티어). </summary>
         [SerializeField] private DefenseDot.Systems.Cards.ArenaCardConfig cardConfig;
@@ -104,8 +101,9 @@ namespace DefenseDot.Systems.Mode
 
             towerAbility = new TowerAbilitySystem();
 
-            // 캐릭터 비주얼을 먼저 생성해 발사점(총구)을 확보 → 능력 시스템에 주입
-            CharacterVisual characterVisual = SpawnCharacterVisual(ctx);
+            // 타워를 먼저 생성해 연출의 발사점(총구)을 확보 → 능력 시스템에 주입
+            TowerActor tower = SpawnTower(ctx);
+            CharacterVisual characterVisual = tower != null ? tower.Visual : null;
             Transform fireOrigin = characterVisual != null ? characterVisual.FirePoint : null;
 
             // 모션·캐스트 애니메이션·기본 공격 속도를 먼저 주입해야 무기가 올바른 값으로 생성된다
@@ -135,14 +133,15 @@ namespace DefenseDot.Systems.Mode
                 characterVisual.Setup(towerAbility, ctx.TargetFinder, ctx.Flow, ctx.Core);
         }
 
-        /// <summary> 캐릭터 3D 연출 타워를 코어 위치에 생성해 비주얼을 반환합니다. </summary>
+        /// <summary> 타워를 코어 위치에 생성해 액터를 반환합니다. </summary>
         /// <param name="ctx">코어 중심 좌표를 담은 모드 컨텍스트</param>
-        private CharacterVisual SpawnCharacterVisual(ModeContext ctx)
+        private TowerActor SpawnTower(ModeContext ctx)
         {
-            if (characterVisualPrefab == null)
+            if (towerData.prefab == null)
                 return null;
 
-            return Instantiate(characterVisualPrefab, ctx.CoreCenter, Quaternion.identity);
+            GameObject instance = Instantiate(towerData.prefab, ctx.CoreCenter, Quaternion.identity);
+            return instance.GetComponent<TowerActor>();
         }
 
         /// <summary> 타워 능력 시스템을 정리합니다. </summary>

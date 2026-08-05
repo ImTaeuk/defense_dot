@@ -4,6 +4,7 @@ using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Data;
 using DefenseDot.Systems.Tower.Debugging;
+using DefenseDot.Systems.Visual;
 
 namespace DefenseDot.Systems.Tower
 {
@@ -12,9 +13,15 @@ namespace DefenseDot.Systems.Tower
     /// </summary>
     public class TowerActor : ActorBase<TowerData>, ICombatActor, IPoolable
     {
+        /// <summary> 이 타워의 3D 연출(조준·모션). 하위 오브젝트를 인스펙터로 연결한다. </summary>
+        [SerializeField] private CharacterVisual visual;
+
         private CombatLogic combatLogic;
         private ITargetable currentTarget;
         private TargetFinder targetFinder;
+
+        /// <summary> 이 타워의 연출입니다. 연출 없는 타워면 null 입니다. </summary>
+        public CharacterVisual Visual => visual;
 
         // DEBUG: 공격 타입 테스트 — 실제 능력 시스템 구현 시 삭제
         [Header("DEBUG Attack Toggles")]

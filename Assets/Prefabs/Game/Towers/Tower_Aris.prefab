@@ -1,0 +1,126 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &864252689404123078
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5743476059762600621}
+  - component: {fileID: 3932730759749343545}
+  m_Layer: 0
+  m_Name: Tower_Aris
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5743476059762600621
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864252689404123078}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 466297103696468369}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3932730759749343545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864252689404123078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9838d0c8e4f2a784c9eba5b3bd8661dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Tower.TowerActor
+  data: {fileID: 11400000, guid: 235e14db366b9ea488379660e5956c00, type: 2}
+  currentHealth: 0
+  visual: {fileID: 297130716896029086}
+  debugSingle: 0
+  debugAoe: 0
+  debugProjectile: 0
+--- !u!1001 &2406217075965897382
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 5743476059762600621}
+    m_Modifications:
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3195259666355612045, guid: f9a691d0a30c652419657c498617e751, type: 3}
+      propertyPath: m_Name
+      value: Aris_CoreTower
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f9a691d0a30c652419657c498617e751, type: 3}
+--- !u!114 &297130716896029086 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2700760641452163896, guid: f9a691d0a30c652419657c498617e751, type: 3}
+  m_PrefabInstance: {fileID: 2406217075965897382}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8f86ee9d8a60404d8767e93dd9874f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Mode.ArisTowerVisual
+--- !u!4 &466297103696468369 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2818135233620226871, guid: f9a691d0a30c652419657c498617e751, type: 3}
+  m_PrefabInstance: {fileID: 2406217075965897382}
+  m_PrefabAsset: {fileID: 0}
