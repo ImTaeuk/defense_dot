@@ -124,3 +124,7 @@ InitTestScene*.unity*
 # Documents (reference originals excluded from this rule)
 docs/
 !/[Aa]ssets/[Rr]eference/dot-defense-main/docs/
+
+# 검증 영상 녹화 도구 (로컬 전용 에디터 스크립트)
+/[Aa]ssets/[Ss]cripts/[Ee]ditor/PlayRecorder.cs
+/[Aa]ssets/[Ss]cripts/[Ee]ditor/PlayRecorder.cs.meta
