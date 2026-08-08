@@ -34,7 +34,9 @@ namespace DefenseDot.Systems.Visual
         private static readonly int DeathHash = Animator.StringToHash("Death");
         private static readonly int VictoryHash = Animator.StringToHash("Victory");
 
-        private TowerAbilitySystem abilitySystem;
+        /// <summary> 공격 모션이 발사 프레임에 닿았을 때 발생합니다. 타워가 구독해 능력을 발사시킵니다. </summary>
+        public event System.Action OnFireFrameReached;
+
         private TargetFinder finder;
         private GameFlowModel flow;
         private CoreModel coreHp;
@@ -45,11 +47,10 @@ namespace DefenseDot.Systems.Visual
         private ITargetable castTarget;   // 발사 대상(조준 유지용)
 
         /// <summary> 합성 루트가 의존성을 주입하고 이벤트를 연결합니다. </summary>
-        public void Setup(TowerAbilitySystem towerAbility, TargetFinder targetFinder,
+        public void Setup(TargetFinder targetFinder,
             GameFlowModel gameFlow, CoreModel coreModel)
         {
             Unsubscribe();
-            abilitySystem = towerAbility;
             finder = targetFinder;
             flow = gameFlow;
             coreHp = coreModel;
@@ -125,7 +126,7 @@ namespace DefenseDot.Systems.Visual
                 d.y = 0f;
                 if (d.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(d.normalized, Vector3.up);
             }
-            if (abilitySystem != null) abilitySystem.NotifyFireFrame();
+            OnFireFrameReached?.Invoke();
         }
 
         private void HandleHealthChanged(DefenseDot.Domain.Models.HealthState state)
