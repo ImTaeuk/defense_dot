@@ -1,4 +1,4 @@
-// 모드별 씬 시스템 베이스 — 모드(IGameMode)를 만들고 한 프레임씩 돌린다
+// 모드별 씬 시스템 베이스 — 모드(IGameMode)를 만들고 이 씬의 자원을 배선한다
 using UnityEngine;
 using DefenseDot.Domain;
 
@@ -26,12 +26,6 @@ namespace DefenseDot.Systems.Mode
         /// <summary> 이 모드만 쓰는 자원을 컨텍스트에 채웁니다. 공통 자원은 합성 루트가 이미 채웠습니다. </summary>
         /// <param name="builder">조립 중인 UI 컨텍스트. 모드 전용 칸만 채운다</param>
         public virtual void FillContext(GameContextBuilder builder)
-        {
-        }
-
-        /// <summary> 이 모드가 소유한 시스템을 한 프레임 진행시킵니다. </summary>
-        /// <param name="deltaTime">경과 시간</param>
-        public virtual void Tick(float deltaTime)
         {
         }
 

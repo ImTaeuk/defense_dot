@@ -82,14 +82,6 @@ namespace DefenseDot.Systems.Mode
                 new[] { universalLineage, CharacterLineage });
         }
 
-        /// <summary> 타워의 능력을 한 프레임 진행시킵니다. </summary>
-        /// <param name="deltaTime">경과 시간</param>
-        public override void Tick(float deltaTime)
-        {
-            if (tower != null)
-                tower.TickAbilities(deltaTime);
-        }
-
         /// <summary> 이 판의 타워를 생성하고 능력·연출을 배선합니다. </summary>
         /// <param name="ctx">코어 중심·타겟 탐색기·풀을 담은 모드 컨텍스트</param>
         private void SetupTower(ModeContext ctx)
@@ -101,8 +93,8 @@ namespace DefenseDot.Systems.Mode
             if (tower == null)
                 return;
 
-            // 능력은 타워가 소유한다. 예열 등록도 타워가 스스로 한다
-            tower.SetupAbilities(ctx.TargetFinder, ctx.CombatState, starterAbilities, ctx.Pooling);
+            // 능력은 타워가 소유한다. 구동·예열 등록도 타워가 스스로 한다
+            tower.SetupAbilities(ctx.TargetFinder, ctx.CombatState, starterAbilities, ctx.Pooling, ctx.Flow);
 
             if (tower.Visual != null)
                 tower.Visual.Setup(ctx.TargetFinder, ctx.Flow, ctx.Core);

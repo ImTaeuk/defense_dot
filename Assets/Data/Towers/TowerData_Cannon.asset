@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: TowerData_Cannon
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.TowerData
   towerName: Cannon
-  attackDamage: 30
-  attackRange: 4
-  aoeRadius: 0.5
+  basicAttack: {fileID: 11400000, guid: 47cf0f1622367b847aea2715031f929e, type: 2}
+  castAnimation: {fileID: 0}
   attackSpeed: 0.7
+  attackRange: 4
   cost: 150
   prefab: {fileID: 5787995391864394890, guid: 58afe9b187e9c18bc9a51f24a39e5bd7, type: 3}
+  attackDamage: 30
+  aoeRadius: 0.5

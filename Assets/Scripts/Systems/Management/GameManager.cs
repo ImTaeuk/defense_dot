@@ -184,9 +184,6 @@ namespace DefenseDot.Systems.Management
             // 아레나: 라운드 제한시간 진행 (Grid는 내부 가드로 통과)
             spawner.TickRound(Time.deltaTime);
 
-            // 모드가 소유한 시스템 진행
-            modeSystem.Tick(Time.deltaTime);
-
             // 아레나: 코어 HP를 수용 헤드룸(한계−생존수)으로 표시
             if (mode.TryGetCapacityHp(spawner.ActiveEnemyCount, out float capacityHp)) Core.SetCurrent(capacityHp);
 

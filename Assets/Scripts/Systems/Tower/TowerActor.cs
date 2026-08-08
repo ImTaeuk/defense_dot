@@ -5,6 +5,7 @@ using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Core.Pooling;
 using DefenseDot.Data;
+using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Abilities;
 using DefenseDot.Systems.Loading;
 using DefenseDot.Systems.Tower.Debugging;
@@ -23,6 +24,9 @@ namespace DefenseDot.Systems.Tower
 
         /// <summary> 이 타워가 가진 능력의 구동계. 타워가 소유하고 수명을 함께 한다. </summary>
         private readonly TowerAbilitySystem abilities = new TowerAbilitySystem();
+
+        /// <summary> 게임 단계. 플레이 중이 아니면 능력을 돌리지 않는다. </summary>
+        private GameFlowModel flow;
 
         private CombatLogic combatLogic;
         private ITargetable currentTarget;
@@ -55,13 +59,15 @@ namespace DefenseDot.Systems.Tower
         /// <param name="combatState">로드아웃 수정자가 참조할 전투 상태</param>
         /// <param name="starters">타워 기본 공격 뒤에 붙일 스타터 능력</param>
         /// <param name="pool">이펙트 예열·스폰에 쓰는 풀</param>
+        /// <param name="gameFlow">게임 단계. 플레이 중이 아니면 능력을 멈춘다</param>
         public void SetupAbilities(TargetFinder finder, ICombatState combatState,
-            IReadOnlyList<AbilityData> starters, PoolSystem pool)
+            IReadOnlyList<AbilityData> starters, PoolSystem pool, GameFlowModel gameFlow)
         {
             if (data == null)
                 return;
 
             targetFinder = finder;
+            flow = gameFlow;
 
             // 1. 모션·클립·공격속도를 먼저 주입해야 무기가 올바른 값으로 생성된다
             if (visual != null)
@@ -81,9 +87,9 @@ namespace DefenseDot.Systems.Tower
             if (starters != null)
                 combined.AddRange(starters);
 
-            // 3. 발사점은 연출의 총구를 쓴다(없으면 타워 위치로 폴백)
+            // 3. 발사점은 연출의 총구를, 사거리는 타워 값을 쓴다(능력이 각자 값을 쓰지 않게)
             Transform fireOrigin = visual != null ? visual.FirePoint : null;
-            abilities.Setup(finder, Position, combatState, combined, pool, fireOrigin);
+            abilities.Setup(finder, Position, combatState, combined, pool, fireOrigin, data.attackRange);
 
             // 4. 예열은 로딩이 기다린다. 로더 없는 씬 단독 실행이면 스스로 수행
             if (SceneLoadManager.Instance != null)
@@ -92,11 +98,13 @@ namespace DefenseDot.Systems.Tower
                 WarmupAsync(destroyCancellationToken).Forget();
         }
 
-        /// <summary> 능력 구동계를 한 프레임 진행시킵니다. </summary>
-        /// <param name="deltaTime">경과 시간</param>
-        public void TickAbilities(float deltaTime)
+        /// <summary> 자기 능력을 한 프레임 진행시킵니다. 플레이 중이 아니면 멈춥니다. </summary>
+        private void Update()
         {
-            abilities.Tick(deltaTime);
+            if (flow != null && !flow.IsPlaying)
+                return;
+
+            abilities.Tick(Time.deltaTime);
         }
 
         /// <summary> 기본 공격 속도를 바꿉니다. </summary>
@@ -136,6 +144,7 @@ namespace DefenseDot.Systems.Tower
         {
             currentTarget = null;
             SetState(ActorState.Idle);
+            ReleaseAbilities();   // 재사용 시 이전 판의 로드아웃·구독이 따라오지 않게
         }
         #endregion
 
@@ -174,8 +183,14 @@ namespace DefenseDot.Systems.Tower
             }
         }
 
-        /// <summary> 연출 구독을 끊고 능력 구동계를 정리합니다. </summary>
+        /// <summary> 능력 구동계를 정리합니다. </summary>
         private void OnDestroy()
+        {
+            ReleaseAbilities();
+        }
+
+        /// <summary> 연출 구독을 끊고 능력 구동계를 놓습니다. 파괴·풀 반환에서 함께 씁니다. </summary>
+        private void ReleaseAbilities()
         {
             if (visual != null)
                 visual.OnFireFrameReached -= HandleFireFrameReached;

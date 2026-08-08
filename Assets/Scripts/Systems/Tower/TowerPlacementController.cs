@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using DefenseDot.Core;
+using DefenseDot.Core.Pooling;
 using DefenseDot.Data;
+using DefenseDot.Domain.Models;
 
 namespace DefenseDot.Systems.Tower
 {
@@ -23,6 +26,14 @@ namespace DefenseDot.Systems.Tower
         [SerializeField] private InputActionAsset inputActions;
 
         private TargetFinder targetFinder;
+
+        /// <summary> 배치될 타워에 넘길 전투 상태(로드아웃 수정자가 참조). </summary>
+        private ICombatState combatState;
+        /// <summary> 배치될 타워에 넘길 이펙트 풀. </summary>
+        private PoolSystem pool;
+        /// <summary> 배치될 타워에 넘길 게임 단계. </summary>
+        private GameFlowModel flow;
+
         private InputAction pointAction;
         private InputAction clickAction;
         private readonly Dictionary<Vector2Int, TowerActor> occupied = new Dictionary<Vector2Int, TowerActor>();
@@ -33,10 +44,17 @@ namespace DefenseDot.Systems.Tower
         /// <summary> 선택이 해제됨. </summary>
         public event System.Action OnSlotDeselected;
 
-        /// <summary> 합성 루트가 타겟 탐색기를 주입합니다. </summary>
-        public void Bind(TargetFinder finder)
+        /// <summary> 합성 루트가 배치될 타워에 넘겨줄 의존성을 주입합니다. </summary>
+        /// <param name="finder">사거리 안의 적을 찾는 탐색기</param>
+        /// <param name="state">로드아웃 수정자가 참조할 전투 상태</param>
+        /// <param name="poolSystem">이펙트 예열·스폰에 쓰는 풀</param>
+        /// <param name="gameFlow">게임 단계. 플레이 중이 아니면 타워가 능력을 멈춘다</param>
+        public void Bind(TargetFinder finder, ICombatState state, PoolSystem poolSystem, GameFlowModel gameFlow)
         {
             targetFinder = finder;
+            combatState = state;
+            pool = poolSystem;
+            flow = gameFlow;
         }
 
         private void Awake()
@@ -113,6 +131,7 @@ namespace DefenseDot.Systems.Tower
             tower.transform.position = CellToWorld(cell);
             tower.Initialize(data);
             tower.SetTargetFinder(targetFinder);
+            tower.SetupAbilities(targetFinder, combatState, null, pool, flow);   // 스타터는 그리드에 없다
 
             occupied[cell] = tower;
             Deselect();

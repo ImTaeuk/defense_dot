@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: TowerData
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.TowerData
   towerName: Tower Test
-  attackDamage: 5
-  attackRange: 3
-  aoeRadius: 0.5
+  basicAttack: {fileID: 11400000, guid: d7292e215a9d97e4cb6163bdbe06f306, type: 2}
+  castAnimation: {fileID: 0}
   attackSpeed: 1
+  attackRange: 3
   cost: 50
   prefab: {fileID: 5787995391864394890, guid: 58afe9b187e9c18bc9a51f24a39e5bd7, type: 3}
-  fusionLineage: {fileID: 11400000, guid: c8446830ed7bc104b88ded33e03504bc, type: 2}
+  attackDamage: 5
+  aoeRadius: 0.5

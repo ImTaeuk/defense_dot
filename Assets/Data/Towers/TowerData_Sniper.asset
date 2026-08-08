@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: TowerData_Sniper
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Data.TowerData
   towerName: Sniper
-  attackDamage: 15
-  attackRange: 6
-  aoeRadius: 0.5
+  basicAttack: {fileID: 11400000, guid: d7292e215a9d97e4cb6163bdbe06f306, type: 2}
+  castAnimation: {fileID: 0}
   attackSpeed: 0.5
+  attackRange: 6
   cost: 100
   prefab: {fileID: 5787995391864394890, guid: 58afe9b187e9c18bc9a51f24a39e5bd7, type: 3}
+  attackDamage: 15
+  aoeRadius: 0.5

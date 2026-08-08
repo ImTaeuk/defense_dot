@@ -128,7 +128,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Tower.TowerActor
   data: {fileID: 11400000, guid: 3abfda84f33119d4626aad661bc55ad6, type: 2}
   currentHealth: 10
-  debugSingle: 1
+  visual: {fileID: 0}
+  debugSingle: 0
   debugAoe: 0
   debugProjectile: 0
 --- !u!114 &6260794249280190646
