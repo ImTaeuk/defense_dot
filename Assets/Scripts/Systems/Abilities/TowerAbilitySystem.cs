@@ -140,12 +140,18 @@ namespace DefenseDot.Systems.Abilities
             weapon?.FireAll(ctx);
         }
 
-        /// <summary> 능력과 무기를 한 프레임 진행시킵니다. </summary>
+        /// <summary> 자율 능력을 한 프레임 진행시킵니다. 기본 공격은 브레인이 TryFireBasic 으로 몹니다. </summary>
         /// <param name="deltaTime">경과 시간</param>
         public void Tick(float deltaTime)
         {
             runner?.Tick(deltaTime);
-            weapon?.Tick(ctx, deltaTime);
+        }
+
+        /// <summary> 기본 공격을 1회 시도합니다. </summary>
+        /// <returns>발사했으면 다음 발사까지의 간격(초), 못 쐈으면 0</returns>
+        public float TryFireBasic()
+        {
+            return weapon != null ? weapon.TryFire(ctx) : 0f;
         }
 
         /// <summary> 무기를 떼어 정리합니다. </summary>

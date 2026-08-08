@@ -33,7 +33,7 @@ namespace DefenseDot.Systems.Actor
         private void Update() { Tick(); }
 
         /// <summary> 트리를 1회 평가합니다. (Dead면 정지) </summary>
-        public void Tick()
+        public virtual void Tick()
         {
             if (actor == null) actor = GetComponent<IActor>();   // 생명주기 미보장 환경 대비
             if (actor == null || actor.CurrentState == ActorState.Dead) return;

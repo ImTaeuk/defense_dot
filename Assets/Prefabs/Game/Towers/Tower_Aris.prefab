@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5743476059762600621}
   - component: {fileID: 3932730759749343545}
+  - component: {fileID: 7588159283318417904}
   m_Layer: 0
   m_Name: Tower_Aris
   m_TagString: Untagged
@@ -48,9 +49,18 @@ MonoBehaviour:
   data: {fileID: 11400000, guid: 235e14db366b9ea488379660e5956c00, type: 2}
   currentHealth: 0
   visual: {fileID: 297130716896029086}
-  debugSingle: 0
-  debugAoe: 0
-  debugProjectile: 0
+--- !u!114 &7588159283318417904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864252689404123078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c454b41777970744196422218f254f8e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Tower.TowerBehaviorTree
 --- !u!1001 &2406217075965897382
 PrefabInstance:
   m_ObjectHideFlags: 0

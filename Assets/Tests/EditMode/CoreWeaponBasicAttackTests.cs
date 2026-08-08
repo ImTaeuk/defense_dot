@@ -121,7 +121,7 @@ namespace DefenseDot.Tests.EditMode
         }
 
         [Test]
-        public void Tick_WithoutBasicAttack_DoesNothing()
+        public void TryFire_WithoutBasicAttack_DoesNothing()
         {
             var loadout = new AbilityLoadout();
             OtherActive other = ScriptableObject.CreateInstance<OtherActive>();
@@ -129,38 +129,51 @@ namespace DefenseDot.Tests.EditMode
             loadout.TryAdd(other);
             var weapon = new CoreWeapon(loadout, null);
 
-            weapon.Tick(Ctx(), 1f);
+            float interval = weapon.TryFire(Ctx());
 
-            Assert.AreEqual(0, other.fireCount, "Basic이 없으면 Tick이 아무 것도 하지 않음");
+            Assert.AreEqual(0, other.fireCount, "Basic이 없으면 아무 것도 발사하지 않음");
+            Assert.AreEqual(0f, interval, "못 쐈으면 주기를 돌려주지 않음");
         }
 
         [Test]
-        public void Tick_FiresBasicAttack_WhenTargetAvailable()
+        public void TryFire_FiresBasicAttack_WhenTargetAvailable()
         {
             var loadout = new AbilityLoadout();
             BasicActive basic = MakeBasic();
             loadout.TryAdd(basic);
             var weapon = new CoreWeapon(loadout, null);
 
-            weapon.Tick(MakeCtx(), 1f);
+            float interval = weapon.TryFire(MakeCtx());
 
             Assert.AreEqual(1, basic.fireCount, "타겟이 있으면 기본 공격이 발사됨");
+            Assert.Greater(interval, 0f, "발사했으면 다음 주기를 돌려줌");
         }
 
         [Test]
-        public void Tick_RespectsAttackSpeedInterval()
+        public void TryFire_WithoutTarget_KeepsReady()
         {
             var loadout = new AbilityLoadout();
             BasicActive basic = MakeBasic();
             loadout.TryAdd(basic);
             var weapon = new CoreWeapon(loadout, null);
-            AbilityContext ctx = MakeCtx(2f);   // 공격속도 2 → 간격 0.5초
 
-            weapon.Tick(ctx, 0.1f);
-            Assert.AreEqual(1, basic.fireCount, "첫 Tick은 남은시간 0에서 시작해 즉시 발사");
+            float interval = weapon.TryFire(Ctx());   // Finder 가 없어 타겟을 못 찾는 컨텍스트
 
-            weapon.Tick(ctx, 0.1f);
-            Assert.AreEqual(1, basic.fireCount, "간격(0.5초)이 차기 전에는 재발사되지 않음");
+            Assert.AreEqual(0, basic.fireCount, "타겟이 없으면 발사하지 않음");
+            Assert.AreEqual(0f, interval, "주기를 소비하지 않아 다음 프레임에 다시 시도한다");
+        }
+
+        [Test]
+        public void TryFire_ReturnsIntervalFromAttackSpeed()
+        {
+            var loadout = new AbilityLoadout();
+            BasicActive basic = MakeBasic();
+            loadout.TryAdd(basic);
+            var weapon = new CoreWeapon(loadout, null);
+
+            float interval = weapon.TryFire(MakeCtx(2f));   // 공격속도 2 → 간격 0.5초
+
+            Assert.AreEqual(0.5f, interval, 0.0001f, "공격속도의 역수가 다음 주기가 된다");
         }
     }
 }

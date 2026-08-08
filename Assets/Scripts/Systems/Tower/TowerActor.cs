@@ -16,7 +16,7 @@ namespace DefenseDot.Systems.Tower
     /// 타워 액터 클래스입니다. 전투(공격) 로직과 사거리 기반 타겟 탐색을 포함하며,
     /// 자신이 가진 능력의 구동과 수명을 함께 책임집니다.
     /// </summary>
-    public class TowerActor : ActorBase<TowerData>, ICombatActor, IPoolable, ISceneWarmup
+    public class TowerActor : ActorBase<TowerData>, IPoolable, ISceneWarmup
     {
         /// <summary> 이 타워의 3D 연출(조준·모션). 하위 오브젝트를 인스펙터로 연결한다. </summary>
         [SerializeField] private CharacterVisual visual;
@@ -27,7 +27,6 @@ namespace DefenseDot.Systems.Tower
         /// <summary> 게임 단계. 플레이 중이 아니면 능력을 돌리지 않는다. </summary>
         private GameFlowModel flow;
 
-        private CombatLogic combatLogic;
         private ITargetable currentTarget;
         private TargetFinder targetFinder;
 
@@ -102,6 +101,13 @@ namespace DefenseDot.Systems.Tower
             abilities.SetBaseAttackSpeed(attacksPerSecond);
         }
 
+        /// <summary> 기본 공격을 1회 시도합니다(브레인이 주기를 보고 부릅니다). </summary>
+        /// <returns>발사했으면 다음 발사까지의 간격(초), 못 쐈으면 0</returns>
+        public float TryFireBasic()
+        {
+            return abilities.TryFireBasic();
+        }
+
         /// <summary> 능력을 사용 가능한 상태로 만듭니다(예열 후 장착). </summary>
         /// <param name="cancellationToken">씬 파괴 등으로 중단할 때 쓰는 토큰</param>
         public async UniTask WarmupAsync(System.Threading.CancellationToken cancellationToken)
@@ -136,32 +142,6 @@ namespace DefenseDot.Systems.Tower
         }
         #endregion
 
-        #region ICombatActor Implementation
-        public bool IsAttackableState()
-        {
-            return currentState == ActorState.Idle || currentState == ActorState.Attacking;
-        }
-
-        /// <summary> 공격 1회를 수행합니다. 현재는 능력이 자기 주기로 쏘므로 비어 있습니다. </summary>
-        public void PerformAttack()
-        {
-            // 주기를 BT 로 옮길 때 발사를 잇는다
-        }
-
-        public void UpdateCombat(float deltaTime)
-        {
-            combatLogic?.Tick(deltaTime);
-        }
-        #endregion
-
-        private void Awake()
-        {
-            if (data != null)
-            {
-                combatLogic = new CombatLogic(this, data.attackSpeed);
-            }
-        }
-
         /// <summary> 능력 구동계를 정리합니다. </summary>
         private void OnDestroy()
         {
@@ -175,12 +155,6 @@ namespace DefenseDot.Systems.Tower
                 visual.OnFireFrameReached -= HandleFireFrameReached;
 
             abilities.Dispose();
-        }
-
-        public override void Initialize(TowerData actorData)
-        {
-            base.Initialize(actorData);
-            combatLogic = new CombatLogic(this, actorData.attackSpeed);
         }
 
         /// <summary> 현재 타겟이 유효(생존+사거리)한지(브레인 조건). </summary>

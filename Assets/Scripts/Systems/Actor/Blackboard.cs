@@ -12,5 +12,8 @@ namespace DefenseDot.Systems.Actor
 
         /// <summary> 남은 기절 시간(초). 외부 CC 시스템이 기록하고 BT가 소비합니다. </summary>
         public float stunTimer;
+
+        /// <summary> 다음 기본 공격까지 남은 시간(초). 타겟이 없어도 계속 줄어듭니다. </summary>
+        public float attackCooldown;
     }
 }

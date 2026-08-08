@@ -23,8 +23,6 @@ namespace DefenseDot.Systems.Abilities
 
         /// <summary> 현재 기본 공격. 없으면 null. </summary>
         private AbilityInstance basicAttack;
-        /// <summary> 다음 발사까지 남은 시간(초). </summary>
-        private float remaining;
         /// <summary> 이번 발사의 대상. </summary>
         private ITargetable pendingTarget;
 
@@ -63,33 +61,27 @@ namespace DefenseDot.Systems.Abilities
             pendingTarget = target;
         }
 
-        /// <summary> 공격속도로 애니 속도를 정해 재생하거나, 준비되면 즉시 발사합니다. </summary>
+        /// <summary> 기본 공격을 1회 시도합니다. 주기 관리는 호출자(BT)가 맡습니다. </summary>
         /// <param name="ctx">능력 구동 컨텍스트</param>
-        /// <param name="deltaTime">경과 시간(초)</param>
-        public void Tick(in AbilityContext ctx, float deltaTime)
+        /// <returns>발사했으면 다음 발사까지의 간격(초), 못 쐈으면 0</returns>
+        public float TryFire(in AbilityContext ctx)
         {
             if (basicAttack == null)
             {
-                return;
-            }
-
-            remaining -= deltaTime;
-            if (remaining > 0f)
-            {
-                return;
+                return 0f;
             }
 
             ITargetable target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, ctx.Range) : null;
             if (target == null)
             {
-                return;   // 준비 유지 — 타겟 잡히는 즉시 발사
+                return 0f;   // 준비 유지 — 타겟 잡히는 즉시 발사
             }
 
             pendingTarget = target;
             float attackSpeed = ctx.Stats != null ? ctx.Stats.attackSpeed : 1f;
             float interval = 1f / Mathf.Max(0.01f, attackSpeed);
-            remaining = interval;
 
+            // 모션이 있으면 발사 프레임이 쏜다
             if (motion != null && castClip != null)
             {
                 float playSpeed = castClip.length / Mathf.Max(MIN_INTERVAL, interval);
@@ -99,6 +91,8 @@ namespace DefenseDot.Systems.Abilities
             {
                 FireAll(ctx);
             }
+
+            return interval;
         }
 
         /// <summary> 기본 공격만 발사합니다(모션의 발사 프레임이 호출). </summary>
