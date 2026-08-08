@@ -29,12 +29,5 @@ namespace DefenseDot.Data
         public int cost;
         [Tooltip("게임 내에 생성될 타워 프리팹")]
         public GameObject prefab;
-
-        // 능력 연결 전까지 DEBUG behavior 가 쓰는 값 — 능력 전환 후 behavior 와 함께 제거한다
-        [Header("DEBUG 잔재")]
-        [Tooltip("공격당 데미지 — DEBUG behavior 전용")]
-        public float attackDamage;
-        [Tooltip("범위(AoE) 공격의 블래스트 반경 — DEBUG behavior 전용")]
-        public float aoeRadius = 3f;
     }
 }

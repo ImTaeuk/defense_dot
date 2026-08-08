@@ -8,7 +8,6 @@ using DefenseDot.Data;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Abilities;
 using DefenseDot.Systems.Loading;
-using DefenseDot.Systems.Tower.Debugging;
 using DefenseDot.Systems.Visual;
 
 namespace DefenseDot.Systems.Tower
@@ -37,17 +36,6 @@ namespace DefenseDot.Systems.Tower
 
         /// <summary> 능력 명령 대상입니다. 카드 선택·강화가 씁니다. </summary>
         public IAbilityCommandTarget Abilities => abilities;
-
-        // DEBUG: 공격 타입 테스트 — 실제 능력 시스템 구현 시 삭제
-        [Header("DEBUG Attack Toggles")]
-        [SerializeField] private bool debugSingle = true;
-        [SerializeField] private bool debugAoe = false;
-        [SerializeField] private bool debugProjectile = false;
-
-        private readonly IAttackBehavior singleBehavior = new SingleTargetAttack();
-        private readonly IAttackBehavior aoeBehavior = new AoeAttack();
-        private readonly IAttackBehavior projectileBehavior = new ProjectileAttack();
-        private readonly List<IAttackBehavior> activeBehaviors = new List<IAttackBehavior>();
 
         /// <summary>
         /// 타겟 탐색기를 주입합니다. (배치 시 호출)
@@ -154,19 +142,10 @@ namespace DefenseDot.Systems.Tower
             return currentState == ActorState.Idle || currentState == ActorState.Attacking;
         }
 
+        /// <summary> 공격 1회를 수행합니다. 현재는 능력이 자기 주기로 쏘므로 비어 있습니다. </summary>
         public void PerformAttack()
         {
-            if (currentTarget == null || !currentTarget.IsActive) return;   // 상태는 브레인이 기록
-
-            // DEBUG: 토글에서 활성 behavior 구성 후 순회 실행
-            activeBehaviors.Clear();
-            if (debugSingle) activeBehaviors.Add(singleBehavior);
-            if (debugAoe) activeBehaviors.Add(aoeBehavior);
-            if (debugProjectile) activeBehaviors.Add(projectileBehavior);
-
-            if (activeBehaviors.Count == 0) return;
-            AttackContext ctx = new AttackContext(this, Position, targetFinder, data);
-            for (int i = 0; i < activeBehaviors.Count; i++) activeBehaviors[i].Execute(in ctx);
+            // 주기를 BT 로 옮길 때 발사를 잇는다
         }
 
         public void UpdateCombat(float deltaTime)
