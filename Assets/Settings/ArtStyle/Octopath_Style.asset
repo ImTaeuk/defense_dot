@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84fa6b605ca36a14b86dee57ae814bf7, type: 3}
+  m_Name: Octopath_Style
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Style.ArtStylePreset
+  styleName: Octopath
+  postFxProfile: {fileID: 11400000, guid: 4677671fe43006d41972bb5d435086ed, type: 2}
+  arenaRig: {fileID: 11400000, guid: 4c1394eaca2d9a24085c197fac12660f, type: 2}
+  gridRig: {fileID: 11400000, guid: 9ebf7c6ef01c78744916c82e99314775, type: 2}
+  lightColor: {r: 1, g: 0.98, b: 0.95, a: 1}
+  lightIntensity: 1.3
+  colorTemperature: 5000
+  lightAngles: {x: 50, y: -30, z: 0}
+  shadowStrength: 1
+  ambientMode: 0
+  ambientSky: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  ambientEquator: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+  ambientGround: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  ambientIntensity: 1
+  skyboxMaterial: {fileID: 0}
+  useFog: 1
+  fogColor: {r: 0.62, g: 0.6, b: 0.58, a: 1}
+  fogMode: 1
+  fogStart: 110
+  fogEnd: 420
+  fogDensity: 0.01
+  useAccentLights: 0
+  accentIntensityScale: 1
+  toonShadowColor: {r: 0.55, g: 0.52, b: 0.62, a: 1}
+  toonShadowThreshold: 0.5
+  toonShadowSmooth: 0.06
+  toonRimColor: {r: 1, g: 0.95, b: 0.85, a: 1}
+  toonRimPower: 3
+  toonRimIntensity: 0.5
+  toonOutlineColor: {r: 0.08, g: 0.07, b: 0.09, a: 1}
+  toonOutlineWidth: 0.0036
+  worldMaterials: []

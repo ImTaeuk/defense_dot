@@ -118,7 +118,8 @@ Shader "DefenseDot/BA_ToonLit"
                 half NdotH = saturate(dot(N, H));
                 half3 spec = SAMPLE_TEXTURE2D(_SpecMap, sampler_SpecMap, IN.uv).rgb * NdotH * _SpecColor.rgb * _SpecIntensity;
 
-                half3 col = (baseCol + rim + spec) * mainLight.color;
+                // 앰비언트는 직접광 곱셈 뒤에 가산 — 라이트가 꺼져도 남는다
+                half3 col = (baseCol + rim + spec) * mainLight.color + albedo * SampleSH(N);
                 col += _DissolveColor.rgb * step(dn - _DissolveAmount, 0.08) * step(0.001, _DissolveAmount);
                 col = lerp(col, (half3)1.0, _HitFlash);
                 return half4(col, 1.0);

@@ -5,7 +5,8 @@
         "DefenseDot",
         "Unity.TextMeshPro",
         "UnityEngine.UI",
-        "Unity.Recorder.Editor"
+        "Unity.Recorder.Editor",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"

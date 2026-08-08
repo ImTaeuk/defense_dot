@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84fa6b605ca36a14b86dee57ae814bf7, type: 3}
+  m_Name: BlueArchive_Style
+  m_EditorClassIdentifier: DefenseDot::DefenseDot.Systems.Visual.Style.ArtStylePreset
+  styleName: BlueArchive
+  postFxProfile: {fileID: 11400000, guid: 356e887a280ca7b4aaa22a54197460f6, type: 2}
+  arenaRig: {fileID: 11400000, guid: e5e3e49d76ccddd46a90162d55714c1a, type: 2}
+  gridRig: {fileID: 11400000, guid: 7fb253b39bf486543956fa306e2a43f2, type: 2}
+  lightColor: {r: 1, g: 0.97, b: 0.92, a: 1}
+  lightIntensity: 1.1
+  colorTemperature: 6200
+  lightAngles: {x: 40, y: -30, z: 0}
+  shadowStrength: 0
+  ambientMode: 1
+  ambientSky: {r: 0.62, g: 0.72, b: 0.9, a: 1}
+  ambientEquator: {r: 0.62, g: 0.6, b: 0.62, a: 1}
+  ambientGround: {r: 0.6, g: 0.55, b: 0.5, a: 1}
+  ambientIntensity: 0.75
+  skyboxMaterial: {fileID: 0}
+  useFog: 0
+  fogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  fogMode: 1
+  fogStart: 60
+  fogEnd: 300
+  fogDensity: 0.01
+  useAccentLights: 0
+  accentIntensityScale: 1
+  toonShadowColor: {r: 0.66, g: 0.61, b: 0.8, a: 1}
+  toonShadowThreshold: 0.35
+  toonShadowSmooth: 0.02
+  toonRimColor: {r: 0.85, g: 0.9, b: 1, a: 1}
+  toonRimPower: 5.5
+  toonRimIntensity: 0.42
+  toonOutlineColor: {r: 0.25, g: 0.2, b: 0.28, a: 1}
+  toonOutlineWidth: 0.0065
+  worldMaterials: []
