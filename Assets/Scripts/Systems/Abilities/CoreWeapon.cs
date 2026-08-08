@@ -23,8 +23,6 @@ namespace DefenseDot.Systems.Abilities
 
         /// <summary> 현재 기본 공격. 없으면 null. </summary>
         private AbilityInstance basicAttack;
-        /// <summary> 기본 공격 타겟 탐색 사거리(1회 캐시). </summary>
-        private float basicRange = 30f;
         /// <summary> 다음 발사까지 남은 시간(초). </summary>
         private float remaining;
         /// <summary> 이번 발사의 대상. </summary>
@@ -81,7 +79,7 @@ namespace DefenseDot.Systems.Abilities
                 return;
             }
 
-            ITargetable target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, basicRange) : null;
+            ITargetable target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, ctx.Range) : null;
             if (target == null)
             {
                 return;   // 준비 유지 — 타겟 잡히는 즉시 발사
@@ -122,7 +120,6 @@ namespace DefenseDot.Systems.Abilities
         private void Rebuild()
         {
             basicAttack = null;
-            basicRange = 30f;
             if (loadout == null)
             {
                 return;
@@ -138,10 +135,6 @@ namespace DefenseDot.Systems.Abilities
                 }
 
                 basicAttack = inst;
-                if (inst.data is ActiveAbilityData active)
-                {
-                    basicRange = active.TargetRange;
-                }
                 return;
             }
         }

@@ -53,7 +53,7 @@ namespace DefenseDot.Systems.Abilities
         /// <summary> 합성 루트가 의존성·스타터 능력을 주입합니다. fireOrigin은 발사체·머즐 스폰용 총구(없으면 origin 폴백). </summary>
         public void Setup(TargetFinder finder, Vector3 origin,
             ICombatState combatState, IReadOnlyList<AbilityData> starters, PoolSystem poolSystem,
-            Transform fireOrigin = null)
+            Transform fireOrigin = null, float range = 30f)
         {
             pool = poolSystem;
             loadout = new AbilityLoadout();
@@ -67,7 +67,7 @@ namespace DefenseDot.Systems.Abilities
             }
 
             IEffectSpawner effects = new PooledEffectSpawner(poolSystem);
-            ctx = new AbilityContext(origin, finder, loadout.Modifiers, effects, stats, fireOrigin);
+            ctx = new AbilityContext(origin, finder, loadout.Modifiers, effects, stats, fireOrigin, range);
             runner = new AbilityRunner(loadout, ctx);
             weapon = new CoreWeapon(loadout, motion, castAnimation);
             // 장착은 예열 후로 미룸(예열 전 Spawn 방지) → WarmupStartersAsync → EquipAll

@@ -20,6 +20,8 @@ namespace DefenseDot.Systems.Abilities
         public readonly IEffectSpawner Effects;
         /// <summary> 전투 능력치(공격속도·쿨다운 배율). </summary>
         public readonly CombatStats Stats;
+        /// <summary> 타워가 정한 타겟 탐색 사거리. 능력은 자기 값 대신 이것을 따른다. </summary>
+        public readonly float Range;
 
         /// <summary> 발사 시점의 총구 월드 위치. 발사점 미배선이면 코어 중심(Origin). </summary>
         public Vector3 FirePosition => FireOrigin != null ? FireOrigin.position : Origin;
@@ -31,8 +33,10 @@ namespace DefenseDot.Systems.Abilities
         /// <param name="effects">효과 엔티티 스포너</param>
         /// <param name="stats">전투 능력치</param>
         /// <param name="fireOrigin">발사체·머즐 스폰용 총구(없으면 origin 폴백)</param>
+        /// <param name="range">타워가 정한 타겟 탐색 사거리</param>
         public AbilityContext(Vector3 origin, TargetFinder finder,
-            AbilityModifiers modifiers, IEffectSpawner effects, CombatStats stats, Transform fireOrigin = null)
+            AbilityModifiers modifiers, IEffectSpawner effects, CombatStats stats,
+            Transform fireOrigin = null, float range = 30f)
         {
             Origin = origin;
             FireOrigin = fireOrigin;
@@ -40,6 +44,7 @@ namespace DefenseDot.Systems.Abilities
             Modifiers = modifiers;
             Effects = effects;
             Stats = stats;
+            Range = range;
         }
     }
 }

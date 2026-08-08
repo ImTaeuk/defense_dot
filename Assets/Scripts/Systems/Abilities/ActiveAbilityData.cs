@@ -70,7 +70,7 @@ namespace DefenseDot.Systems.Abilities
                 return;
             }
 
-            ITargetable target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, TargetRange) : null;
+            ITargetable target = ctx.Finder != null ? ctx.Finder.FindNearest(ctx.Origin, ctx.Range) : null;
             if (target == null)
             {
                 return;
