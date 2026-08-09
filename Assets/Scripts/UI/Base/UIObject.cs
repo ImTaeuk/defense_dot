@@ -11,10 +11,16 @@ namespace DefenseDot.UI.Base
     {
         [SerializeField] private UIDepth depth = UIDepth.HUD;
 
+        /// <summary> 이 UI 를 장부에서 꺼낼지 풀에서 빌릴지 정합니다. </summary>
+        [SerializeField] private UIObjectType objectType = UIObjectType.Single;
+
         private RectTransform cachedRect;
 
         /// <summary> 이 UI의 렌더 깊이 계층입니다. </summary>
         public UIDepth Depth => depth;
+
+        /// <summary> 이 UI 를 어디서 얻는지의 구분입니다. </summary>
+        public UIObjectType ObjectType => objectType;
 
         /// <summary> 캐시된 RectTransform입니다. </summary>
         public RectTransform RectTransform
