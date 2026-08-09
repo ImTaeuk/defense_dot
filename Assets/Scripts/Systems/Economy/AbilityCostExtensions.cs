@@ -1,4 +1,4 @@
-// 골드 강화 비용 계산 — AbilityUpgradeService 와 함께 현재 쓰이지 않는다 (그 파일 상단 주석 참고)
+// 골드 강화 비용 계산 — AbilityUpgradeSystem 과 함께 현재 쓰이지 않는다 (그 파일 상단 주석 참고)
 using UnityEngine;
 using DefenseDot.Systems.Abilities;
 

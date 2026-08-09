@@ -6,7 +6,7 @@ using DefenseDot.Systems.Economy;
 
 namespace DefenseDot.Tests.EditMode
 {
-    public class AbilityUpgradeServiceTests
+    public class AbilityUpgradeSystemTests
     {
         private sealed class StubData : AbilityData { }
         private sealed class StubCore : IAbilityCommandTarget
@@ -49,10 +49,10 @@ namespace DefenseDot.Tests.EditMode
             economy.Initialize(1000);
             StubCore core = new StubCore();
             AbilityInstance a = Ability(30, 1);
-            AbilityUpgradeService service = new AbilityUpgradeService(core, economy, Config());
-            int cost = service.GetUpgradeCost(a);
+            AbilityUpgradeSystem system = new AbilityUpgradeSystem(core, economy, Config());
+            int cost = system.GetUpgradeCost(a);
 
-            bool ok = service.TryUpgrade(a);
+            bool ok = system.TryUpgrade(a);
 
             Assert.IsTrue(ok);
             Assert.AreEqual(1, core.leveled);
@@ -65,9 +65,9 @@ namespace DefenseDot.Tests.EditMode
             EconomyModel economy = new EconomyModel();
             economy.Initialize(10);
             StubCore core = new StubCore();
-            AbilityUpgradeService service = new AbilityUpgradeService(core, economy, Config());
+            AbilityUpgradeSystem system = new AbilityUpgradeSystem(core, economy, Config());
 
-            bool ok = service.TryUpgrade(Ability(30, 1));
+            bool ok = system.TryUpgrade(Ability(30, 1));
 
             Assert.IsFalse(ok);
             Assert.AreEqual(0, core.leveled);
@@ -80,9 +80,9 @@ namespace DefenseDot.Tests.EditMode
             EconomyModel economy = new EconomyModel();
             economy.Initialize(1000);
             StubCore core = new StubCore();
-            AbilityUpgradeService service = new AbilityUpgradeService(core, economy, Config());
+            AbilityUpgradeSystem system = new AbilityUpgradeSystem(core, economy, Config());
 
-            bool ok = service.TryUpgrade(Ability(30, level: 5, maxLevel: 5));
+            bool ok = system.TryUpgrade(Ability(30, level: 5, maxLevel: 5));
 
             Assert.IsFalse(ok);
             Assert.AreEqual(0, core.leveled);
@@ -96,10 +96,10 @@ namespace DefenseDot.Tests.EditMode
             economy.Initialize(0);
             StubCore core = new StubCore();
             AbilityInstance a = Ability(30, level: 3);
-            AbilityUpgradeService service = new AbilityUpgradeService(core, economy, Config());
-            int refund = service.GetRefund(a);
+            AbilityUpgradeSystem system = new AbilityUpgradeSystem(core, economy, Config());
+            int refund = system.GetRefund(a);
 
-            service.Dismiss(a);
+            system.Dismiss(a);
 
             Assert.AreEqual(1, core.removed);
             Assert.AreEqual(refund, economy.Gold.Value);
