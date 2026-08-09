@@ -15,7 +15,7 @@ namespace DefenseDot.UI.Presenters
     public sealed class CardSelectionPresenter : UIPresenter<CardSelectionView>
     {
         private readonly LevelModel level;
-        private readonly IAbilityCommandTarget core;
+        private readonly IAbilityCommandTarget abilityTarget;
         private readonly ArenaCardConfig config;
         private readonly AbilityPool pool;
         private readonly GameFlowModel flow;
@@ -27,7 +27,7 @@ namespace DefenseDot.UI.Presenters
         public CardSelectionPresenter(CardSelectionView view, GameContext ctx) : base(view)
         {
             level = ctx.Level;
-            core = ctx.CoreTarget;
+            abilityTarget = ctx.AbilityTarget;
             config = ctx.CardConfig;
             pool = ctx.AbilityPool;
             flow = ctx.Flow;
@@ -58,7 +58,7 @@ namespace DefenseDot.UI.Presenters
         private void TryShowNextLevelUpCard()
         {
             if (!level.TryConsumePending()) return;   // 대기 레벨업 없으면 종료
-            current = generator.Generate(core.Loadout, pool, config, level.Level, fusion);
+            current = generator.Generate(abilityTarget.Loadout, pool, config, level.Level, fusion);
             if (current == null || current.Count == 0) { current = null; TryShowNextLevelUpCard(); return; }   // 후보 0개면 다음 대기 소비
             view.ShowChoices(current);
             if (config.pauseOnCardSelect) Time.timeScale = 0f;   // 카드 선택 중 정지
@@ -77,7 +77,7 @@ namespace DefenseDot.UI.Presenters
         {
             try
             {
-                await CardApplier.ApplyAsync(core, card, pooling, fusion);
+                await CardApplier.ApplyAsync(abilityTarget, card, pooling, fusion);
             }
             finally
             {

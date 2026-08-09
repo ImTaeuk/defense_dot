@@ -5,6 +5,7 @@ using UnityEngine;
 using DefenseDot.Core;
 using DefenseDot.Core.Pooling;
 using DefenseDot.Data;
+using DefenseDot.Domain;
 using DefenseDot.Domain.Models;
 using DefenseDot.Systems.Abilities;
 using DefenseDot.Systems.Loading;
@@ -21,11 +22,20 @@ namespace DefenseDot.Systems.Tower
         /// <summary> 이 타워의 3D 연출(조준·모션). 하위 오브젝트를 인스펙터로 연결한다. </summary>
         [SerializeField] private CharacterVisual visual;
 
+        /// <summary> 코어 HP 비율이 이 값 이하면 연출을 위태로운 상태로 바꾼다. </summary>
+        [SerializeField] private float lowHpRatio = 0.3f;
+
         /// <summary> 이 타워가 가진 능력의 구동계. 타워가 소유하고 수명을 함께 한다. </summary>
         private readonly TowerAbilitySystem abilities = new TowerAbilitySystem();
 
         /// <summary> 게임 단계. 플레이 중이 아니면 능력을 돌리지 않는다. </summary>
         private GameFlowModel flow;
+
+        /// <summary> 코어 상태. 연출에 전달할 HP·파괴를 여기서 받는다. </summary>
+        private CoreModel coreModel;
+
+        /// <summary> 코어 HP 구독 해제용 핸들. </summary>
+        private System.IDisposable coreHealthSub;
 
         private ITargetable currentTarget;
         private TargetFinder targetFinder;
@@ -88,10 +98,57 @@ namespace DefenseDot.Systems.Tower
         /// <summary> 자기 능력을 한 프레임 진행시킵니다. 플레이 중이 아니면 멈춥니다. </summary>
         private void Update()
         {
+            // 조준은 게임 단계와 무관하다
+            if (visual != null)
+                visual.SetAimTarget(currentTarget);
+
             if (flow != null && !flow.IsPlaying)
                 return;
 
             abilities.Tick(Time.deltaTime);
+        }
+
+        /// <summary> 연출이 반응할 코어 상태를 잇습니다. 판단은 타워가 하고 연출은 지시만 받습니다. </summary>
+        /// <param name="core">코어 HP·파괴를 알리는 모델</param>
+        public void BindVisualToState(CoreModel core)
+        {
+            if (visual == null)
+                return;
+
+            visual.Prepare();
+
+            coreModel = core;
+            if (coreModel != null)
+            {
+                coreHealthSub = coreModel.Health.Subscribe(HandleCoreHealthChanged);
+                coreModel.OnCoreDestroyed += HandleCoreDestroyed;
+            }
+
+            if (flow != null)
+                flow.OnPhaseChanged += HandlePhaseChanged;
+        }
+
+        /// <summary> 코어 HP 변화를 연출에 전달합니다. </summary>
+        /// <param name="state">현재 HP 상태</param>
+        private void HandleCoreHealthChanged(HealthState state)
+        {
+            visual.SetLowHp(state.Ratio <= lowHpRatio);
+        }
+
+        /// <summary> 코어가 부서지면 연출을 파괴 상태로 넘깁니다. </summary>
+        private void HandleCoreDestroyed()
+        {
+            visual.PlayDeath();
+        }
+
+        /// <summary> 승리 단계에 들어가면 연출을 승리 상태로 넘깁니다. </summary>
+        /// <param name="phase">바뀐 게임 단계</param>
+        private void HandlePhaseChanged(GamePhase phase)
+        {
+            if (phase != GamePhase.Victory)
+                return;
+
+            visual.PlayVictory();
         }
 
         /// <summary> 기본 공격 속도를 바꿉니다. </summary>
@@ -148,11 +205,21 @@ namespace DefenseDot.Systems.Tower
             ReleaseAbilities();
         }
 
-        /// <summary> 연출 구독을 끊고 능력 구동계를 놓습니다. 파괴·풀 반환에서 함께 씁니다. </summary>
+        /// <summary> 구독을 모두 끊고 능력 구동계를 놓습니다. 파괴·풀 반환에서 함께 씁니다. </summary>
         private void ReleaseAbilities()
         {
             if (visual != null)
                 visual.OnFireFrameReached -= HandleFireFrameReached;
+
+            if (coreModel != null)
+            {
+                coreHealthSub?.Dispose();
+                coreModel.OnCoreDestroyed -= HandleCoreDestroyed;
+                coreModel = null;
+            }
+
+            if (flow != null)
+                flow.OnPhaseChanged -= HandlePhaseChanged;
 
             abilities.Dispose();
         }

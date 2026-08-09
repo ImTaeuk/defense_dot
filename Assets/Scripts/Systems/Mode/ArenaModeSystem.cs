@@ -75,7 +75,7 @@ namespace DefenseDot.Systems.Mode
         {
             builder.CardConfig = cardConfig;
             builder.AbilityPool = abilityPool;
-            builder.CoreTarget = tower != null ? tower.Abilities : null;
+            builder.AbilityTarget = tower != null ? tower.Abilities : null;
 
             // 계보를 소유한 쪽이 합성 시스템을 만든다. null 세트는 FusionSystem 이 건너뛴다
             builder.Fusion = new DefenseDot.Systems.Cards.FusionSystem(
@@ -96,8 +96,8 @@ namespace DefenseDot.Systems.Mode
             // 능력은 타워가 소유한다. 구동·예열 등록도 타워가 스스로 한다
             tower.SetupAbilities(ctx.TargetFinder, ctx.CombatState, starterAbilities, ctx.Pooling, ctx.Flow);
 
-            if (tower.Visual != null)
-                tower.Visual.Setup(ctx.TargetFinder, ctx.Flow, ctx.Core);
+            // 연출 지휘는 타워가 맡는다
+            tower.BindVisualToState(ctx.Core);
         }
 
         /// <summary> 타워를 코어 위치에 생성해 액터를 반환합니다. </summary>

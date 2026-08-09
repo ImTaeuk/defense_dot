@@ -1,24 +1,19 @@
-// 캐릭터 타워 연출 — 공격 애니 오버라이드·속도 동기화(IAttackMotion) + 코어 상태·적 방향 연동
+// 캐릭터 타워 연출 — 공격 애니 오버라이드·속도 동기화(IAttackMotion). 무엇을 겨눌지·언제 죽을지는 타워가 지시한다
 using UnityEngine;
 using DefenseDot.Core;
-using DefenseDot.Domain;
-using DefenseDot.Domain.Models;
-using DefenseDot.Systems.Tower;
 using DefenseDot.Systems.Abilities;
 
 namespace DefenseDot.Systems.Visual
 {
     /// <summary>
     /// 캐릭터 타워의 연출 컴포넌트입니다. 공격 모션을 AnimatorOverrideController로 갈아끼우고
-    /// 발사 주기에 맞춰 재생 속도를 맞추며(IAttackMotion), 코어 HP·게임 단계·적 방향을 Animator·회전에 연동합니다.
+    /// 발사 주기에 맞춰 재생 속도를 맞춥니다(IAttackMotion). 상태 판단은 하지 않고 타워의 지시만 따릅니다.
     /// </summary>
     public sealed class CharacterVisual : MonoBehaviour, IAttackMotion
     {
         [SerializeField] private Animator animator;
         [SerializeField] private Transform firePoint;   // 발사체·머즐 스폰 위치(레일건 총구 본)
         [SerializeField] private float rotateSpeed = 8f;
-        [SerializeField] private float targetRange = 30f;
-        [SerializeField] private float lowHpRatio = 0.3f;
 
         /// <summary> 교체 대상이 되는 원본 공격 클립. 에디터가 컨트롤러의 Attack 상태에서 자동으로 채운다. </summary>
         [SerializeField] private AnimationClip baseAttackClip;
@@ -37,23 +32,17 @@ namespace DefenseDot.Systems.Visual
         /// <summary> 공격 모션이 발사 프레임에 닿았을 때 발생합니다. 타워가 구독해 능력을 발사시킵니다. </summary>
         public event System.Action OnFireFrameReached;
 
-        private TargetFinder finder;
-        private GameFlowModel flow;
-        private CoreModel coreHp;
+        /// <summary> 타워가 지정한 조준 대상. 공격 중이 아닐 때 이쪽을 본다. </summary>
+        private ITargetable aimTarget;
+
         private UnityEngine.Camera viewCamera;
-        private System.IDisposable healthSub;
         private AnimatorOverrideController overrideController;
         private bool locked;              // 파괴/승리 시 회전·공격 잠금
         private ITargetable castTarget;   // 발사 대상(조준 유지용)
 
-        /// <summary> 합성 루트가 의존성을 주입하고 이벤트를 연결합니다. </summary>
-        public void Setup(TargetFinder targetFinder,
-            GameFlowModel gameFlow, CoreModel coreModel)
+        /// <summary> 연출을 재생 가능한 상태로 만듭니다(클립 교체용 오버라이드 컨트롤러 구성). </summary>
+        public void Prepare()
         {
-            Unsubscribe();
-            finder = targetFinder;
-            flow = gameFlow;
-            coreHp = coreModel;
             if (animator == null) animator = GetComponentInChildren<Animator>();
             viewCamera = UnityEngine.Camera.main;
 
@@ -67,13 +56,37 @@ namespace DefenseDot.Systems.Visual
                     animator.runtimeAnimatorController = overrideController;
                 }
             }
+        }
 
-            if (coreHp != null)
-            {
-                healthSub = coreHp.Health.Subscribe(HandleHealthChanged);
-                coreHp.OnCoreDestroyed += HandleCoreDestroyed;
-            }
-            if (flow != null) flow.OnPhaseChanged += HandlePhaseChanged;
+        /// <summary> 겨눌 대상을 지정합니다. 타워가 자기 타겟을 알려줍니다. </summary>
+        /// <param name="target">조준 대상(없으면 null)</param>
+        public void SetAimTarget(ITargetable target)
+        {
+            aimTarget = target;
+        }
+
+        /// <summary> 코어가 위태로운 상태인지 알립니다. </summary>
+        /// <param name="isLow">위태로우면 true</param>
+        public void SetLowHp(bool isLow)
+        {
+            if (animator == null)
+                return;
+
+            animator.SetBool(LowHpHash, isLow);
+        }
+
+        /// <summary> 파괴 연출을 재생하고 이후 움직임을 멈춥니다. </summary>
+        public void PlayDeath()
+        {
+            locked = true;
+            if (animator != null) animator.SetTrigger(DeathHash);
+        }
+
+        /// <summary> 승리 연출을 재생하고 이후 움직임을 멈춥니다. </summary>
+        public void PlayVictory()
+        {
+            locked = true;
+            if (animator != null) animator.SetTrigger(VictoryHash);
         }
 
         private void Update()
@@ -81,14 +94,13 @@ namespace DefenseDot.Systems.Visual
             if (!locked) FaceTarget();
         }
 
-        /// <summary> 최근접 적(없으면 카메라)을 향해 Y축으로 부드럽게 회전합니다. </summary>
+        /// <summary> 지정된 대상(없으면 카메라)을 향해 Y축으로 부드럽게 회전합니다. </summary>
         private void FaceTarget()
         {
+            ITargetable target = (castTarget != null && castTarget.IsActive) ? castTarget : aimTarget;
+
             Vector3 dir;
-            ITargetable target = (castTarget != null && castTarget.IsActive)
-                ? castTarget
-                : (finder != null ? finder.FindNearest(transform.position, targetRange) : null);
-            if (target != null) dir = target.Position - transform.position;
+            if (target != null && target.IsActive) dir = target.Position - transform.position;
             else if (viewCamera != null) dir = viewCamera.transform.position - transform.position;
             else return;
 
@@ -127,31 +139,6 @@ namespace DefenseDot.Systems.Visual
                 if (d.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(d.normalized, Vector3.up);
             }
             OnFireFrameReached?.Invoke();
-        }
-
-        private void HandleHealthChanged(DefenseDot.Domain.Models.HealthState state)
-        {
-            if (animator == null) return;
-            animator.SetBool(LowHpHash, state.Ratio <= lowHpRatio);
-        }
-
-        private void HandleCoreDestroyed()
-        {
-            locked = true;
-            if (animator != null) animator.SetTrigger(DeathHash);
-        }
-
-        private void HandlePhaseChanged(GamePhase phase)
-        {
-            if (phase != GamePhase.Victory) return;
-
-            locked = true;
-            if (animator != null) animator.SetTrigger(VictoryHash);
-        }
-
-        private void OnDestroy()
-        {
-            Unsubscribe();
         }
 
 #if UNITY_EDITOR
@@ -194,15 +181,5 @@ namespace DefenseDot.Systems.Visual
             return null;
         }
 #endif
-
-        private void Unsubscribe()
-        {
-            if (coreHp != null)
-            {
-                healthSub?.Dispose();
-                coreHp.OnCoreDestroyed -= HandleCoreDestroyed;
-            }
-            if (flow != null) flow.OnPhaseChanged -= HandlePhaseChanged;
-        }
     }
 }

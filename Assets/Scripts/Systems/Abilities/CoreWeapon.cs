@@ -99,7 +99,8 @@ namespace DefenseDot.Systems.Abilities
         /// <param name="ctx">능력 구동 컨텍스트</param>
         public void FireAll(in AbilityContext ctx)
         {
-            if (basicAttack == null || pendingTarget == null)
+            // 모션 중에 죽은 대상엔 쏘지 않는다
+            if (basicAttack == null || pendingTarget == null || !pendingTarget.IsActive)
             {
                 return;
             }

@@ -54,7 +54,7 @@ namespace DefenseDot.Domain
         public AbilityPool AbilityPool { get; set; }
 
         /// <summary> 능력 명령 대상. 능력을 다루는 모드만 채웁니다. </summary>
-        public IAbilityCommandTarget CoreTarget { get; set; }
+        public IAbilityCommandTarget AbilityTarget { get; set; }
 
         /// <summary> 합성 시스템(계보 소유). 합성이 있는 모드만 채웁니다. </summary>
         public FusionSystem Fusion { get; set; }
@@ -88,7 +88,7 @@ namespace DefenseDot.Domain
         {
             return new GameContext(Economy, Core, Wave, Score, Timer, Flow, Level,
                 EnemyCapacity, Roster, Placement, CardConfig,
-                AbilityPool, CoreTarget, Pooling, Fusion);
+                AbilityPool, AbilityTarget, Pooling, Fusion);
         }
     }
 }

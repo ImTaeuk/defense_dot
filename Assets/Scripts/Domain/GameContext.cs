@@ -35,8 +35,8 @@ namespace DefenseDot.Domain
         public ArenaCardConfig CardConfig { get; }
         /// <summary> 능력 풀입니다. </summary>
         public AbilityPool AbilityPool { get; }
-        /// <summary> 코어 능력 명령 대상입니다. </summary>
-        public IAbilityCommandTarget CoreTarget { get; }
+        /// <summary> 능력 명령 대상입니다(타워가 자기 능력을 내어줍니다). </summary>
+        public IAbilityCommandTarget AbilityTarget { get; }
         /// <summary> 공용 풀링 매니저입니다. </summary>
         public PoolSystem Pooling { get; }
         /// <summary> 합성의 단일 원천 시스템입니다(계보 데이터 소유). </summary>
@@ -46,13 +46,13 @@ namespace DefenseDot.Domain
         public GameContext(EconomyModel economy, CoreModel core, WaveModel wave, ScoreModel score,
             RoundTimerModel timer, GameFlowModel flow, LevelModel level, int enemyCapacity,
             TowerRoster roster, TowerPlacementController placement, ArenaCardConfig cardConfig,
-            AbilityPool abilityPool, IAbilityCommandTarget coreTarget, PoolSystem pooling,
+            AbilityPool abilityPool, IAbilityCommandTarget abilityTarget, PoolSystem pooling,
             FusionSystem fusion)
         {
             Economy = economy; Core = core; Wave = wave; Score = score; Timer = timer;
             Flow = flow; Level = level; EnemyCapacity = enemyCapacity; Roster = roster;
             Placement = placement; CardConfig = cardConfig; AbilityPool = abilityPool;
-            CoreTarget = coreTarget; Pooling = pooling; Fusion = fusion;
+            AbilityTarget = abilityTarget; Pooling = pooling; Fusion = fusion;
         }
     }
 }
