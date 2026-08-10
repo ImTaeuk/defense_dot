@@ -33,6 +33,15 @@ namespace DefenseDot.UI.Base
             }
         }
 
+        /// <summary> Single 이면 자기를 장부에 올립니다. 하위가 오버라이드하면 base 를 부릅니다. </summary>
+        protected virtual void Awake()
+        {
+            if (objectType != UIObjectType.Single)
+                return;
+
+            RegisterSingle(this, gameObject.scene.name);
+        }
+
         /// <summary> 등록된 Single 인스턴스와 그 소속 씬입니다. </summary>
         private readonly struct SingleEntry
         {

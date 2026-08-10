@@ -16,8 +16,10 @@ namespace DefenseDot.UI.Base
         public event System.Action OnShown;
 
         /// <summary> 시작 활성 상태를 적용합니다. </summary>
-        protected virtual void Awake()
+        protected override void Awake()
         {
+            base.Awake();
+
             if (initType == UIInitType.InactiveOnStart)
                 gameObject.SetActive(false);
         }
