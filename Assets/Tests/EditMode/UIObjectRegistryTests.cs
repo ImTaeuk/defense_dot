@@ -86,5 +86,99 @@ namespace DefenseDot.Tests.EditMode
             Assert.IsNull(UIObject.Create<ProbePanel>());
             Object.DestroyImmediate(go);
         }
+
+        private sealed class PresenterProbeView : UIView
+        {
+        }
+
+        private sealed class PresenterProbePresenter : UIPresenter<PresenterProbeView>
+        {
+            /// <summary> 이 Presenter 가 초기화된 횟수입니다. </summary>
+            public static int InitializedCount;
+
+            /// <summary> 이 Presenter 가 정리된 횟수입니다. </summary>
+            public static int DisposedCount;
+
+            /// <summary> View 와 컨텍스트를 받아 베이스에 View 를 전달합니다. </summary>
+            /// <param name="view">제어할 View</param>
+            /// <param name="ctx">주입되는 게임 컨텍스트</param>
+            public PresenterProbePresenter(PresenterProbeView view, DefenseDot.Domain.GameContext ctx) : base(view)
+            {
+            }
+
+            /// <summary> 초기화 횟수를 센다. </summary>
+            protected override void OnInitialize()
+            {
+                InitializedCount++;
+            }
+
+            /// <summary> 정리 횟수를 센다. </summary>
+            protected override void OnDispose()
+            {
+                DisposedCount++;
+            }
+        }
+
+        /// <summary> 등록된 View 의 Presenter 가 생성·초기화되는지 확인합니다. </summary>
+        [Test]
+        public void CreatePresenters_RegisteredView_InitializesPresenter()
+        {
+            PresenterProbePresenter.InitializedCount = 0;
+            var go = new GameObject("probe");
+            PresenterProbeView view = go.AddComponent<PresenterProbeView>();
+            UIObject.RegisterSingle(view, "SceneA");
+
+            UIObject.CreatePresenters(null, "SceneA");
+
+            Assert.AreEqual(1, PresenterProbePresenter.InitializedCount);
+            Object.DestroyImmediate(go);
+        }
+
+        /// <summary> 같은 씬을 재호출하면 이전 Presenter 가 해제되는지 확인합니다. </summary>
+        [Test]
+        public void CreatePresenters_CalledTwice_DisposesPreviousPresenters()
+        {
+            PresenterProbePresenter.DisposedCount = 0;
+            var go = new GameObject("probe");
+            PresenterProbeView view = go.AddComponent<PresenterProbeView>();
+            UIObject.RegisterSingle(view, "SceneA");
+            UIObject.CreatePresenters(null, "SceneA");
+
+            UIObject.CreatePresenters(null, "SceneA");
+
+            Assert.AreEqual(1, PresenterProbePresenter.DisposedCount);
+            Object.DestroyImmediate(go);
+        }
+
+        /// <summary> 씬을 정리하면 그 씬 Presenter 도 함께 해제되는지 확인합니다. </summary>
+        [Test]
+        public void ReleaseScene_DisposesPresenters()
+        {
+            PresenterProbePresenter.DisposedCount = 0;
+            var go = new GameObject("probe");
+            PresenterProbeView view = go.AddComponent<PresenterProbeView>();
+            UIObject.RegisterSingle(view, "SceneA");
+            UIObject.CreatePresenters(null, "SceneA");
+
+            UIObject.ReleaseScene("SceneA");
+
+            Assert.AreEqual(1, PresenterProbePresenter.DisposedCount);
+        }
+
+        /// <summary> ClearRegistry 가 남은 Presenter 도 함께 해제하는지 확인합니다. </summary>
+        [Test]
+        public void ClearRegistry_DisposesPresenters()
+        {
+            PresenterProbePresenter.DisposedCount = 0;
+            var go = new GameObject("probe");
+            PresenterProbeView view = go.AddComponent<PresenterProbeView>();
+            UIObject.RegisterSingle(view, "SceneA");
+            UIObject.CreatePresenters(null, "SceneA");
+
+            UIObject.ClearRegistry();
+
+            Assert.AreEqual(1, PresenterProbePresenter.DisposedCount);
+            Object.DestroyImmediate(go);
+        }
     }
 }

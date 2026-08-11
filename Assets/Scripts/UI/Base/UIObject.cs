@@ -64,6 +64,9 @@ namespace DefenseDot.UI.Base
         private static readonly Dictionary<System.Type, SingleEntry> singles =
             new Dictionary<System.Type, SingleEntry>();
 
+        private static readonly Dictionary<string, List<DefenseDot.UI.Presenters.IPresenter>> presenters =
+            new Dictionary<string, List<DefenseDot.UI.Presenters.IPresenter>>();
+
         /// <summary> Single 인스턴스를 장부에 올립니다. </summary>
         /// <param name="target">등록할 인스턴스</param>
         /// <param name="sceneName">이 인스턴스가 속한 씬 이름</param>
@@ -90,6 +93,54 @@ namespace DefenseDot.UI.Base
             return null;
         }
 
+        /// <summary> 한 씬의 Presenter 구독을 끊고 장부에서 지웁니다. </summary>
+        /// <param name="sceneName">대상 씬 이름</param>
+        private static void DisposeScenePresenters(string sceneName)
+        {
+            if (!presenters.TryGetValue(sceneName, out List<DefenseDot.UI.Presenters.IPresenter> list))
+                return;
+
+            foreach (DefenseDot.UI.Presenters.IPresenter presenter in list)
+            {
+                presenter.Dispose();
+            }
+
+            presenters.Remove(sceneName);
+        }
+
+        /// <summary> 이 씬에 등록된 View 들의 Presenter 를 만들어 초기화합니다. </summary>
+        /// <param name="context">Presenter 에 주입할 컨텍스트</param>
+        /// <param name="sceneName">대상 씬 이름</param>
+        public static void CreatePresenters(DefenseDot.Domain.GameContext context, string sceneName)
+        {
+            if (string.IsNullOrEmpty(sceneName))
+                return;
+
+            // 재호출 시 이전 걸 먼저 끊는다
+            DisposeScenePresenters(sceneName);
+
+            var factory = new DefenseDot.UI.UIPresenterFactory(context);
+            var created = new List<DefenseDot.UI.Presenters.IPresenter>();
+
+            foreach (KeyValuePair<System.Type, SingleEntry> pair in singles)
+            {
+                if (pair.Value.SceneName != sceneName)
+                    continue;
+
+                if (pair.Value.Target is not UIView view)
+                    continue;
+
+                DefenseDot.UI.Presenters.IPresenter presenter = factory.Create(view);
+                if (presenter == null)
+                    continue;
+
+                presenter.Initialize();
+                created.Add(presenter);
+            }
+
+            presenters[sceneName] = created;
+        }
+
         /// <summary> 한 씬 소속 Single 을 장부에서 지우고 파괴합니다. </summary>
         /// <param name="sceneName">떠나는 씬 이름</param>
         public static void ReleaseScene(string sceneName)
@@ -97,6 +148,10 @@ namespace DefenseDot.UI.Base
             if (string.IsNullOrEmpty(sceneName))
                 return;
 
+            // 1. Presenter 를 먼저 끊는다. 뷰가 사라진 뒤 구독이 살아 있으면 안 된다
+            DisposeScenePresenters(sceneName);
+
+            // 2. 등록된 Single 을 장부에서 빼고 파괴한다
             using (UnityEngine.Pool.ListPool<System.Type>.Get(out List<System.Type> targets))
             {
                 foreach (KeyValuePair<System.Type, SingleEntry> pair in singles)
@@ -120,7 +175,17 @@ namespace DefenseDot.UI.Base
         /// <summary> 장부를 비웁니다. 게임 진입 지점에서 호출합니다. </summary>
         public static void ClearRegistry()
         {
+            // 안 끊고 버리면 구독이 샌다
+            foreach (KeyValuePair<string, List<DefenseDot.UI.Presenters.IPresenter>> pair in presenters)
+            {
+                foreach (DefenseDot.UI.Presenters.IPresenter presenter in pair.Value)
+                {
+                    presenter.Dispose();
+                }
+            }
+
             singles.Clear();
+            presenters.Clear();
         }
     }
 }
