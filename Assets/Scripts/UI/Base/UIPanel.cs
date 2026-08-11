@@ -7,7 +7,7 @@ namespace DefenseDot.UI.Base
     /// 표시/숨김과 표시 시점 훅을 제공하는 UI 패널 베이스입니다.
     /// Presenter 를 전제하지 않으므로 스스로 켜고 끄는 패널이 여기서 파생합니다.
     /// </summary>
-    public abstract class UIPanel : UIObject, IUIShowable
+    public abstract class UIPanel : UIObject
     {
         /// <summary> 시작 시 활성/비활성 중 어느 쪽으로 둘지 정합니다. </summary>
         [SerializeField] private UIInitType initType = UIInitType.ActiveOnStart;

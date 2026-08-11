@@ -10,12 +10,13 @@ namespace DefenseDot.UI.Base
     }
 
     /// <summary>
-    /// 표시 데이터(DTO) T로 갱신되는 위젯입니다. 표시 포맷팅을 스스로 소유합니다.
+    /// 표시 데이터 T 로 갱신되는 위젯입니다. 표시 포맷팅을 스스로 소유합니다.
     /// </summary>
     /// <typeparam name="T">바인딩 표시 데이터 타입</typeparam>
     public abstract class UIWidget<T> : UIWidget
     {
-        /// <summary> DTO로 이 위젯의 표시를 갱신합니다. </summary>
+        /// <summary> 표시 데이터로 이 위젯의 표시를 갱신합니다. </summary>
+        /// <param name="data">이 위젯이 그릴 표시 데이터</param>
         public abstract void SetData(T data);
     }
 }
